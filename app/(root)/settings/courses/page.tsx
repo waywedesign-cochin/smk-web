@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AddCourseDialog from "@/components/student/course/AddCourseDialog";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
-
+import axios from "axios";
 // Course type (same as in dialog)
 interface Course {
   id?: number;
@@ -17,6 +17,18 @@ interface Course {
 
 function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
+
+  const fetchCourses = async () => {
+    const res = await axios.get(`http://localhost:3001/api/course/get-courses`);
+
+    console.log(res?.data);
+    setCourses(res?.data?.data);
+  };
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
@@ -61,7 +73,7 @@ function CoursesPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
