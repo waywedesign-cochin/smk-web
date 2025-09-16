@@ -1,7 +1,12 @@
+import { Students } from "@/components/student/student";
 import React from "react";
 
 function StudentsPage() {
-  return <div>StudentsPage</div>;
+  return (
+    <section>
+      <Students />
+    </section>
+  );
 }
 
 export default StudentsPage;
