@@ -48,6 +48,7 @@ import {
   History,
 } from "lucide-react";
 import { Student } from "@/lib/types";
+import AddStudentForm from "./AddStudentForm";
 // import { mockStudents, mockPayments } from "../../lib/mock-data";
 // import { Student } from "../../types";
 // import { AddStudentForm } from "../add-student-form";
@@ -98,11 +99,11 @@ export function Students() {
                   Create a new student record and enroll them in a batch
                 </SheetDescription>
               </SheetHeader>
-              <div className="mt-6">
-                {/* <AddStudentForm
+              <div className="mt-6 px-4">
+                <AddStudentForm
                   onSubmit={handleAddStudent}
                   onCancel={() => setIsAddFormOpen(false)}
-                /> */}
+                />
               </div>
             </SheetContent>
           </Sheet>
