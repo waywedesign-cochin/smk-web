@@ -14,8 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 
-interface Course {
-  id?: number;
+export interface Course {
+  id?: string;
   name: string;
   description: string;
   baseFee: number;

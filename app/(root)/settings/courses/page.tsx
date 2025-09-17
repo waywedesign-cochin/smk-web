@@ -1,9 +1,14 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AddCourseDialog from "@/components/student/course/AddCourseDialog";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+
+import { fetchCourses } from "@/features/course/courseSlice";
+import { AppDispatch } from "@/redux/store";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { CourseList } from "@/components/student/course/CourseList";
 
 // Course type (same as in dialog)
 interface Course {
@@ -16,7 +21,13 @@ interface Course {
 }
 
 function CoursesPage() {
-  const [courses, setCourses] = useState<Course[]>([]);
+  const dispatch = useAppDispatch();
+  const courses = useAppSelector((state) => state.courses.courses);
+  useEffect(() => {
+    dispatch(fetchCourses());
+  }, []);
+  console.log("courses", courses);
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
@@ -32,36 +43,36 @@ function CoursesPage() {
 
   const resetForm = () => setFormData(emptyCourse);
 
-  const handleSubmit = (course: Course, isEdit: boolean) => {
-    if (isEdit && editingCourse) {
-      // update existing course
-      setCourses((prev) =>
-        prev.map((c) =>
-          c.id === editingCourse.id ? { ...course, id: editingCourse.id } : c
-        )
-      );
-    } else {
-      // add new course
-      setCourses((prev) => [
-        ...prev,
-        { ...course, id: Date.now() }, // temporary ID, replace with backend ID
-      ]);
-    }
-  };
+  // const handleSubmit = (course: Course, isEdit: boolean) => {
+  //   if (isEdit && editingCourse) {
+  //     // update existing course
+  //     setCourses((prev) =>
+  //       prev.map((c) =>
+  //         c.id === editingCourse.id ? { ...course, id: editingCourse.id } : c
+  //       )
+  //     );
+  //   } else {
+  //     // add new course
+  //     setCourses((prev) => [
+  //       ...prev,
+  //       { ...course, id: Date.now() }, // temporary ID, replace with backend ID
+  //     ]);
+  //   }
+  // };
 
-  const handleEdit = (course: Course) => {
-    setEditingCourse(course);
-    setFormData(course);
-    setIsAddDialogOpen(true);
-  };
+  // const handleEdit = (course: Course) => {
+  //   setEditingCourse(course);
+  //   setFormData(course);
+  //   setIsAddDialogOpen(true);
+  // };
 
-  const handleDelete = (id?: number) => {
-    if (!id) return;
-    setCourses((prev) => prev.filter((c) => c.id !== id));
-  };
+  // const handleDelete = (id?: number) => {
+  //   if (!id) return;
+  //   setCourses((prev) => prev.filter((c) => c.id !== id));
+  // };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -70,7 +81,7 @@ function CoursesPage() {
             Manage courses, fee structures, and enrollment settings
           </p>
         </div>
-        <AddCourseDialog
+        {/* <AddCourseDialog
           formData={formData} // pass formData
           setFormData={setFormData} // pass setFormData
           isAddDialogOpen={isAddDialogOpen}
@@ -79,11 +90,11 @@ function CoursesPage() {
           setEditingCourse={setEditingCourse}
           resetForm={resetForm}
           onSubmit={handleSubmit}
-        />
+        /> */}
       </div>
 
       {/* Course List */}
-      <div className="border rounded-lg p-4 space-y-4">
+      {/* <div className="border rounded-lg p-4 space-y-4">
         {courses.length === 0 ? (
           <p className="text-muted-foreground">No courses added yet.</p>
         ) : (
@@ -115,7 +126,7 @@ function CoursesPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => handleEdit(course)}
+                  // onClick={() => handleEdit(course)}
                 >
                   <Pencil className="w-4 h-4 mr-1" />
                   Edit
@@ -123,7 +134,7 @@ function CoursesPage() {
                 <Button
                   size="sm"
                   variant="destructive"
-                  onClick={() => handleDelete(course.id)}
+                  // onClick={() => handleDelete(course.id)}
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
                   Delete
@@ -132,7 +143,8 @@ function CoursesPage() {
             </div>
           ))
         )}
-      </div>
+      </div> */}
+      <CourseList courses={courses} />
     </div>
   );
 }
