@@ -9,7 +9,7 @@ import { fetchCourses } from "@/features/course/courseSlice";
 import { AppDispatch } from "@/redux/store";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { CourseList } from "@/components/student/course/CourseList";
-
+export const dynamic = "force-dynamic";
 // Course type (same as in dialog)
 interface Course {
   id?: number;
