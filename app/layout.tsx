@@ -5,7 +5,7 @@ import "./globals.css";
 // import { Provider } from "react-redux";
 // import { store } from "@/redux/store";
 import StoreProvider from "./StoreProvider";
-
+import { Toaster } from "react-hot-toast";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -32,7 +32,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* <Provider store={store}> {children} </Provider> */}
-        <StoreProvider> {children} </StoreProvider>
+        <StoreProvider>
+          {children}
+
+          <Toaster position="top-center" reverseOrder={false} />
+        </StoreProvider>
       </body>
     </html>
   );

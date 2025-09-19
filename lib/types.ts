@@ -24,11 +24,13 @@ export interface Location {
 }
 
 export interface Course {
-  id: number;
+  id?: string;
   name: string;
   description?: string;
   baseFee: number;
-  batches: Batch[];
+  duration: string;
+  batches?: Batch[];
+  isActive: boolean;
 }
 
 export interface Batch {
