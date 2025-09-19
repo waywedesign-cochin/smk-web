@@ -74,60 +74,60 @@ export const menuItems = [
   },
 ];
 
-export const mockLocations: Location[] = [
-  {
-    id: 1,
-    name: "Downtown Campus",
-    batches: [],
-    cashBooks: [],
-  },
-  {
-    id: 2,
-    name: "North Branch",
-    batches: [],
-    cashBooks: [],
-  },
-  {
-    id: 3,
-    name: "South Campus",
-    batches: [],
-    cashBooks: [],
-  },
-];
+// export const mockLocations: Location[] = [
+//   {
+//     id: 1,
+//     name: "Downtown Campus",
+//     batches: [],
+//     cashBooks: [],
+//   },
+//   {
+//     id: 2,
+//     name: "North Branch",
+//     batches: [],
+//     cashBooks: [],
+//   },
+//   {
+//     id: 3,
+//     name: "South Campus",
+//     batches: [],
+//     cashBooks: [],
+//   },
+// ];
 
-export const mockCourses: Course[] = [
-  {
-    id: 1,
-    name: "Full Stack Development",
-    description: "Learn web development from scratch",
-    baseFee: 10000,
-    batches: [],
-  },
-  {
-    id: 2,
-    name: "Data Science",
-    description: "Learn data analysis and machine learning",
-    baseFee: 12000,
-    batches: [],
-  },
-];
-export const mockBatches: Batch[] = [
-  {
-    id: 1,
-    name: "FSD-2024-01",
-    year: 2024,
-    location: mockLocations[0],
-    locationId: 1,
-    course: mockCourses[0],
-    courseId: 1,
-    tutor: "John Smith",
-    coordinator: "Sarah Johnson",
-    slotLimit: 30,
-    currentCount: 25,
-    mode: "HYBRID" as BatchMode,
-    status: "ACTIVE" as BatchStatus,
-    students: [],
-    createdAt: new Date("2024-01-15"),
-    updatedAt: new Date("2024-12-01"),
-  },
-];
+// export const mockCourses: Course[] = [
+//   {
+//     id: 1,
+//     name: "Full Stack Development",
+//     description: "Learn web development from scratch",
+//     baseFee: 10000,
+//     batches: [],
+//   },
+//   {
+//     id: 2,
+//     name: "Data Science",
+//     description: "Learn data analysis and machine learning",
+//     baseFee: 12000,
+//     batches: [],
+//   },
+// ];
+// export const mockBatches: Batch[] = [
+//   {
+//     id: 1,
+//     name: "FSD-2024-01",
+//     year: 2024,
+//     location: mockLocations[0],
+//     locationId: 1,
+//     course: mockCourses[0],
+//     courseId: 1,
+//     tutor: "John Smith",
+//     coordinator: "Sarah Johnson",
+//     slotLimit: 30,
+//     currentCount: 25,
+//     mode: "HYBRID" as BatchMode,
+//     status: "ACTIVE" as BatchStatus,
+//     students: [],
+//     createdAt: new Date("2024-01-15"),
+//     updatedAt: new Date("2024-12-01"),
+//   },
+// ];

@@ -1,22 +1,19 @@
+import DeleteDialogue from "@/components/shared/DashboardSidebar/DeleteDialogue";
 import { Button } from "@/components/ui/button";
+import { Course } from "@/lib/types";
 import { Pencil, Trash2 } from "lucide-react";
-
-interface Course {
-  id?: string;
-  name: string;
-  description: string;
-  baseFee: number;
-  duration: string;
-  isActive: boolean;
-}
 
 interface CourseListProps {
   courses: Course[];
-  // handleEdit: (course: Course) => void;
-  // handleDelete: (id: string) => void;
+  handleEdit: (course: Course) => void;
+  handleDelete: (id: string) => void;
 }
 
-export function CourseList({ courses }: CourseListProps) {
+export function CourseList({
+  courses,
+  handleEdit,
+  handleDelete,
+}: CourseListProps) {
   return (
     <div className="border border-gray-200  rounded-xl p-6 bg-white  transition-shadow duration-300 space-y-6">
       {courses.length === 0 ? (
@@ -65,12 +62,12 @@ export function CourseList({ courses }: CourseListProps) {
                   size="sm"
                   variant="outline"
                   className="border-gray-300  text-gray-700  hover:bg-blue-100  transition-colors duration-200"
-                  // onClick={() => handleEdit(course)}
+                  onClick={() => handleEdit(course)}
                 >
                   <Pencil className="w-4 h-4 mr-1" />
                   Edit
                 </Button>
-                <Button
+                {/* <Button
                   size="sm"
                   variant="destructive"
                   className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white transition-colors duration-200"
@@ -78,7 +75,12 @@ export function CourseList({ courses }: CourseListProps) {
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
                   Delete
-                </Button>
+                </Button> */}
+                <DeleteDialogue
+                  id={course.id as string}
+                  title={course.name}
+                  handelDelete={handleDelete}
+                />
               </div>
             </div>
           ))}
