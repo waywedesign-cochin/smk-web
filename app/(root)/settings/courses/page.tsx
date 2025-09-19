@@ -6,7 +6,7 @@ import {
   deleteCourse,
   fetchCourses,
   updateCourse,
-} from "@/features/course/courseSlice";
+} from "@/redux/features/course/courseSlice";
 
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { CourseList } from "@/components/student/course/CourseList";

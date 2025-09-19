@@ -1,6 +1,6 @@
 // Types based on Prisma schema
 export interface User {
-  id: number;
+  id: string;
   email: string;
   password: string;
   role: UserRole;
@@ -35,12 +35,12 @@ export interface Course {
 }
 
 export interface Batch {
-  id: number;
+  id: string;
   name: string;
   year: number;
-  location: Location;
+  location?: Location;
   locationId: number;
-  course: Course;
+  course?: Course;
   courseId: number;
   tutor?: string;
   coordinator?: string;
@@ -48,7 +48,7 @@ export interface Batch {
   currentCount: number;
   mode: BatchMode;
   status: BatchStatus;
-  students: Student[];
+  students?: Student[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -66,7 +66,7 @@ export enum BatchStatus {
 }
 
 export interface Student {
-  id: number;
+  id: string;
   admissionNo: string;
   name: string;
   email?: string;
@@ -75,12 +75,12 @@ export interface Student {
   salesperson?: string;
   referralInfo?: string;
   isFundedAccount: boolean;
-  currentBatch: Batch;
+  currentBatch?: Batch;
   currentBatchId: number;
   //   admissions: Admission[];
   //   payments: Payment[];
   //   batchHistory: BatchHistory[];
-  communications: CommunicationLog[];
+  // communications: CommunicationLog[];
 }
 
 export interface Admission {
