@@ -173,7 +173,7 @@ export function Students() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="space-y-1">
+                    {/* <div className="space-y-1">
                       <p className="font-medium">{student.currentBatch.name}</p>
                       <p className="text-sm text-muted-foreground">
                         {student.currentBatch.course.name}
@@ -181,7 +181,7 @@ export function Students() {
                       <Badge variant="outline">
                         {student.currentBatch.mode}
                       </Badge>
-                    </div>
+                    </div> */}
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
