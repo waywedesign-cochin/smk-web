@@ -17,10 +17,11 @@ export enum UserRole {
 }
 
 export interface Location {
-  id: string;
+  id?: string;
   name: string;
-  batches: Batch[];
-  cashBooks: CashBook[];
+  address?: string;
+  batches?: Batch[];
+  createdAt?: string;
 }
 
 export interface Course {

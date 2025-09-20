@@ -1,7 +1,7 @@
 import DeleteDialogue from "@/components/shared/DashboardSidebar/DeleteDialogue";
 import { Button } from "@/components/ui/button";
 import { Course } from "@/lib/types";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 interface CourseListProps {
   courses: Course[];
