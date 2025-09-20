@@ -14,30 +14,25 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   LocationFormData,
   locationSchema,
 } from "@/lib/validation/locationSchema";
-type Location = {
-  id: string;
-  name: string;
-  address?: string;
-};
+import { Location } from "@/lib/types";
 
 export default function AddLocation({
   isAddDialogOpen,
   setIsAddDialogOpen,
   editingLocation,
   setEditingLocation,
-  onSubmit, // parent handles final submit
+  onSubmit,
 }: {
   isAddDialogOpen: boolean;
   setIsAddDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   editingLocation: Location | null;
   setEditingLocation: React.Dispatch<React.SetStateAction<Location | null>>;
-  onSubmit: (data: LocationFormData, id?: string) => void;
+  onSubmit: (location: Location, isEdit?: boolean) => void;
 }) {
   const {
     register,
@@ -46,13 +41,10 @@ export default function AddLocation({
     formState: { errors },
   } = useForm<LocationFormData>({
     resolver: zodResolver(locationSchema),
-    defaultValues: {
-      name: "",
-      address: "",
-    },
+    defaultValues: { name: "", address: "" },
   });
 
-  // ✅ Reset form when editing or adding new
+  // Reset when editing or adding new
   useEffect(() => {
     if (editingLocation) {
       reset({
@@ -60,16 +52,12 @@ export default function AddLocation({
         address: editingLocation.address || "",
       });
     } else {
-      reset({
-        name: "",
-        address: "",
-      });
+      reset({ name: "", address: "" });
     }
   }, [editingLocation, reset]);
 
-  // ✅ Handle form submit
   const submitHandler = (data: LocationFormData) => {
-    onSubmit(data, editingLocation?.id);
+    onSubmit(data, !!editingLocation);
     setIsAddDialogOpen(false);
     setEditingLocation(null);
     reset();

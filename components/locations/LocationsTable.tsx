@@ -8,8 +8,9 @@ import {
   TableHead,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit } from "lucide-react";
 import { Location } from "@/lib/types";
+import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
 
 export default function LocationsTable({
   locations,
@@ -64,7 +65,7 @@ export default function LocationsTable({
               </TableCell>
               <TableCell>
                 <div className="text-sm text-muted-foreground">
-                  {formatDate(location.createdAt)}
+                  {formatDate(location?.createdAt || "")}
                 </div>
               </TableCell>
               <TableCell>
@@ -76,13 +77,11 @@ export default function LocationsTable({
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(location.id)}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <DeleteDialogue
+                    id={location?.id as string}
+                    title={location.name}
+                    handelDelete={handleDelete}
+                  />
                 </div>
               </TableCell>
             </TableRow>

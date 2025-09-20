@@ -1,114 +1,44 @@
 "use client";
-import { useState } from "react";
-
-import { Plus, Edit, Trash2, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LocationsTable from "@/components/locations/LocationsTable";
 import AddLocation from "@/components/locations/AddLocation";
-
-interface Location {
-  id: string;
-  name: string;
-  address: string;
-  createdAt: string;
-}
-
-const mockLocations: Location[] = [
-  {
-    id: "1",
-    name: "calicut",
-    address: "mavoor road",
-    createdAt: "2020-03-15T10:30:00Z",
-  },
-  {
-    id: "2",
-    name: "Kochi",
-    address: "Edappaly near LuLu mall",
-    createdAt: "2021-06-10T14:20:00Z",
-  },
-  {
-    id: "3",
-    name: "Trivandrum",
-    address: "Near bus stand",
-    createdAt: "2022-01-20T09:15:00Z",
-  },
-];
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import {
+  addLocation,
+  deleteLocation,
+  fetchLocations,
+  updateLocation,
+} from "@/redux/features/location/locationSlice";
+import { Location } from "@/lib/types";
 
 export default function LocationsPage() {
-  const [locations, setLocations] = useState<Location[]>(mockLocations);
+  const dispatch = useAppDispatch();
+  const locations = useAppSelector((state) => state.locations.locations);
+
+  useEffect(() => {
+    dispatch(fetchLocations());
+  }, [dispatch]);
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    address: "",
-  });
 
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      address: "",
-    });
-  };
-
-  const handleSubmit = () => {
-    if (!formData.name.trim()) {
-      //   toast.error("Location name is required");
-      return;
-    }
-
-    // Check for duplicate names (since it's unique in schema)
-    const isDuplicate = locations.some(
-      (location) =>
-        location.name.toLowerCase() === formData.name.toLowerCase() &&
-        location.id !== editingLocation?.id
-    );
-
-    if (isDuplicate) {
-      //   toast.error("Location name already exists");
-      return;
-    }
-
-    if (editingLocation) {
-      setLocations(
-        locations.map((location) =>
-          location.id === editingLocation.id
-            ? {
-                ...location,
-                name: formData.name.trim(),
-                address: formData.address.trim(),
-              }
-            : location
-        )
-      );
-      //   toast.success("Location updated successfully");
-      setEditingLocation(null);
+  const handleSubmit = (data: Location, isEdit?: boolean) => {
+    if (isEdit) {
+      dispatch(updateLocation(data));
     } else {
-      const newLocation: Location = {
-        id: Date.now().toString(), // Simple ID generation for demo
-        name: formData.name.trim(),
-        address: formData.address.trim(),
-        createdAt: new Date().toISOString(),
-      };
-      setLocations([...locations, newLocation]);
-      //   toast.success("Location added successfully");
+      dispatch(addLocation(data));
     }
-
-    resetForm();
-    setIsAddDialogOpen(false);
   };
 
   const handleEdit = (location: Location) => {
-    setFormData({
-      name: location.name,
-      address: location.address,
-    });
     setEditingLocation(location);
     setIsAddDialogOpen(true);
   };
-
-  const handleDelete = (locationId: string) => {
-    setLocations(locations.filter((location) => location.id !== locationId));
-    // toast.success("Location deleted successfully");
+  const handleDelete = (id?: string) => {
+    if (!id) return;
+    dispatch(deleteLocation(id));
   };
 
   return (
@@ -121,14 +51,11 @@ export default function LocationsPage() {
           </p>
         </div>
         <AddLocation
-          formData={formData}
-          handleSubmit={handleSubmit}
           isAddDialogOpen={isAddDialogOpen}
           setIsAddDialogOpen={setIsAddDialogOpen}
-          setFormData={setFormData}
-          resetForm={resetForm}
           editingLocation={editingLocation}
           setEditingLocation={setEditingLocation}
+          onSubmit={handleSubmit}
         />
       </div>
 
@@ -173,7 +100,7 @@ export default function LocationsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {locations.filter((l) => l.address.trim()).length}
+              {locations.filter((l) => l?.address?.trim()).length}
             </div>
             <p className="text-xs text-muted-foreground">
               Out of {locations.length} total
