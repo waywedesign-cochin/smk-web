@@ -3,6 +3,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { User } from "@/lib/types";
 import { BASE_URL } from "@/redux/baseUrl";
+import { SignUpInput } from "@/lib/validation/signupSchema";
 
 //
 // Types
@@ -34,17 +35,19 @@ const initialState: UserState = {
   error: null,
 };
 
-export const signUp = createAsyncThunk<User, User>(
+export const signUp = createAsyncThunk<User, SignUpInput>(
   "users/signup",
-  async (userData, { rejectWithValue }) => {
+  async (formData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${BASE_URL}/api/auth/signup`,
-        userData
-      );
+      // remove confirmPassword
+      const { confirmPassword, ...payload } = formData;
+
+      const response = await axios.post(`${BASE_URL}/api/user/signup`, payload);
+
       if (response.data.success) {
         toast.success(response.data.message || "Signup successful, login now");
       }
+
       return response.data.data as User;
     } catch (error: unknown) {
       let errorMessage = "Signup failed";
@@ -59,7 +62,7 @@ export const login = createAsyncThunk<LoginResponse, LoginCredentials>(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${BASE_URL}/api/auth/login`,
+        `${BASE_URL}/api/user/login`,
         credentials
       );
       const { token, user } = response.data.data;
@@ -80,7 +83,7 @@ export const fetchUsers = createAsyncThunk<User[]>(
   "users/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/auth/get-users`);
+      const response = await axios.get(`${BASE_URL}/api/user/get-users`);
       return response.data.data as User[];
     } catch (error: unknown) {
       let errorMessage = "Failed to fetch users";
@@ -94,7 +97,7 @@ export const fetchUserById = createAsyncThunk<User, string>(
   "users/fetchById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/users/${id}`);
+      const response = await axios.get(`${BASE_URL}/api/user/get-user/${id}`);
       return response.data.data as User;
     } catch (error: unknown) {
       let errorMessage = "Failed to fetch user";
@@ -109,7 +112,7 @@ export const updateUser = createAsyncThunk<User, Partial<User>>(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${BASE_URL}/api/users/${userData.id}`,
+        `${BASE_URL}/api/user/update-user/${userData.id}`,
         userData
       );
       return response.data.data as User;
