@@ -5,22 +5,19 @@ import { User } from "@/lib/types";
 import { BASE_URL } from "@/redux/baseUrl";
 import { SignUpInput } from "@/lib/validation/signupSchema";
 
-//
+
 // Types
-//
 interface LoginCredentials {
   email: string;
   password: string;
 }
 
 interface LoginResponse {
-  token: string;
   user: User;
 }
 
 interface UserState {
   currentUser: User | null;
-  token: string | null;
   users: User[];
   loading: boolean;
   error: string | null;
@@ -29,7 +26,6 @@ interface UserState {
 // Initial State
 const initialState: UserState = {
   currentUser: null,
-  token: null,
   users: [],
   loading: false,
   error: null,
@@ -63,16 +59,48 @@ export const login = createAsyncThunk<LoginResponse, LoginCredentials>(
     try {
       const response = await axios.post(
         `${BASE_URL}/api/user/login`,
-        credentials
+        credentials,
+        {
+          withCredentials: true,
+        }
       );
-      const { token, user } = response.data.data;
-      // Save to localStorage
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
 
-      return { token, user };
+      return response.data.data as LoginResponse;
     } catch (error: unknown) {
       let errorMessage = "Login failed";
+      if (error instanceof Error) errorMessage = error.message;
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const logoutUser = createAsyncThunk(
+  "users/logout",
+  async (_, { rejectWithValue }) => {
+    try {
+      await axios.post(
+        `${BASE_URL}/api/user/logout`,
+        {},
+        { withCredentials: true }
+      );
+      return true;
+    } catch (error: unknown) {
+      let errorMessage = "Logout failed";
+      if (error instanceof Error) errorMessage = error.message;
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+export const fetchCurrentUser = createAsyncThunk<User>(
+  "users/fetchCurrentUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/user/me`, {
+        withCredentials: true, 
+      });
+      return response.data.data as User;
+    } catch (error: unknown) {
+      let errorMessage = "Failed to fetch current user";
       if (error instanceof Error) errorMessage = error.message;
       return rejectWithValue(errorMessage);
     }
@@ -130,14 +158,7 @@ export const updateUser = createAsyncThunk<User, Partial<User>>(
 const userSlice = createSlice({
   name: "users",
   initialState,
-  reducers: {
-    logout: (state) => {
-      state.currentUser = null;
-      state.token = null;
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       // Signup
@@ -163,10 +184,39 @@ const userSlice = createSlice({
         (state, action: PayloadAction<LoginResponse>) => {
           state.loading = false;
           state.currentUser = action.payload.user;
-          state.token = action.payload.token;
         }
       )
       .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      //logout
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.currentUser = null;
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      //current user
+      .addCase(fetchCurrentUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchCurrentUser.fulfilled,
+        (state, action: PayloadAction<User>) => {
+          state.loading = false;
+          state.currentUser = action.payload;
+        }
+      )
+      .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
@@ -224,5 +274,4 @@ const userSlice = createSlice({
   },
 });
 
-export const { logout } = userSlice.actions;
 export default userSlice.reducer;

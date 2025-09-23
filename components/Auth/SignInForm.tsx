@@ -13,7 +13,7 @@ import { login } from "@/redux/features/user/userSlice";
 import { useRouter } from "next/navigation";
 
 export function SignInForm() {
-    const router=useRouter()
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const [formData, setFormData] = useState({
     email: "",
@@ -49,7 +49,7 @@ export function SignInForm() {
 
     setIsLoading(true);
     try {
-      await dispatch(login(parsed.data));
+      const result = await dispatch(login(parsed.data)).unwrap();
       router.push("/");
       setFormData({ email: "", password: "" });
     } catch (err) {
@@ -139,7 +139,12 @@ export function SignInForm() {
             </form>
 
             <div className="mt-4 text-center">
-              <Button onClick={() => router.push("/signup")} variant="link" className="text-sm cursor-pointer" disabled={isLoading}>
+              <Button
+                onClick={() => router.push("/signup")}
+                variant="link"
+                className="text-sm cursor-pointer"
+                disabled={isLoading}
+              >
                 Don’t have an account? Sign up
               </Button>
             </div>
