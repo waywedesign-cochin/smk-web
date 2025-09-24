@@ -88,7 +88,7 @@ export function SignUpForm() {
     setIsLoading(true);
 
     try {
-      await dispatch(signUp(parsed.data));
+      const result = await dispatch(signUp(parsed.data)).unwrap();
       router.push("/signin");
       setFormData({
         username: "",
