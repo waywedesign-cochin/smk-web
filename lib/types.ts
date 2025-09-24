@@ -2,19 +2,20 @@
 export interface User {
   id: string;
   email: string;
+  username: string;
   password: string;
-  role: UserRole;
+  role: number;
   name?: string;
   location?: Location;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export enum UserRole {
-  ADMIN = "ADMIN",
-  STAFF = "STAFF",
-  DIRECTOR = "DIRECTOR",
-}
+// export enum UserRole {
+//   ADMIN = "ADMIN",
+//   STAFF = "STAFF",
+//   DIRECTOR = "DIRECTOR",
+// }
 
 export interface Location {
   id?: string;
