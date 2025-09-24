@@ -63,6 +63,7 @@ export enum BatchStatus {
   ACTIVE = "ACTIVE",
   COMPLETED = "COMPLETED",
   CANCELLED = "CANCELLED",
+  PENDING = "PENDING",
 }
 
 export interface Student {

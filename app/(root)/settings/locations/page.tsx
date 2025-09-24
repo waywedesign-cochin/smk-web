@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import LocationsTable from "@/components/locations/LocationsTable";
 import AddLocation from "@/components/locations/AddLocation";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
