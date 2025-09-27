@@ -3,231 +3,220 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-
-// -------------------- Types --------------------
-
-interface AddStudentFormData {
-  // Personal Information
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-
-  // Admission Details
-  selectedBatchId: string;
-  salesperson: string;
-  referralInfo: string;
-  isFundedAccount: boolean;
-  admissionNo: string;
-
-  // Fee Structure
-  totalCourseFee: number;
-  discount: number;
-  advanceAmount: number;
-  feeDueMode: string;
-  dueDate: string;
-  paymentMode: string;
-  upiTransactionId: string;
-
-  // Notes
-  notes: string;
-
-  // Auto-calculated
-  balanceAmount?: number;
-}
-
-interface Batch {
-  id: string;
-  name: string;
-  course: { name: string; baseFee: number };
-  mode: string;
-  location: { name: string };
-  slotLimit: number;
-  currentCount: number;
-  status: string;
-}
+import { Checkbox } from "../ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { Batch } from "@/lib/types";
+import {
+  StudentSchema,
+  StudentInput,
+} from "../../lib/validation/studentSchema";
 
 interface AddStudentFormProps {
-  onSubmit: (studentData: AddStudentFormData) => void;
+  onSubmit: (studentData: StudentInput) => void;
   onCancel: () => void;
+  batches: Batch[];
+  loading?: boolean;
 }
 
-// -------------------- Component --------------------
-
-const AddStudentForm: React.FC<AddStudentFormProps> = ({ onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState<AddStudentFormData>({
+const AddStudentForm: React.FC<AddStudentFormProps> = ({
+  onSubmit,
+  onCancel,
+  batches,
+  loading = false,
+}) => {
+  const [formData, setFormData] = useState<StudentInput>({
     name: "",
     email: "",
     phone: "",
     address: "",
-    selectedBatchId: "",
+    currentBatchId: "",
     salesperson: "",
-    referralInfo: "",
     isFundedAccount: false,
     admissionNo: "",
-    totalCourseFee: 0,
-    discount: 0,
-    advanceAmount: 0,
-    feeDueMode: "",
-    dueDate: "",
-    paymentMode: "",
-    upiTransactionId: "",
-    notes: "",
   });
 
-  const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof StudentInput, string>>
+  >({});
 
-  // Generic input handler
-  const handleInputChange = <K extends keyof AddStudentFormData>(
+  const handleInputChange = <K extends keyof StudentInput>(
     field: K,
-    value: AddStudentFormData[K]
+    value: StudentInput[K]
   ) => {
-    setFormData((prev) => {
-      const updated = { ...prev, [field]: value };
-
-      if (field === "totalCourseFee" || field === "discount" || field === "advanceAmount") {
-        const finalFee = updated.totalCourseFee - updated.discount;
-        updated.balanceAmount = finalFee - updated.advanceAmount;
-      }
-
-      return updated;
-    });
+    setFormData((prev: StudentInput) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = () => {
-    onSubmit(formData);
+    const result = StudentSchema.safeParse(formData);
+
+    if (!result.success) {
+      // collect errors
+      const newErrors: Partial<Record<keyof StudentInput, string>> = {};
+      result.error.issues.forEach(
+        (err: {
+          path: (string | number | symbol)[];
+          message: string | undefined;
+        }) => {
+          const field = err.path[0] as keyof StudentInput;
+          newErrors[field] = err.message;
+        }
+      );
+      setErrors(newErrors);
+      return;
+    }
+
+    // clear errors and submit
+    setErrors({});
+    onSubmit(result.data);
   };
 
   return (
-    <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>Add New Student</DialogTitle>
-        </DialogHeader>
+    <div className="max-w-3xl mx-auto bg-white rounded-xl shadow p-8">
+      <h2 className="text-2xl font-semibold mb-6 text-gray-800">
+        Add New Student
+      </h2>
 
-        <div className="grid gap-4">
-          {/* Personal Information */}
+      <div className="space-y-6">
+        {/* Personal Information */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h3 className="text-lg font-medium">Personal Information</h3>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              <Input
-                placeholder="Name"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-              />
-              <Input
-                placeholder="Email"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-              />
-              <Input
-                placeholder="Phone"
-                value={formData.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-              />
-              <Input
-                placeholder="Address"
-                value={formData.address}
-                onChange={(e) => handleInputChange("address", e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Admission Details */}
-          <div>
-            <h3 className="text-lg font-medium">Admission Details</h3>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              <Input
-                placeholder="Admission No"
-                value={formData.admissionNo}
-                onChange={(e) => handleInputChange("admissionNo", e.target.value)}
-              />
-              <Input
-                placeholder="Salesperson"
-                value={formData.salesperson}
-                onChange={(e) => handleInputChange("salesperson", e.target.value)}
-              />
-              <Input
-                placeholder="Referral Info"
-                value={formData.referralInfo}
-                onChange={(e) => handleInputChange("referralInfo", e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Fee Structure */}
-          <div>
-            <h3 className="text-lg font-medium">Fee Structure</h3>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              <Input
-                type="number"
-                placeholder="Total Course Fee"
-                value={formData.totalCourseFee}
-                onChange={(e) => handleInputChange("totalCourseFee", Number(e.target.value))}
-              />
-              <Input
-                type="number"
-                placeholder="Discount"
-                value={formData.discount}
-                onChange={(e) => handleInputChange("discount", Number(e.target.value))}
-              />
-              <Input
-                type="number"
-                placeholder="Advance Amount"
-                value={formData.advanceAmount}
-                onChange={(e) => handleInputChange("advanceAmount", Number(e.target.value))}
-              />
-              <Input
-                placeholder="Fee Due Mode"
-                value={formData.feeDueMode}
-                onChange={(e) => handleInputChange("feeDueMode", e.target.value)}
-              />
-              <Input
-                type="date"
-                placeholder="Due Date"
-                value={formData.dueDate}
-                onChange={(e) => handleInputChange("dueDate", e.target.value)}
-              />
-              <Input
-                placeholder="Payment Mode"
-                value={formData.paymentMode}
-                onChange={(e) => handleInputChange("paymentMode", e.target.value)}
-              />
-              <Input
-                placeholder="UPI Transaction ID"
-                value={formData.upiTransactionId}
-                onChange={(e) => handleInputChange("upiTransactionId", e.target.value)}
-              />
-              <Input
-                readOnly
-                placeholder="Balance Amount"
-                value={formData.balanceAmount ?? 0}
-              />
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div>
-            <h3 className="text-lg font-medium">Notes</h3>
-            <Textarea
-              placeholder="Additional notes"
-              value={formData.notes}
-              onChange={(e) => handleInputChange("notes", e.target.value)}
+            <Input
+              placeholder="Name"
+              value={formData.name}
+              onChange={(e) => handleInputChange("name", e.target.value)}
+              disabled={loading}
             />
+            {errors.name && (
+              <p className="text-red-500 text-sm">{errors.name}</p>
+            )}
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit}>Submit</Button>
+          <div>
+            <Input
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) => handleInputChange("email", e.target.value)}
+              disabled={loading}
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email}</p>
+            )}
+          </div>
+
+          <div>
+            <Input
+              placeholder="Phone"
+              value={formData.phone}
+              onChange={(e) => handleInputChange("phone", e.target.value)}
+              disabled={loading}
+            />
+            {errors.phone && (
+              <p className="text-red-500 text-sm">{errors.phone}</p>
+            )}
+          </div>
+
+          <div>
+            <Input
+              placeholder="Address"
+              value={formData.address}
+              onChange={(e) => handleInputChange("address", e.target.value)}
+              disabled={loading}
+            />
+            {errors.address && (
+              <p className="text-red-500 text-sm">{errors.address}</p>
+            )}
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Admission Details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Input
+              placeholder="Admission No"
+              value={formData.admissionNo}
+              onChange={(e) => handleInputChange("admissionNo", e.target.value)}
+              disabled={loading}
+            />
+            {errors.admissionNo && (
+              <p className="text-red-500 text-sm">{errors.admissionNo}</p>
+            )}
+          </div>
+
+          <div>
+            <Input
+              placeholder="Salesperson"
+              value={formData.salesperson}
+              onChange={(e) => handleInputChange("salesperson", e.target.value)}
+              disabled={loading}
+            />
+            {errors.salesperson && (
+              <p className="text-red-500 text-sm">{errors.salesperson}</p>
+            )}
+          </div>
+
+          {/* Batch Select */}
+          <div>
+            <Select
+              value={formData.currentBatchId}
+              onValueChange={(value) =>
+                handleInputChange("currentBatchId", value)
+              }
+              disabled={loading}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Batch" />
+              </SelectTrigger>
+              <SelectContent>
+                {batches.map((batch) => (
+                  <SelectItem key={batch.id} value={batch.id?.toString() || ""}>
+                    {batch.name} ({batch.course?.name})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.currentBatchId && (
+              <p className="text-red-500 text-sm">{errors.currentBatchId}</p>
+            )}
+          </div>
+
+          {/* Funded Account */}
+          <div className="flex items-center gap-2 border px-4 py-2 rounded-lg w-full">
+            <Checkbox
+              id="funded-account"
+              checked={formData.isFundedAccount}
+              onCheckedChange={(checked) =>
+                handleInputChange("isFundedAccount", Boolean(checked))
+              }
+              disabled={loading}
+            />
+            <label
+              htmlFor="funded-account"
+              className={`text-sm font-medium ${
+                loading ? "text-gray-400" : "text-black"
+              }`}
+            >
+              Funded Account
+            </label>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          <Button variant="outline" onClick={onCancel} disabled={loading}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? "Adding..." : "Submit"}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 };
 

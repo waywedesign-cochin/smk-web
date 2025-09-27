@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -46,33 +46,83 @@ import {
   User,
   CreditCard,
   History,
+  Loader2,
 } from "lucide-react";
 import { Student } from "@/lib/types";
 import AddStudentForm from "./AddStudentForm";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { fetchBatches } from "@/redux/features/batch/batchSlice";
+import {
+  addStudent,
+  fetchStudents,
+} from "@/redux/features/student/studentSlice";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 // import { mockStudents, mockPayments } from "../../lib/mock-data";
 // import { Student } from "../../types";
 // import { AddStudentForm } from "../add-student-form";
 
 export function Students() {
+  const dispatch = useAppDispatch();
+  const batches = useAppSelector((state) => state.batches.batches); // Batch[]
+  const { students, pagination, loading, error } = useAppSelector(
+    (state) => state.students
+  );
+
+  // console.log(students);
+
   const [searchTerm, setSearchTerm] = useState("");
   //   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
+  const [accountTypeFilter, setAccountTypeFilter] = useState<
+    "all" | "funded" | "regular"
+  >("all");
+
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
 
-  //   const filteredStudents = mockStudents?.filter(
-  //     (student) =>
-  //       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //       student.admissionNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //       student.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //       student.phone.includes(searchTerm)
-  //   );
-  const filteredStudents: Student[] = [];
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleAddStudent = (studentData: any) => {
-    // In a real app, this would make an API call
-    console.log("Adding student:", studentData);
-    setIsAddFormOpen(false);
+  const handleAddStudent = async (studentData: any) => {
+    try {
+      await dispatch(addStudent(studentData)).unwrap();
+      setIsAddFormOpen(false);
+    } catch (error) {
+      console.error("Failed to add student:", error);
+    }
   };
+  // Debounce effect
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500); // wait 500ms after typing stops
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
+  useEffect(() => {
+    if (!batches || batches.length === 0) {
+      dispatch(fetchBatches({}));
+    }
+  }, [batches, dispatch]);
+
+  useEffect(() => {
+    dispatch(
+      fetchStudents({
+        search: debouncedSearch,
+        isFundedAccount:
+          accountTypeFilter === "funded"
+            ? true
+            : accountTypeFilter === "regular"
+            ? false
+            : undefined,
+      })
+    );
+  }, [dispatch, debouncedSearch, accountTypeFilter]);
 
   return (
     <div className="space-y-6">
@@ -103,6 +153,8 @@ export function Students() {
                 <AddStudentForm
                   onSubmit={handleAddStudent}
                   onCancel={() => setIsAddFormOpen(false)}
+                  batches={batches}
+                  loading={loading}
                 />
               </div>
             </SheetContent>
@@ -116,7 +168,7 @@ export function Students() {
           <CardTitle>Search Students</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -126,6 +178,23 @@ export function Students() {
                 className="pl-9"
               />
             </div>
+
+            {/* ShadCN Select */}
+            <Select
+              value={accountTypeFilter}
+              onValueChange={(value) =>
+                setAccountTypeFilter(value as "all" | "funded" | "regular")
+              }
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="All Accounts" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Accounts</SelectItem>
+                <SelectItem value="funded">Funded</SelectItem>
+                <SelectItem value="regular">Regular</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -150,41 +219,53 @@ export function Students() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredStudents?.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <p className="font-medium">{student.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {student.admissionNo}
-                      </p>
+              {loading ? (
+                <TableRow>
+                  {/* Use a single TableCell spanning all columns */}
+                  <TableCell colSpan={5} className="text-center py-6">
+                    <div className="flex items-center justify-center gap-2 text-gray-500">
+                      <Loader2 className="animate-spin h-5 w-5" />
+                      Loading students...
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Mail className="h-3 w-3" />
-                        {student.email || "N/A"}
+                </TableRow>
+              ) : students?.length > 0 ? (
+                students.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="font-medium">{student.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {student.admissionNo}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Phone className="h-3 w-3" />
-                        {student.phone}
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Mail className="h-3 w-3" />
+                          {student.email || "N/A"}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Phone className="h-3 w-3" />
+                          {student.phone}
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {/* <div className="space-y-1">
-                      <p className="font-medium">{student.currentBatch.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {student.currentBatch.course.name}
-                      </p>
-                      <Badge variant="outline">
-                        {student.currentBatch.mode}
-                      </Badge>
-                    </div> */}
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="font-medium">
+                          {student.currentBatch?.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {student.currentBatch?.course?.name}
+                        </p>
+                        <Badge variant="outline">
+                          {student.currentBatch?.mode}
+                        </Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>
                       <Badge
                         variant={
                           student.isFundedAccount ? "default" : "secondary"
@@ -197,40 +278,41 @@ export function Students() {
                           Sales: {student.salesperson}
                         </p>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            // onClick={() => setSelectedStudent(student)}
-                          >
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
-                          <DialogHeader>
-                            <DialogTitle>Student Details</DialogTitle>
-                            <DialogDescription>
-                              Complete information for {student.name}
-                            </DialogDescription>
-                          </DialogHeader>
-                          {/* {selectedStudent && (
-                            <StudentDetailView student={selectedStudent} />
-                          )} */}
-                        </DialogContent>
-                      </Dialog>
-
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Eye className="h-3 w-3" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
+                            <DialogHeader>
+                              <DialogTitle>Student Details</DialogTitle>
+                              <DialogDescription>
+                                Complete information for {student.name}
+                              </DialogDescription>
+                            </DialogHeader>
+                          </DialogContent>
+                        </Dialog>
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-6 text-gray-500"
+                  >
+                    No students found
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>
