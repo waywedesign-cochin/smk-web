@@ -36,13 +36,14 @@ export interface Course {
 }
 
 export interface Batch {
-  id: string;
+  id?: string;
+  startDate: string;
   name: string;
   year: number;
   location?: Location;
-  locationId: number;
+  locationId: string;
   course?: Course;
-  courseId: number;
+  courseId: string;
   tutor?: string;
   coordinator?: string;
   slotLimit: number;
@@ -50,14 +51,14 @@ export interface Batch {
   mode: BatchMode;
   status: BatchStatus;
   students?: Student[];
-  createdAt: Date;
-  updatedAt: Date;
+  description?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export enum BatchMode {
   ONLINE = "ONLINE",
   OFFLINE = "OFFLINE",
-  HYBRID = "HYBRID",
 }
 
 export enum BatchStatus {
@@ -65,6 +66,15 @@ export enum BatchStatus {
   COMPLETED = "COMPLETED",
   CANCELLED = "CANCELLED",
   PENDING = "PENDING",
+}
+export interface BatchResponse {
+  batches: Batch[];
+  pagination: {
+    currentPage: number;
+    limit: number;
+    totalPages: number;
+    totalCount: number;
+  };
 }
 
 export interface Student {

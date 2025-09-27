@@ -1,5 +1,6 @@
+// batches.tsx
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -20,70 +21,165 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Search,
   Plus,
   Edit,
-  Eye,
   Users,
   MapPin,
-  Calendar,
   GraduationCap,
   User,
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
-import { CreateBatchForm } from "./createBatchForm";
+import AddBatchSheet from "./createBatchForm";
 import { Batch, BatchMode, BatchStatus } from "@/lib/types";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
   addBatch,
+  deleteBatch,
   fetchBatches,
   updateBatch,
 } from "@/redux/features/batch/batchSlice";
+import { debounce } from "lodash";
+import { BatchFormValues } from "@/lib/validation/batchSchema";
+import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
+import { fetchLocations } from "@/redux/features/location/locationSlice";
+import { fetchCourses } from "@/redux/features/course/courseSlice";
 
 export function Batches() {
   const dispatch = useAppDispatch();
-  const batchesWithPagination = useAppSelector(
-    (state) => state.batches.batches
+  const { batches, pagination, loading } = useAppSelector(
+    (state) => state.batches
   );
-  useEffect(() => {
-    dispatch(fetchBatches());
-  }, []);
-
-  console.log("batchesWithPagination", batchesWithPagination);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [modeFilter, setModeFilter] = useState<string>("all");
+  const [locationFilter, setLocationFilter] = useState<string>("");
+  const [courseFilter, setCourseFilter] = useState<string>("");
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  const [editingBatch, setEditingBatch] = useState<Batch | null>(null);
+  const locations = useAppSelector((state) => state.locations.locations);
+  const courses = useAppSelector((state) => state.courses.courses);
 
-  // const filteredBatches = batches.filter((batch) => {
-  //   const matchesSearch =
-  //     batch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     batch?.course?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     batch.tutor?.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    dispatch(fetchLocations());
+    dispatch(fetchCourses());
+  }, [dispatch]);
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce((searchValue: string) => {
+      dispatch(
+        fetchBatches({
+          page: 1,
+          search: searchValue,
+          status: statusFilter !== "all" ? statusFilter : undefined,
+          mode: modeFilter !== "all" ? modeFilter : undefined,
+          location: locationFilter,
+          course: courseFilter,
+        })
+      );
+    }, 500),
+    [statusFilter, modeFilter, locationFilter, courseFilter]
+  );
 
-  //   const matchesStatus =
-  //     statusFilter === "all" || batch.status === statusFilter;
+  // Initial load and when filters change
+  useEffect(() => {
+    dispatch(
+      fetchBatches({
+        page: 1,
+        search: searchTerm,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        mode: modeFilter !== "all" ? modeFilter : undefined,
+        location: locationFilter,
+        course: courseFilter,
+      })
+    );
+  }, [dispatch, statusFilter, modeFilter, locationFilter, courseFilter]);
 
-  //   return matchesSearch && matchesStatus;
-  // });
+  // Handle search with debounce
+  useEffect(() => {
+    if (searchTerm !== "") {
+      debouncedSearch(searchTerm);
+    } else {
+      dispatch(
+        fetchBatches({
+          page: 1,
+          status: statusFilter !== "all" ? statusFilter : undefined,
+          mode: modeFilter !== "all" ? modeFilter : undefined,
+          location: locationFilter,
+          course: courseFilter,
+        })
+      );
+    }
+
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [searchTerm, debouncedSearch]);
+
+  const handlePageChange = (newPage: number) => {
+    dispatch(
+      fetchBatches({
+        page: newPage,
+        search: searchTerm,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        mode: modeFilter !== "all" ? modeFilter : undefined,
+        location: locationFilter,
+        course: courseFilter,
+      })
+    );
+  };
+
+  const handleCreateBatch = (batchData: BatchFormValues, isEdit: boolean) => {
+    const data = {
+      ...batchData,
+      currentCount: batchData.currentCount ?? 0, // Ensure currentCount is always a number
+      status: BatchStatus[batchData.status as keyof typeof BatchStatus],
+      mode: BatchMode[batchData.mode as keyof typeof BatchMode],
+    };
+    console.log(data);
+
+    if (isEdit) {
+      dispatch(updateBatch(data));
+    } else {
+      dispatch(addBatch(data));
+    }
+    setIsCreateFormOpen(false);
+    setEditingBatch(null);
+
+    // Refresh the list after creating/updating
+    dispatch(
+      fetchBatches({
+        page: pagination.currentPage,
+        search: searchTerm,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        mode: modeFilter !== "all" ? modeFilter : undefined,
+        location: locationFilter,
+        course: courseFilter,
+      })
+    );
+  };
+
+  const handleEdit = (batch: Batch) => {
+    setEditingBatch(batch);
+    setIsCreateFormOpen(true);
+  };
+
+  const handleCreateFormOpen = (open: boolean) => {
+    setIsCreateFormOpen(open);
+    if (!open) {
+      setEditingBatch(null);
+    }
+  };
 
   const getStatusColor = (status: BatchStatus) => {
     switch (status) {
@@ -94,7 +190,7 @@ export function Batches() {
       case "CANCELLED":
         return "destructive";
       case "PENDING":
-        return "warning";
+        return "secondary"; // Changed from "warning" to "secondary"
       default:
         return "outline";
     }
@@ -106,33 +202,28 @@ export function Batches() {
         return "secondary";
       case "OFFLINE":
         return "default";
-
       default:
         return "outline";
     }
   };
 
-  const [editingBatch, setEditingBatch] = useState<Batch | null>(null);
-
-  /**
-   * Handles creating a new batch or updating an existing batch.
-   * If isEdit is true, it will update the batch with the given batchData.
-   * If isEdit is false, it will create a new batch with the given batchData.
-   * After creating or updating the batch, it will close the create batch form.
-   * @param {Batch} batchData - The data of the batch to be created or updated.
-   * @param {boolean} isEdit - Whether the batch is being updated or created.
-   */
-  const handleCreateBatch = (batchData: Batch, isEdit: boolean) => {
-    // In a real app, this would make an API call
-    console.log("Creating batch:", batchData);
-    if (isEdit) {
-      dispatch(updateBatch(batchData));
-    } else {
-      // add new course
-      dispatch(addBatch(batchData));
-    }
-    setIsCreateFormOpen(false);
+  const handleDelete = (id?: string) => {
+    if (!id) return;
+    dispatch(deleteBatch(id));
   };
+
+  // Calculate statistics from current batch data
+  const activeBatchesCount = batches.filter(
+    (b) => b.status === "ACTIVE"
+  ).length;
+  const totalEnrollment = batches.reduce(
+    (sum, batch) => sum + batch.currentCount,
+    0
+  );
+  const availableSlots = batches.reduce(
+    (sum, batch) => sum + (batch.slotLimit - batch.currentCount),
+    0
+  );
 
   return (
     <div className="space-y-6">
@@ -144,32 +235,19 @@ export function Batches() {
             Manage course batches, schedules, and enrollments
           </p>
         </div>
-        <div className="flex gap-2">
-          <Sheet open={isCreateFormOpen} onOpenChange={setIsCreateFormOpen}>
-            <SheetTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Batch
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
-              <SheetHeader>
-                <SheetTitle>Create New Batch</SheetTitle>
-                <SheetDescription>
-                  Set up a new batch with course, location, and capacity details
-                </SheetDescription>
-              </SheetHeader>
-              <div className="mt-6">
-                {/* <CreateBatchForm
-                  editingBatch={editingBatch}
-                  setEditingBatch={setEditingBatch}
-                  onSubmit={handleCreateBatch}
-                  onCancel={() => setIsCreateFormOpen(false)}
-                /> */}
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
+        {/* <Button onClick={() => setIsCreateFormOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Batch
+        </Button> */}
+        <AddBatchSheet
+          setIsOpen={setIsCreateFormOpen}
+          isOpen={isCreateFormOpen}
+          editingBatch={editingBatch}
+          setEditingBatch={setEditingBatch}
+          onSubmit={handleCreateBatch}
+          courses={courses}
+          locations={locations}
+        />
       </div>
 
       {/* Search and Filters */}
@@ -178,16 +256,17 @@ export function Batches() {
           <CardTitle>Search & Filter Batches</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-4">
-            <div className="relative flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search by batch name, course, or tutor..."
+                placeholder="Search batches..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
               />
             </div>
+
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -197,7 +276,45 @@ export function Batches() {
               <option value="ACTIVE">Active</option>
               <option value="COMPLETED">Completed</option>
               <option value="CANCELLED">Cancelled</option>
+              <option value="PENDING">Pending</option>
             </select>
+
+            <select
+              value={modeFilter}
+              onChange={(e) => setModeFilter(e.target.value)}
+              className="px-3 py-2 border border-input bg-background rounded-md"
+            >
+              <option value="all">All Modes</option>
+              <option value="ONLINE">Online</option>
+              <option value="OFFLINE">Offline</option>
+            </select>
+
+            <Input
+              placeholder="Filter by location..."
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+            />
+          </div>
+
+          <div className="flex gap-4">
+            <Input
+              placeholder="Filter by course..."
+              value={courseFilter}
+              onChange={(e) => setCourseFilter(e.target.value)}
+              className="flex-1"
+            />
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchTerm("");
+                setStatusFilter("all");
+                setModeFilter("all");
+                setLocationFilter("");
+                setCourseFilter("");
+              }}
+            >
+              Clear Filters
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -212,9 +329,7 @@ export function Batches() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Active Batches</p>
-                <p className="text-xl font-bold">
-                  {/* {batches.filter((b) => b.status === "ACTIVE").length} */}
-                </p>
+                <p className="text-xl font-bold">{activeBatchesCount}</p>
               </div>
             </div>
           </CardContent>
@@ -230,9 +345,7 @@ export function Batches() {
                 <p className="text-sm text-muted-foreground">
                   Total Enrollment
                 </p>
-                <p className="text-xl font-bold">
-                  {/* {batches.reduce((sum, batch) => sum + batch.currentCount, 0)} */}
-                </p>
+                <p className="text-xl font-bold">{totalEnrollment}</p>
               </div>
             </div>
           </CardContent>
@@ -246,13 +359,7 @@ export function Batches() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Available Slots</p>
-                <p className="text-xl font-bold">
-                  {/* {batches.reduce(
-                    (sum, batch) =>
-                      sum + (batch.slotLimit - batch.currentCount),
-                    0
-                  )} */}
-                </p>
+                <p className="text-xl font-bold">{availableSlots}</p>
               </div>
             </div>
           </CardContent>
@@ -262,7 +369,14 @@ export function Batches() {
       {/* Batches Table */}
       <Card>
         <CardHeader>
-          {/* <CardTitle>Batches List ({filteredBatches?.length})</CardTitle> */}
+          <CardTitle>
+            Batches List ({pagination.totalCount})
+            {loading && (
+              <span className="text-sm text-muted-foreground ml-2">
+                Loading...
+              </span>
+            )}
+          </CardTitle>
           <CardDescription>All course batches in the system</CardDescription>
         </CardHeader>
         <CardContent>
@@ -278,345 +392,189 @@ export function Batches() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* {filteredBatches.map((batch) => (
-                <TableRow key={batch.id}>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <p className="font-medium">{batch.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Year {batch.year}
-                      </p>
-                      <div className="flex gap-1">
-                        <Badge
-                          variant={getModeColor(batch.mode)}
-                          className="text-xs"
-                        >
-                          {batch.mode}
-                        </Badge>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <p className="font-medium">{batch.course.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        ₹{batch.course.baseFee.toLocaleString()}
-                      </p>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <MapPin className="h-3 w-3" />
-                        {batch.location.name}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1 text-sm">
-                        <User className="h-3 w-3" />
-                        {batch.tutor || "TBD"}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Coordinator: {batch.coordinator || "TBD"}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>
-                          {batch.currentCount}/{batch.slotLimit}
-                        </span>
-                        <span>
-                          {Math.round(
-                            (batch.currentCount / batch.slotLimit) * 100
-                          )}
-                          %
-                        </span>
-                      </div>
-                      <Progress
-                        value={(batch.currentCount / batch.slotLimit) * 100}
-                        className="h-2"
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusColor(batch.status)}>
-                      {batch.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedBatch(batch)}
+              {batches.length > 0 ? (
+                batches.map((batch) => (
+                  <TableRow key={batch.id}>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="font-medium">{batch.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Year {batch.year}
+                        </p>
+                        <div className="flex gap-1">
+                          <Badge
+                            variant={getModeColor(batch.mode)}
+                            className="text-xs"
                           >
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-6xl w-full max-h-[80vh] overflow-auto">
-                          <DialogHeader>
-                            <DialogTitle>Batch Details</DialogTitle>
-                            <DialogDescription>
-                              Complete information for {batch.name}
-                            </DialogDescription>
-                          </DialogHeader>
-                          {selectedBatch && (
-                            <BatchDetailView batch={selectedBatch} />
-                          )}
-                        </DialogContent>
-                      </Dialog>
-
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                    </div>
+                            {batch.mode}
+                          </Badge>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="font-medium">{batch.course?.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          ₹{batch.course?.baseFee?.toLocaleString()}
+                        </p>
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <MapPin className="h-3 w-3" />
+                          {batch.location?.name}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1 text-sm">
+                          <User className="h-3 w-3" />
+                          {batch.tutor || "TBD"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Coordinator: {batch.coordinator || "TBD"}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>
+                            {batch.currentCount}/{batch.slotLimit}
+                          </span>
+                          <span>
+                            {Math.round(
+                              (batch.currentCount / batch.slotLimit) * 100
+                            )}
+                            %
+                          </span>
+                        </div>
+                        <Progress
+                          value={(batch.currentCount / batch.slotLimit) * 100}
+                          className="h-2"
+                        />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusColor(batch.status)}>
+                        {batch.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(batch)}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <DeleteDialogue
+                          id={batch?.id as string}
+                          title={batch.name}
+                          handelDelete={handleDelete}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-8 text-muted-foreground"
+                  >
+                    {loading ? "Loading batches..." : "No batches found"}
                   </TableCell>
                 </TableRow>
-              ))} */}
+              )}
             </TableBody>
           </Table>
+
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6">
+              <div className="text-sm text-muted-foreground">
+                Showing {(pagination.currentPage - 1) * pagination.limit + 1} to{" "}
+                {Math.min(
+                  pagination.currentPage * pagination.limit,
+                  pagination.totalCount
+                )}{" "}
+                of {pagination.totalCount} batches
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  disabled={pagination.currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+
+                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                  .filter(
+                    (page) =>
+                      page === 1 ||
+                      page === pagination.totalPages ||
+                      Math.abs(page - pagination.currentPage) <= 1
+                  )
+                  .map((page, index, array) => {
+                    const showEllipsis =
+                      index < array.length - 1 && array[index + 1] - page > 1;
+                    return (
+                      <div key={page} className="flex items-center">
+                        <Button
+                          variant={
+                            pagination.currentPage === page
+                              ? "default"
+                              : "outline"
+                          }
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </Button>
+                        {showEllipsis && <span className="px-2">...</span>}
+                      </div>
+                    );
+                  })}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  disabled={pagination.currentPage === pagination.totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Create/Edit Batch Sheet */}
+      {/* <Sheet open={isCreateFormOpen} onOpenChange={handleCreateFormOpen}>
+        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>
+              {editingBatch ? "Edit Batch" : "Create New Batch"}
+            </SheetTitle>
+            <SheetDescription>
+              {editingBatch
+                ? "Update the batch details"
+                : "Set up a new batch with course, location, and capacity details"}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-6">
+            <CreateBatchForm
+              editingBatch={editingBatch}
+              setEditingBatch={setEditingBatch}
+              onSubmit={handleCreateBatch}
+              onCancel={() => setIsCreateFormOpen(false)}
+            />
+          </div>
+        </SheetContent>
+      </Sheet> */}
     </div>
   );
-}
-
-function BatchDetailView({ batch }: { batch: Batch }) {
-  // Get students for this batch (mock implementation)
-  // const batchStudents = mockStudents.filter(
-  //   (student) => student.currentBatchId === batch.id
-  // );
-  const batchStudents = [];
-
-  return (
-    // <Tabs defaultValue="overview" className="w-full">
-    //   <TabsList className="grid w-full grid-cols-3">
-    //     <TabsTrigger value="overview">Overview</TabsTrigger>
-    //     <TabsTrigger value="students">
-    //       Students ({batchStudents.length})
-    //     </TabsTrigger>
-    //     <TabsTrigger value="schedule">Schedule</TabsTrigger>
-    //   </TabsList>
-
-    //   <TabsContent value="overview" className="space-y-4">
-    //     <div className="grid grid-cols-2 gap-6">
-    //       <div className="space-y-4">
-    //         <div className="space-y-2">
-    //           <h4 className="font-medium">Batch Information</h4>
-    //           <div className="border rounded-lg p-4 space-y-3">
-    //             <div className="flex justify-between">
-    //               <span className="text-muted-foreground">Batch Name:</span>
-    //               <span className="font-medium">{batch.name}</span>
-    //             </div>
-    //             <div className="flex justify-between">
-    //               <span className="text-muted-foreground">Year:</span>
-    //               <span>{batch.year}</span>
-    //             </div>
-    //             <div className="flex justify-between">
-    //               <span className="text-muted-foreground">Mode:</span>
-    //               <Badge variant={getModeColor(batch.mode)}>{batch.mode}</Badge>
-    //             </div>
-    //             <div className="flex justify-between">
-    //               <span className="text-muted-foreground">Status:</span>
-    //               <Badge variant={getStatusColor(batch.status)}>
-    //                 {batch.status}
-    //               </Badge>
-    //             </div>
-    //             <div className="flex justify-between">
-    //               <span className="text-muted-foreground">Created:</span>
-    //               <span>{batch.createdAt as string}</span>
-    //             </div>
-    //           </div>
-    //         </div>
-
-    //         <div className="space-y-2">
-    //           <h4 className="font-medium">Course Details</h4>
-    //           <div className="border rounded-lg p-4 space-y-3">
-    //             <div className="flex justify-between">
-    //               <span className="text-muted-foreground">Course:</span>
-    //               <span className="font-medium">{batch.course.name}</span>
-    //             </div>
-    //             <div className="flex justify-between">
-    //               <span className="text-muted-foreground">Base Fee:</span>
-    //               <span>₹{batch.course.baseFee.toLocaleString()}</span>
-    //             </div>
-    //             {batch.course.description && (
-    //               <div className="space-y-1">
-    //                 <span className="text-muted-foreground">Description:</span>
-    //                 <p className="text-sm">{batch.course.description}</p>
-    //               </div>
-    //             )}
-    //           </div>
-    //         </div>
-    //       </div>
-
-    //       <div className="space-y-4">
-    //         <div className="space-y-2">
-    //           <h4 className="font-medium">Enrollment Statistics</h4>
-    //           <div className="border rounded-lg p-4 space-y-3">
-    //             <div className="flex justify-between">
-    //               <span className="text-muted-foreground">Slot Limit:</span>
-    //               <span>{batch.slotLimit}</span>
-    //             </div>
-    //             <div className="flex justify-between">
-    //               <span className="text-muted-foreground">Current Count:</span>
-    //               <span className="font-medium">{batch.currentCount}</span>
-    //             </div>
-    //             <div className="flex justify-between">
-    //               <span className="text-muted-foreground">
-    //                 Available Slots:
-    //               </span>
-    //               <span className="text-green-600">
-    //                 {batch.slotLimit - batch.currentCount}
-    //               </span>
-    //             </div>
-    //             <div className="space-y-2">
-    //               <div className="flex justify-between text-sm">
-    //                 <span>Enrollment Progress</span>
-    //                 <span>
-    //                   {Math.round((batch.currentCount / batch.slotLimit) * 100)}
-    //                   %
-    //                 </span>
-    //               </div>
-    //               <Progress
-    //                 value={(batch.currentCount / batch.slotLimit) * 100}
-    //               />
-    //             </div>
-    //           </div>
-    //         </div>
-
-    //         <div className="space-y-2">
-    //           <h4 className="font-medium">Staff Assignment</h4>
-    //           <div className="border rounded-lg p-4 space-y-3">
-    //             <div className="flex justify-between">
-    //               <span className="text-muted-foreground">Tutor:</span>
-    //               <span>{batch.tutor || "Not Assigned"}</span>
-    //             </div>
-    //             <div className="flex justify-between">
-    //               <span className="text-muted-foreground">Coordinator:</span>
-    //               <span>{batch.coordinator || "Not Assigned"}</span>
-    //             </div>
-    //             <div className="flex justify-between">
-    //               <span className="text-muted-foreground">Location:</span>
-    //               <span>{batch.location.name}</span>
-    //             </div>
-    //           </div>
-    //         </div>
-    //       </div>
-    //     </div>
-    //   </TabsContent>
-
-    //   <TabsContent value="students" className="space-y-4">
-    //     <div className="space-y-4">
-    //       <div className="flex justify-between items-center">
-    //         <h4 className="font-medium">Enrolled Students</h4>
-    //         <Button size="sm">
-    //           <Plus className="h-4 w-4 mr-2" />
-    //           Enroll Student
-    //         </Button>
-    //       </div>
-
-    //       <div className="space-y-2">
-    //         {/* {batchStudents.map((student) => (
-    //           <div
-    //             key={student.id}
-    //             className="border rounded-lg p-3 flex justify-between items-center"
-    //           >
-    //             <div className="space-y-1">
-    //               <p className="font-medium">{student.name}</p>
-    //               <p className="text-sm text-muted-foreground">
-    //                 {student.admissionNo}
-    //               </p>
-    //               <div className="flex items-center gap-4 text-xs text-muted-foreground">
-    //                 <span>{student.phone}</span>
-    //                 {student.email && <span>{student.email}</span>}
-    //               </div>
-    //             </div>
-    //             <div className="flex gap-2">
-    //               <Badge
-    //                 variant={student.isFundedAccount ? "default" : "secondary"}
-    //               >
-    //                 {student.isFundedAccount ? "Funded" : "Regular"}
-    //               </Badge>
-    //               <Button variant="outline" size="sm">
-    //                 View
-    //               </Button>
-    //             </div>
-    //           </div>
-    //         ))} */}
-
-    //         {/* {batchStudents.length === 0 && (
-    //           <div className="text-center py-8 text-muted-foreground">
-    //             No students enrolled in this batch yet.
-    //           </div>
-    //         )} */}
-    //       </div>
-    //     </div>
-    //   </TabsContent>
-
-    //   <TabsContent value="schedule" className="space-y-4">
-    //     <div className="space-y-4">
-    //       <h4 className="font-medium flex items-center gap-2">
-    //         <Calendar className="h-4 w-4" />
-    //         Batch Schedule
-    //       </h4>
-
-    //       <div className="border rounded-lg p-4">
-    //         <p className="text-muted-foreground">
-    //           Schedule management feature will be available soon. Currently
-    //           showing batch timing and session information.
-    //         </p>
-
-    //         <div className="mt-4 space-y-2">
-    //           <div className="flex justify-between">
-    //             <span className="text-muted-foreground">Start Date:</span>
-    //             <span>{batch.createdAt}</span>
-    //           </div>
-    //           <div className="flex justify-between">
-    //             <span className="text-muted-foreground">Mode:</span>
-    //             <span>{batch.mode}</span>
-    //           </div>
-    //           <div className="flex justify-between">
-    //             <span className="text-muted-foreground">Duration:</span>
-    //             <span>3-6 months (Course dependent)</span>
-    //           </div>
-    //         </div>
-    //       </div>
-    //     </div>
-    //   </TabsContent>
-    // </Tabs>
-    <></>
-  );
-}
-
-function getModeColor(
-  mode: BatchMode
-): "default" | "secondary" | "destructive" | "outline" {
-  switch (mode) {
-    case "ONLINE":
-      return "secondary";
-    case "OFFLINE":
-      return "default";
-    case "HYBRID":
-      return "outline";
-    default:
-      return "outline";
-  }
-}
-
-function getStatusColor(
-  status: BatchStatus
-): "default" | "secondary" | "destructive" | "outline" {
-  switch (status) {
-    case "ACTIVE":
-      return "default";
-    case "COMPLETED":
-      return "secondary";
-    case "CANCELLED":
-      return "destructive";
-    default:
-      return "outline";
-  }
 }

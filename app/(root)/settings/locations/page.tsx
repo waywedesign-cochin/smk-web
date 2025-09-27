@@ -101,7 +101,7 @@ export default function LocationsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {locations.filter((l) => l?.address?.trim()).length}
+              {locations.filter((l: Location) => l?.address?.trim()).length}
             </div>
             <p className="text-xs text-muted-foreground">
               Out of {locations.length} total
