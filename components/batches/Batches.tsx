@@ -29,7 +29,6 @@ import {
 } from "@/components/ui/sheet";
 import {
   Search,
-  Plus,
   Edit,
   Users,
   MapPin,
@@ -174,13 +173,6 @@ export function Batches() {
     setIsCreateFormOpen(true);
   };
 
-  const handleCreateFormOpen = (open: boolean) => {
-    setIsCreateFormOpen(open);
-    if (!open) {
-      setEditingBatch(null);
-    }
-  };
-
   const getStatusColor = (status: BatchStatus) => {
     switch (status) {
       case "ACTIVE":
@@ -257,16 +249,6 @@ export function Batches() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search batches..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -288,21 +270,49 @@ export function Batches() {
               <option value="ONLINE">Online</option>
               <option value="OFFLINE">Offline</option>
             </select>
+            <select
+              value={courseFilter}
+              onChange={(e) => setCourseFilter(e.target.value)}
+              className="flex-1 px-3 py-2 border border-input bg-background rounded-md"
+            >
+              <option value="">All Courses</option>
+              {courses.map((course) => (
+                <option key={course.id} value={course.name}>
+                  {course.name}
+                </option>
+              ))}
+            </select>
 
-            <Input
+            {/* <Input
               placeholder="Filter by location..."
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
-            />
+            /> */}
+            <select
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+              className="px-3 py-2 border border-input bg-background rounded-md"
+            >
+              <option value="">All Locations</option>
+              {locations.map((location) => (
+                <option key={location.id} value={location.name}>
+                  {location.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="flex gap-4">
-            <Input
-              placeholder="Filter by course..."
-              value={courseFilter}
-              onChange={(e) => setCourseFilter(e.target.value)}
-              className="flex-1"
-            />
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search batches..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
             <Button
               variant="outline"
               onClick={() => {
@@ -388,6 +398,7 @@ export function Batches() {
                 <TableHead>Instructors</TableHead>
                 <TableHead>Enrollment</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Descriptions</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -453,6 +464,16 @@ export function Batches() {
                         />
                       </div>
                     </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">
+                          {batch.description
+                            ? batch.description
+                            : "No description"}{" "}
+                        </p>
+                      </div>
+                    </TableCell>
+
                     <TableCell>
                       <Badge variant={getStatusColor(batch.status)}>
                         {batch.status}

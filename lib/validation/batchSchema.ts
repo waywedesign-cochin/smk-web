@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const batchSchema = z.object({
+  id: z.string().optional(),
   name: z
     .string()
     .min(2, "Batch name is required")
