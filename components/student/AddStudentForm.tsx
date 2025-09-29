@@ -11,16 +11,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { Batch } from "@/lib/types";
+import { Batch, Student } from "@/lib/types";
 import {
   StudentSchema,
   StudentInput,
 } from "../../lib/validation/studentSchema";
+import { Textarea } from "../ui/textarea";
 
 interface AddStudentFormProps {
   onSubmit: (studentData: StudentInput) => void;
   onCancel: () => void;
   batches: Batch[];
+  student?: Student;
   loading?: boolean;
 }
 
@@ -28,17 +30,20 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
   onSubmit,
   onCancel,
   batches,
+  student,
   loading = false,
 }) => {
+  console.log(student);
+
   const [formData, setFormData] = useState<StudentInput>({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
-    currentBatchId: "",
-    salesperson: "",
-    isFundedAccount: false,
-    admissionNo: "",
+    name: student?.name || "",
+    email: student?.email || "",
+    phone: student?.phone || "",
+    address: student?.address || "",
+    currentBatchId: student?.currentBatchId || "",
+    salesperson: student?.salesperson || "",
+    isFundedAccount: student?.isFundedAccount || false,
+    admissionNo: student?.admissionNo || "",
   });
 
   const [errors, setErrors] = useState<
@@ -77,7 +82,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-xl shadow p-8">
+    <div className="w-full mx-auto bg-white rounded-xl shadow p-2">
       <h2 className="text-2xl font-semibold mb-6 text-gray-800">
         Add New Student
       </h2>
@@ -120,22 +125,6 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
               <p className="text-red-500 text-sm">{errors.phone}</p>
             )}
           </div>
-
-          <div>
-            <Input
-              placeholder="Address"
-              value={formData.address}
-              onChange={(e) => handleInputChange("address", e.target.value)}
-              disabled={loading}
-            />
-            {errors.address && (
-              <p className="text-red-500 text-sm">{errors.address}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Admission Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Input
               placeholder="Admission No"
@@ -147,7 +136,22 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
               <p className="text-red-500 text-sm">{errors.admissionNo}</p>
             )}
           </div>
+        </div>
 
+        <div>
+          <Textarea
+            placeholder="Address"
+            value={formData.address}
+            onChange={(e) => handleInputChange("address", e.target.value)}
+            disabled={loading}
+            className="h-32"
+          />
+          {errors.address && (
+            <p className="text-red-500 text-sm">{errors.address}</p>
+          )}
+        </div>
+        {/* Admission Details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Input
               placeholder="Salesperson"
@@ -173,11 +177,20 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
                 <SelectValue placeholder="Select Batch" />
               </SelectTrigger>
               <SelectContent>
-                {batches.map((batch) => (
-                  <SelectItem key={batch.id} value={batch.id?.toString() || ""}>
-                    {batch.name} ({batch.course?.name})
-                  </SelectItem>
-                ))}
+                {batches
+                  .filter(
+                    (batch) =>
+                      batch.status === "ACTIVE" &&
+                      batch.currentCount !== batch.slotLimit
+                  )
+                  .map((batch) => (
+                    <SelectItem
+                      key={batch.id}
+                      value={batch.id?.toString() || ""}
+                    >
+                      {batch.name} ({batch.course?.name})
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
             {errors.currentBatchId && (
@@ -211,9 +224,15 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
           <Button variant="outline" onClick={onCancel} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? "Adding..." : "Submit"}
-          </Button>
+          {student ? (
+            <Button onClick={handleSubmit} disabled={loading}>
+              {loading ? "Updating..." : "Update"}
+            </Button>
+          ) : (
+            <Button onClick={handleSubmit} disabled={loading}>
+              {loading ? "Adding..." : "Add Student"}
+            </Button>
+          )}
         </div>
       </div>
     </div>

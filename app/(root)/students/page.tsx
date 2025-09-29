@@ -1,4 +1,4 @@
-import { Students } from "@/components/student/student";
+import { Students } from "@/components/student/StudentHomePage";
 import React from "react";
 
 function StudentsPage() {
