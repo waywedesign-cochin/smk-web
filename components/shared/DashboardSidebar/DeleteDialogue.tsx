@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Trash } from "lucide-react";
 
 export default function DeleteDialogue({
   id,
@@ -25,7 +26,7 @@ export default function DeleteDialogue({
         type="button"
         className="bg-red-500 h-8 rounded-md gap-1.5 px-3  hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white transition-colors duration-200 "
       >
-        Delete
+        <Trash className="w-4 h-4" />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

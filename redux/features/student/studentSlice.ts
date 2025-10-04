@@ -28,6 +28,8 @@ interface StudentState {
 interface FetchStudentsParams {
   search?: string;
   isFundedAccount?: true | false;
+  page?: number;
+  limit?: number;
 }
 
 // ------------------ Initial State ------------------
@@ -64,9 +66,12 @@ export const fetchStudents = createAsyncThunk<
   FetchStudentsParams | undefined
 >("students/fetch", async (params, { rejectWithValue }) => {
   try {
-    const response = await axios.get(`${BASE_URL}/api/student/get-students`, {
-      params: params || {},
-    });
+    const response = await axios.get(
+      `${BASE_URL}/api/student/get-students?page=${params?.page}&limit=${params?.limit}`,
+      {
+        params: params || {},
+      }
+    );
     return response.data.data as StudentsResponse;
   } catch (error: unknown) {
     let errorMessage = "Failed to fetch students";
@@ -128,7 +133,7 @@ const studentSlice = createSlice({
       })
       .addCase(addStudent.fulfilled, (state, action) => {
         state.loading = false;
-        state.students = [...state.students, action.payload];
+        state.students = [action.payload, ...state.students];
       })
       .addCase(addStudent.rejected, (state, action) => {
         state.loading = false;

@@ -157,7 +157,7 @@ const batchSlice = createSlice({
       })
       .addCase(addBatch.fulfilled, (state, action) => {
         state.loading = false;
-        state.batches = [...state.batches, action.payload];
+        state.batches = [action.payload, ...state.batches];
       })
       .addCase(addBatch.rejected, (state, action) => {
         state.loading = false;

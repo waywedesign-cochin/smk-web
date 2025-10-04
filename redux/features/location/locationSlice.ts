@@ -113,7 +113,7 @@ const locationSlice = createSlice({
       })
       .addCase(addLocation.fulfilled, (state, action) => {
         state.loading = false;
-        state.locations = [...state.locations, action.payload];
+        state.locations = [action.payload, ...state.locations];
       })
       .addCase(addLocation.rejected, (state, action) => {
         state.loading = false;

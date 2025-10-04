@@ -8,8 +8,8 @@ import {
   updateCourse,
 } from "@/redux/features/course/courseSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { CourseList } from "@/components/student/course/CourseList";
-import AddCourseSheet from "@/components/student/course/AddCourseSheet";
+import { CourseList } from "@/components/shared/course/CourseList";
+import AddCourseSheet from "@/components/shared/course/AddCourseSheet";
 import { Course } from "@/lib/types";
 export const dynamic = "force-dynamic";
 

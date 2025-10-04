@@ -78,7 +78,7 @@ export interface BatchResponse {
 }
 
 export interface Student {
-  id: string;
+  id?: string;
   admissionNo: string;
   name: string;
   email?: string;
@@ -88,7 +88,7 @@ export interface Student {
   referralInfo?: string;
   isFundedAccount: boolean;
   currentBatch?: Batch;
-  currentBatchId: number;
+  currentBatchId: string;
   //   admissions: Admission[];
   //   payments: Payment[];
   //   batchHistory: BatchHistory[];
