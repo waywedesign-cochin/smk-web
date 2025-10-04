@@ -30,7 +30,7 @@ export interface Course {
   name: string;
   description?: string;
   baseFee: number;
-  duration: string;
+  duration: number;
   batches?: Batch[];
   isActive: boolean;
 }
