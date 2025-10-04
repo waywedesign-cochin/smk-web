@@ -28,7 +28,7 @@ function CoursesPage() {
     name: "",
     description: "",
     baseFee: 0,
-    duration: "",
+    duration: 0,
     isActive: true,
   };
 

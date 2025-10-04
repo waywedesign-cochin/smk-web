@@ -47,7 +47,7 @@ export default function AddCourseSheet({
       name: "",
       description: "",
       baseFee: 0,
-      duration: "",
+      duration: 0,
       isActive: true,
     },
   });
@@ -61,7 +61,7 @@ export default function AddCourseSheet({
         name: "",
         description: "",
         baseFee: 0,
-        duration: "",
+        duration: 0,
         isActive: true,
       });
     }
@@ -147,10 +147,11 @@ export default function AddCourseSheet({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="duration">Duration *</Label>
+              <Label htmlFor="duration">Duration*</Label>
               <Input
                 id="duration"
-                placeholder="eg: 2 months, 1 year"
+                type="number"
+                placeholder="Total Months"
                 {...register("duration")}
               />
               {errors.duration && (

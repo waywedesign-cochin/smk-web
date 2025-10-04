@@ -37,7 +37,7 @@ export function CourseList({
                 <div className="flex items-center gap-4 text-sm text-gray-700 ">
                   <span className="font-medium">Fee: ₹{course.baseFee}</span>
                   <span className="font-medium">•</span>
-                  <span>Duration: {course.duration}</span>
+                  <span>Duration: {course.duration} Months</span>
                 </div>
                 <p className="text-xs font-medium">
                   Status:{" "}

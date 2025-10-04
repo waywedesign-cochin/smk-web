@@ -96,7 +96,7 @@ export default function DashboardSidebar({
           </SidebarHeader>
 
           <SidebarContent>
-            <SidebarMenu>
+            <SidebarMenu className="p-3">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
