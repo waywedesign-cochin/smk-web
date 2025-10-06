@@ -5,7 +5,6 @@ import { User } from "@/lib/types";
 import { BASE_URL } from "@/redux/baseUrl";
 import { SignUpInput } from "@/lib/validation/signupSchema";
 
-
 // Types
 interface LoginCredentials {
   email: string;
@@ -14,11 +13,13 @@ interface LoginCredentials {
 
 interface LoginResponse {
   user: User;
+  token: string;
 }
 
 interface UserState {
   currentUser: User | null;
   users: User[];
+  token: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -27,23 +28,21 @@ interface UserState {
 const initialState: UserState = {
   currentUser: null,
   users: [],
+  token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
   loading: false,
   error: null,
 };
 
+// Signup
 export const signUp = createAsyncThunk<User, SignUpInput>(
   "users/signup",
   async (formData, { rejectWithValue }) => {
     try {
-      // remove confirmPassword
       const { confirmPassword, ...payload } = formData;
-
       const response = await axios.post(`${BASE_URL}/api/user/signup`, payload);
-
       if (response.data.success) {
         toast.success(response.data.message || "Signup successful, login now");
       }
-
       return response.data.data as User;
     } catch (error: unknown) {
       let errorMessage = "Signup failed";
@@ -53,18 +52,18 @@ export const signUp = createAsyncThunk<User, SignUpInput>(
   }
 );
 
+// Login
 export const login = createAsyncThunk<LoginResponse, LoginCredentials>(
   "users/login",
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await axios.post(
         `${BASE_URL}/api/user/login`,
-        credentials,
-        {
-          withCredentials: true,
-        }
+        credentials
       );
-
+      const { token } = response.data.data;
+      localStorage.setItem("token", token);
+      toast.success("Login successful");
       return response.data.data as LoginResponse;
     } catch (error: unknown) {
       let errorMessage = "Login failed";
@@ -74,29 +73,27 @@ export const login = createAsyncThunk<LoginResponse, LoginCredentials>(
   }
 );
 
+// Logout
 export const logoutUser = createAsyncThunk(
   "users/logout",
-  async (_, { rejectWithValue }) => {
-    try {
-      await axios.post(
-        `${BASE_URL}/api/user/logout`,
-        {},
-        { withCredentials: true }
-      );
-      return true;
-    } catch (error: unknown) {
-      let errorMessage = "Logout failed";
-      if (error instanceof Error) errorMessage = error.message;
-      return rejectWithValue(errorMessage);
-    }
+  async (_, { dispatch }) => {
+    localStorage.removeItem("token");
+    dispatch(userSlice.actions.clearUser());
+    toast.success("Logged out successfully");
+    return true;
   }
 );
+
+// Fetch Current User
 export const fetchCurrentUser = createAsyncThunk<User>(
   "users/fetchCurrentUser",
   async (_, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
       const response = await axios.get(`${BASE_URL}/api/user/me`, {
-        withCredentials: true, 
+        headers: { Authorization: `Bearer ${token}` },
       });
       return response.data.data as User;
     } catch (error: unknown) {
@@ -107,6 +104,7 @@ export const fetchCurrentUser = createAsyncThunk<User>(
   }
 );
 
+// Fetch All Users
 export const fetchUsers = createAsyncThunk<User[]>(
   "users/fetchAll",
   async (_, { rejectWithValue }) => {
@@ -121,6 +119,7 @@ export const fetchUsers = createAsyncThunk<User[]>(
   }
 );
 
+// Fetch User By Id
 export const fetchUserById = createAsyncThunk<User, string>(
   "users/fetchById",
   async (id, { rejectWithValue }) => {
@@ -135,13 +134,18 @@ export const fetchUserById = createAsyncThunk<User, string>(
   }
 );
 
+// Update User
 export const updateUser = createAsyncThunk<User, Partial<User>>(
   "users/update",
   async (userData, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
       const response = await axios.put(
         `${BASE_URL}/api/user/update-user/${userData.id}`,
-        userData
+        userData,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       return response.data.data as User;
     } catch (error: unknown) {
@@ -152,13 +156,16 @@ export const updateUser = createAsyncThunk<User, Partial<User>>(
   }
 );
 
-//
 // Slice
-//
 const userSlice = createSlice({
   name: "users",
   initialState,
-  reducers: {},
+  reducers: {
+    clearUser(state) {
+      state.currentUser = null;
+      state.token = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Signup
@@ -184,27 +191,21 @@ const userSlice = createSlice({
         (state, action: PayloadAction<LoginResponse>) => {
           state.loading = false;
           state.currentUser = action.payload.user;
+          state.token = action.payload.token;
         }
       )
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      //logout
-      .addCase(logoutUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+
+      // Logout
       .addCase(logoutUser.fulfilled, (state) => {
-        state.loading = false;
         state.currentUser = null;
-      })
-      .addCase(logoutUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.token = null;
       })
 
-      //current user
+      // Fetch Current User
       .addCase(fetchCurrentUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -221,7 +222,7 @@ const userSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // Fetch All Users
+      // Fetch Users
       .addCase(fetchUsers.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -260,12 +261,9 @@ const userSlice = createSlice({
       .addCase(updateUser.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
         const index = state.users.findIndex((u) => u.id === action.payload.id);
-        if (index >= 0) {
-          state.users[index] = action.payload;
-        }
-        if (state.currentUser?.id === action.payload.id) {
+        if (index >= 0) state.users[index] = action.payload;
+        if (state.currentUser?.id === action.payload.id)
           state.currentUser = action.payload;
-        }
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.loading = false;
@@ -274,4 +272,5 @@ const userSlice = createSlice({
   },
 });
 
+export const { clearUser } = userSlice.actions;
 export default userSlice.reducer;
