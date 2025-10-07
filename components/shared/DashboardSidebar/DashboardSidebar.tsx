@@ -13,7 +13,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { menuItems } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
@@ -37,44 +37,52 @@ export default function DashboardSidebar({
 }) {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [currentPage, setCurrentPage] = useState("overview");
   const { currentUser: user, loading } = useAppSelector((state) => state.users);
 
+  const [currentPage, setCurrentPage] = useState("overview");
   const [checkedUser, setCheckedUser] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const isLoggingOutRef = useRef(false);
 
-  // Fetch current user on mount
   useEffect(() => {
-    dispatch(fetchCurrentUser()).finally(() => setCheckedUser(true));
+    const token = localStorage.getItem("token");
+    if (token) {
+      dispatch(fetchCurrentUser()).finally(() => setCheckedUser(true));
+    } else {
+      setCheckedUser(true);
+    }
   }, [dispatch]);
 
-  // Redirect to signin if not authenticated
+  //logout
+  const handleLogout = async () => {
+    isLoggingOutRef.current = true;
+    await dispatch(logoutUser());
+    localStorage.removeItem("token");
+    router.push("/signin");
+    setLogoutDialogOpen(false);
+  };
+
+  // redirect effect
   useEffect(() => {
-    if (checkedUser && !loading && !user) {
-      !logoutDialogOpen && toast.error("Please sign in to continue");
+    if (checkedUser && !loading && !user && !isLoggingOutRef.current) {
+      toast.error("Please sign in to continue");
       router.push("/signin");
     }
   }, [user, loading, checkedUser, router]);
 
-  //logout function
-  const handleLogout = async () => {
-    await dispatch(logoutUser());
-    router.push("/signin");
-    toast.success("Logged out successfully");
-    setLogoutDialogOpen(false);
-  };
   const onPageChange = (page: string) => {
     router.push(`/${page}`);
     setCurrentPage(page);
   };
 
-  // Show loader while fetching user or if user is null
-  if (loading || !checkedUser || !user)
+  // Show loader while fetching user or before client hydration
+  if (!checkedUser || loading || !user) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
       </div>
     );
+  }
 
   return (
     <SidebarProvider>
@@ -116,12 +124,12 @@ export default function DashboardSidebar({
             <div className="text-sm text-sidebar-foreground/60">
               <p>Logged in as</p>
               <p className="font-semibold text-black">
-                {user?.username} (
-                {user?.role === 1
+                {user.username} (
+                {user.role === 1
                   ? "Staff"
-                  : user?.role === 2
+                  : user.role === 2
                   ? "Director"
-                  : user?.role === 3
+                  : user.role === 3
                   ? "Admin"
                   : "Unknown"}
                 )
