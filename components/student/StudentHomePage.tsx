@@ -70,6 +70,7 @@ import {
 } from "../ui/select";
 import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
 import StudentDetailsView from "./StudentDetailsView";
+import Link from "next/link";
 // import { mockStudents, mockPayments } from "../../lib/mock-data";
 // import { Student } from "../../types";
 // import { AddStudentForm } from "../add-student-form";
@@ -371,22 +372,12 @@ export function Students() {
                       )}
                     </TableCell>
                     <TableCell className="px-6 py-4 whitespace-nowrap flex gap-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
-                          <DialogHeader>
-                            <DialogTitle>Student Details</DialogTitle>
-                            <DialogDescription>
-                              Complete information for {student.name}
-                            </DialogDescription>
-                            <StudentDetailsView student={student} />
-                          </DialogHeader>
-                        </DialogContent>
-                      </Dialog>
+                      <Link
+                        className="flex items-center justify-center text-indigo-600 hover:text-indigo-900"
+                        href={`/students/${student.id}`}
+                      >
+                        <Eye className="h-3 w-3" />
+                      </Link>
                       <Button
                         variant="outline"
                         size="sm"

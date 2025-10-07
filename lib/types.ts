@@ -89,10 +89,26 @@ export interface Student {
   isFundedAccount: boolean;
   currentBatch?: Batch;
   currentBatchId: string;
+  fees: Fee[];
+  // payments: Payment[];
   //   admissions: Admission[];
   //   payments: Payment[];
   //   batchHistory: BatchHistory[];
   // communications: CommunicationLog[];
+}
+export interface Fee {
+  id?: string;
+  totalCourseFee: number;
+  finalFee?: number;
+  discountAmount?: number;
+  balanceAmount: number;
+  feePaymentMode?: string;
+  student: Student;
+  studentId: string;
+  payments: Payment[];
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Admission {

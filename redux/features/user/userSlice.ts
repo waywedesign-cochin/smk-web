@@ -96,7 +96,8 @@ export const fetchCurrentUser = createAsyncThunk<User>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${BASE_URL}/api/user/me`, {
-        withCredentials: true, 
+        withCredentials:  true, 
+       
       });
       return response.data.data as User;
     } catch (error: unknown) {
