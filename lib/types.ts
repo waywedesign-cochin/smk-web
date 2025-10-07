@@ -89,7 +89,7 @@ export interface Student {
   isFundedAccount: boolean;
   currentBatch?: Batch;
   currentBatchId: string;
-  fees: Fee[];
+  fees?: Fee[];
   // payments: Payment[];
   //   admissions: Admission[];
   //   payments: Payment[];
