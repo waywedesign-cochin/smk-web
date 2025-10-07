@@ -5,7 +5,6 @@ import { User } from "@/lib/types";
 import { BASE_URL } from "@/redux/baseUrl";
 import { SignUpInput } from "@/lib/validation/signupSchema";
 
-
 // Types
 interface LoginCredentials {
   email: string;
@@ -96,8 +95,7 @@ export const fetchCurrentUser = createAsyncThunk<User>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${BASE_URL}/api/user/me`, {
-        withCredentials:  true, 
-       
+        withCredentials: true,
       });
       return response.data.data as User;
     } catch (error: unknown) {
