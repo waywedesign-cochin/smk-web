@@ -15,9 +15,9 @@ export function CourseList({
   handleDelete,
 }: CourseListProps) {
   return (
-    <div className="border border-gray-200  rounded-xl p-6 bg-white  transition-shadow duration-300 space-y-6">
+    <div className="border border-gray-200  rounded-xl p-6   transition-shadow duration-300 space-y-6">
       {courses.length === 0 ? (
-        <p className="text-gray-500  text-center text-lg font-medium">
+        <p className="text-gray-50  text-center text-lg font-medium">
           No courses added yet. Start by adding one!
         </p>
       ) : (

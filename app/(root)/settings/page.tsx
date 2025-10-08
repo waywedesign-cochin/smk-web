@@ -43,10 +43,18 @@ function SettingsCard({
 export default function SettingsPage() {
   return (
     <div className="">
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+      <div
+        style={{
+          backgroundImage: "url('/cource/course.png')",
+          backgroundSize: "cover",
+
+          backgroundPosition: "center",
+        }}
+        className="flex p-5 rounded-2xl text-white flex-col sm:flex-row gap-4 justify-between items-start sm:items-center"
+      >
         <div>
           <h2 className="text-2xl font-semibold">System Settings</h2>
-          <p className="text-muted-foreground">
+          <p className="text-white/80">
             Configure system settings and preferences
           </p>
         </div>

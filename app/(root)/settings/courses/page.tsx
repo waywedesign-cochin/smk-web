@@ -57,12 +57,22 @@ function CoursesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 ">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div
+        className="flex justify-between items-center p-5 text-white rounded-2xl bg-cover bg-center"
+        // /cource/course.png
+
+        style={{
+          backgroundImage: "url('/cource/course.png')",
+          backgroundSize: "cover",
+
+          backgroundPosition: "center",
+        }}
+      >
         <div>
           <h2 className="text-3xl font-semibold">Course Configuration</h2>
-          <p className="text-muted-foreground">
+          <p className="text-white/80">
             Manage courses, fee structures, and enrollment settings
           </p>
         </div>

@@ -86,24 +86,22 @@ export default function DashboardSidebar({
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full">
+      <div className="flex h-screen w-full  ">
         {/* Sidebar */}
-        <Sidebar>
-          <SidebarHeader className="border-b border-sidebar-border p-6">
+        <Sidebar className="overflow-hidden  rounded-e-2xl">
+          <SidebarHeader className="border-b  border-sidebar-border p-6  bg-black text-white">
             <div className="flex items-center gap-3">
               <div className="bg-primary text-primary-foreground rounded-lg p-2">
                 <GraduationCap className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold">StockForx</h1>
-                <p className="text-sm text-sidebar-foreground/60">
-                  Institute Management
-                </p>
+                <h1 className="text-lg font-semibold">SK & SL Associate</h1>
+                <p className="text-sm text-white">Private Limited</p>
               </div>
             </div>
           </SidebarHeader>
 
-          <SidebarContent>
+          <SidebarContent className="bg-gradient-to-b from-black to-[#122147] text-white">
             <SidebarMenu className="p-3">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
@@ -120,10 +118,10 @@ export default function DashboardSidebar({
             </SidebarMenu>
           </SidebarContent>
 
-          <SidebarFooter className="border-t border-sidebar-border p-4">
-            <div className="text-sm text-sidebar-foreground/60">
+          <SidebarFooter className="border-t border-sidebar-border p-4 bg-[#122147] text-white">
+            <div className="text-sm text-white">
               <p>Logged in as</p>
-              <p className="font-semibold text-black">
+              <p className="font-semibold text-white">
                 {user.username} (
                 {user.role === 1
                   ? "Staff"
@@ -139,7 +137,7 @@ export default function DashboardSidebar({
         </Sidebar>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden ">
           <header className="border-b bg-background px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
