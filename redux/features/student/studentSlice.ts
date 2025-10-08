@@ -23,6 +23,7 @@ interface StudentState {
   pagination: Pagination | null;
   loading: boolean;
   error: string | null;
+  currentStudent: Student | null;
 }
 
 interface FetchStudentsParams {
@@ -38,6 +39,7 @@ const initialState: StudentState = {
   pagination: null,
   loading: false,
   error: null,
+  currentStudent: null,
 };
 
 // ------------------ Async Thunks ------------------
@@ -75,6 +77,24 @@ export const fetchStudents = createAsyncThunk<
     return response.data.data as StudentsResponse;
   } catch (error: unknown) {
     let errorMessage = "Failed to fetch students";
+    if (error instanceof Error) errorMessage = error.message;
+    return rejectWithValue(errorMessage);
+  }
+});
+
+// Fetch a single student by ID
+export const fetchStudentById = createAsyncThunk<
+  Student, // your Student type
+  string, // the ID we pass
+  { rejectValue: string }
+>("students/fetchById", async (id, { rejectWithValue }) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/api/student/get-students?id=${id}`
+    );
+    return response.data.data as Student;
+  } catch (error: unknown) {
+    let errorMessage = "Failed to fetch student details";
     if (error instanceof Error) errorMessage = error.message;
     return rejectWithValue(errorMessage);
   }
@@ -185,6 +205,20 @@ const studentSlice = createSlice({
       .addCase(deleteStudent.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to delete student";
+      });
+    // Fetch student by ID
+    builder
+      .addCase(fetchStudentById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchStudentById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentStudent = action.payload;
+      })
+      .addCase(fetchStudentById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

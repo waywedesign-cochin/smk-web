@@ -375,8 +375,9 @@ export function Students() {
                       <Link
                         className="flex items-center justify-center text-indigo-600 hover:text-indigo-900"
                         href={`/students/${student.id}`}
+                        style={{ width: "1.5rem", height: "1.5rem" }}
                       >
-                        <Eye className="h-3 w-3" />
+                        <Eye className="h-full w-full my-auto" />
                       </Link>
                       <Button
                         variant="outline"
