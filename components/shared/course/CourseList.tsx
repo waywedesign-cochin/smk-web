@@ -15,7 +15,7 @@ export function CourseList({
   handleDelete,
 }: CourseListProps) {
   return (
-    <div className="border border-gray-200  rounded-xl p-6   transition-shadow duration-300 space-y-6">
+    <div className=" bg-gradient-to-br from-[#122147] via-black to-[#122147]  rounded-xl p-6   transition-shadow duration-300 space-y-6">
       {courses.length === 0 ? (
         <p className="text-gray-50  text-center text-lg font-medium">
           No courses added yet. Start by adding one!
@@ -25,10 +25,10 @@ export function CourseList({
           {courses.map((course) => (
             <div
               key={course.id}
-              className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100  transition-colors duration-200 border border-gray-100 "
+              className="flex justify-between items-center  backdrop-blur-lg p-4 rounded-lg hover:bg-gray-100/50  transition-colors duration-200 border border-gray-100 "
             >
               <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-gray-900 ">
+                <h3 className="text-xl font-semibold text-white ">
                   {course.name}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
