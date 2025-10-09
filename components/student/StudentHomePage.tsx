@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -51,7 +51,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Student } from "@/lib/types";
+import { Batch, Student } from "@/lib/types";
 import AddStudentForm from "./AddStudentForm";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { fetchBatches } from "@/redux/features/batch/batchSlice";
@@ -71,6 +71,7 @@ import {
 import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
 import StudentDetailsView from "./StudentDetailsView";
 import Link from "next/link";
+import { fetchLocations } from "@/redux/features/location/locationSlice";
 // import { mockStudents, mockPayments } from "../../lib/mock-data";
 // import { Student } from "../../types";
 // import { AddStudentForm } from "../add-student-form";
@@ -88,23 +89,164 @@ export interface StudentInput {
 
 export function Students() {
   const dispatch = useAppDispatch();
-  const batches = useAppSelector((state) => state.batches.batches); // Batch[]
+  const batches = useAppSelector((state) => state.batches.batches);
   const { students, pagination, loading, error } = useAppSelector(
     (state) => state.students
   );
-  // console.log(students);
+  const locations = useAppSelector((state) => state.locations.locations);
+
+  // State variables
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  //   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
   const [accountTypeFilter, setAccountTypeFilter] = useState<
     "all" | "funded" | "regular"
   >("all");
+
+  // Set first location as default if locations exist, otherwise empty string
+  const [locationTypeFilter, setLocationTypeFilter] = useState<string>(
+    locations && locations.length > 0 ? locations[0]?.id || "" : ""
+  );
+
+  const [batchTypeFilter, setBatchTypeFilter] = useState<string>("all");
+  const [modeFilter, setModeFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //add student
+  // Filter batches based on selected location - THIS IS CRITICAL
+  const filteredBatches = useMemo(() => {
+    console.log("Filtering batches with location:", locationTypeFilter);
+    console.log("All batches:", batches);
+
+    if (!batches || batches.length === 0) return [];
+    if (!locationTypeFilter || locationTypeFilter === "all") return batches;
+
+    const filtered = batches.filter(
+      (batch) => batch.locationId === locationTypeFilter
+    );
+    console.log("Filtered batches:", filtered);
+    return filtered;
+  }, [batches, locationTypeFilter]);
+
+  // Set batch filter when filteredBatches changes
+  useEffect(() => {
+    console.log("filteredBatches changed:", filteredBatches);
+    if (filteredBatches && filteredBatches.length > 0) {
+      // If current batch filter is not in the filtered batches, reset to "all"
+      const isCurrentBatchValid = filteredBatches.some(
+        (batch) => batch.id === batchTypeFilter
+      );
+      if (!isCurrentBatchValid && batchTypeFilter !== "all") {
+        setBatchTypeFilter("all");
+      }
+    } else {
+      // If no batches available, set to "all"
+      setBatchTypeFilter("all");
+    }
+  }, [filteredBatches, batchTypeFilter]);
+
+  // Fetch batches when location changes
+  useEffect(() => {
+    if (locationTypeFilter) {
+      console.log("Fetching batches for location:", locationTypeFilter);
+      dispatch(fetchBatches({ location: locationTypeFilter, limit: 0 }));
+    }
+  }, [locationTypeFilter, dispatch]);
+
+  // Set initial location when locations are loaded
+  useEffect(() => {
+    if (locations && locations.length > 0 && !locationTypeFilter) {
+      const firstLocationId = locations[0]?.id;
+      if (firstLocationId) {
+        console.log("Setting initial location:", firstLocationId);
+        setLocationTypeFilter(firstLocationId);
+      }
+    }
+  }, [locations, locationTypeFilter]);
+
+  // Fetch initial locations
+  useEffect(() => {
+    if (!locations || locations.length === 0) {
+      console.log("Fetching locations...");
+      dispatch(fetchLocations());
+    }
+  }, [locations, dispatch]);
+
+  // Debounce search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
+
+  // Main data fetching with all filters
+  useEffect(() => {
+    if (locationTypeFilter) {
+      console.log("Fetching students with filters:", {
+        location: locationTypeFilter,
+        batch: batchTypeFilter,
+        search: debouncedSearch,
+      });
+
+      dispatch(
+        fetchStudents({
+          page: pagination?.currentPage || 1,
+          limit: itemsPerPage,
+          search: debouncedSearch,
+          isFundedAccount:
+            accountTypeFilter === "funded"
+              ? true
+              : accountTypeFilter === "regular"
+              ? false
+              : undefined,
+          location: locationTypeFilter,
+          batch: batchTypeFilter === "all" ? undefined : batchTypeFilter,
+          mode: modeFilter === "all" ? undefined : modeFilter,
+          status: statusFilter === "all" ? undefined : statusFilter,
+        })
+      );
+    }
+  }, [
+    dispatch,
+    debouncedSearch,
+    accountTypeFilter,
+    locationTypeFilter,
+    batchTypeFilter,
+    modeFilter,
+    statusFilter,
+    itemsPerPage,
+    pagination?.currentPage,
+  ]);
+
+  // Pagination handler
+  const handlePageChange = (page: number) => {
+    if (locationTypeFilter) {
+      dispatch(
+        fetchStudents({
+          page,
+          limit: itemsPerPage,
+          search: debouncedSearch,
+          isFundedAccount:
+            accountTypeFilter === "funded"
+              ? true
+              : accountTypeFilter === "regular"
+              ? false
+              : undefined,
+          location: locationTypeFilter,
+          batch: batchTypeFilter === "all" ? undefined : batchTypeFilter,
+          mode: modeFilter === "all" ? undefined : modeFilter,
+          status: statusFilter === "all" ? undefined : statusFilter,
+        })
+      );
+    }
+  };
+
+  // handlers for add, update, delete...
   const handleAddStudent = async (studentData: StudentInput) => {
     try {
       await dispatch(addStudent(studentData)).unwrap();
@@ -114,7 +256,6 @@ export function Students() {
     }
   };
 
-  //edit student
   const handleUpdateStudent = async (studentData: StudentInput) => {
     try {
       await dispatch(
@@ -127,64 +268,13 @@ export function Students() {
     }
   };
 
-  //delete student
   const handleDeleteStudent = async (studentId: string) => {
     try {
-      await dispatch(deleteStudent(studentId)).unwrap(); // Make sure you have deleteStudent thunk
+      await dispatch(deleteStudent(studentId)).unwrap();
     } catch (error) {
       console.error("Failed to delete student:", error);
     }
   };
-
-  //pagination funcs
-  const handlePageChange = (page: number) => {
-    dispatch(
-      fetchStudents({
-        page,
-        limit: itemsPerPage,
-        search: debouncedSearch,
-        isFundedAccount:
-          accountTypeFilter === "funded"
-            ? true
-            : accountTypeFilter === "regular"
-            ? false
-            : undefined,
-      })
-    );
-  };
-
-  // Debounce effect
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-    }, 500); // wait 500ms after typing stops
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm]);
-  useEffect(() => {
-    if (!batches || batches.length === 0) {
-      dispatch(fetchBatches({}));
-    }
-  }, [batches, dispatch]);
-
-  useEffect(() => {
-    dispatch(
-      fetchStudents({
-        page: pagination?.currentPage || 1,
-        limit: itemsPerPage,
-        search: debouncedSearch,
-        isFundedAccount:
-          accountTypeFilter === "funded"
-            ? true
-            : accountTypeFilter === "regular"
-            ? false
-            : undefined,
-      })
-    );
-  }, [dispatch, debouncedSearch, accountTypeFilter]);
-
   return (
     <div className="space-y-6">
       {/* Header Actions */}
@@ -254,7 +344,7 @@ export function Students() {
               />
             </div>
 
-            {/* ShadCN Select */}
+            {/* Account Type Filter */}
             <Select
               value={accountTypeFilter}
               onValueChange={(value) =>
@@ -268,6 +358,76 @@ export function Students() {
                 <SelectItem value="all">All Accounts</SelectItem>
                 <SelectItem value="funded">Funded</SelectItem>
                 <SelectItem value="regular">Regular</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Location Filter - Always has a selected value */}
+            <Select
+              value={locationTypeFilter}
+              onValueChange={(value) => setLocationTypeFilter(value)}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Select Location" />
+              </SelectTrigger>
+              <SelectContent>
+                {locations
+                  ?.filter(({ id }) => Boolean(id))
+                  .map(({ id, name }) => (
+                    <SelectItem key={id!} value={id!}>
+                      {name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+
+            {/* Batch Filter - Never disabled, shows batches for selected location */}
+            {/* Batch Filter */}
+            <Select
+              value={batchTypeFilter}
+              onValueChange={(value) => setBatchTypeFilter(value)}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Select Batch" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Batches</SelectItem>
+                {filteredBatches?.map((batch) => (
+                  <SelectItem key={batch.id} value={batch.name}>
+                    {batch.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Mode Filter */}
+            <Select
+              value={modeFilter}
+              onValueChange={(value) => setModeFilter(value)}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Mode" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Modes</SelectItem>
+                <SelectItem value="ONLINE">Online</SelectItem>
+                <SelectItem value="OFFLINE">Offline</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Status Filter */}
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value)}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="ACTIVE">Active</SelectItem>
+                <SelectItem value="COMPLETED">Completed</SelectItem>
+                <SelectItem value="CANCELLED">Cancelled</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -321,7 +481,7 @@ export function Students() {
               ) : students?.length > 0 ? (
                 students.map((student, idx) => (
                   <TableRow
-                    key={student.id}
+                    key={idx}
                     className={`${
                       idx % 2 === 0 ? "bg-white" : "bg-gray-50"
                     } hover:bg-indigo-50 transition-colors rounded-lg`}

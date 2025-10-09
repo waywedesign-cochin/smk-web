@@ -29,6 +29,10 @@ interface StudentState {
 interface FetchStudentsParams {
   search?: string;
   isFundedAccount?: true | false;
+  location?: string;
+  batch?: string;
+  mode?: string;
+  status?: string;
   page?: number;
   limit?: number;
 }
