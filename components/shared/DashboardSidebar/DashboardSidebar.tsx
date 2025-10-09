@@ -86,10 +86,10 @@ export default function DashboardSidebar({
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full  ">
+      <div className="flex h-screen w-full bg-black ">
         {/* Sidebar */}
         <Sidebar className="overflow-hidden  rounded-e-2xl">
-          <SidebarHeader className="border-b  border-sidebar-border p-6  bg-black text-white">
+          <SidebarHeader className=" p-6  bg-black text-white">
             <div className="flex items-center gap-3">
               <div className="bg-primary text-primary-foreground rounded-lg p-2">
                 <GraduationCap className="h-6 w-6" />
@@ -138,7 +138,7 @@ export default function DashboardSidebar({
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden ">
-          <header className="border-b bg-background px-6 py-3 flex items-center justify-between">
+          <header className="border-b bg-black text-white px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
               <h2 className="text-xl font-semibold capitalize">
@@ -147,7 +147,7 @@ export default function DashboardSidebar({
               </h2>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
+              <Button className="bg-gray-600/20" variant="outline" size="sm">
                 Profile
               </Button>
 
@@ -157,7 +157,11 @@ export default function DashboardSidebar({
                 onOpenChange={setLogoutDialogOpen}
               >
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    className="bg-gray-600/20"
+                    variant="outline"
+                    size="sm"
+                  >
                     Logout
                   </Button>
                 </DialogTrigger>
@@ -189,7 +193,7 @@ export default function DashboardSidebar({
             </div>
           </header>
 
-          <main className="flex-1 overflow-auto p-6 bg-muted/20">
+          <main className="flex-1 overflow-auto p-6 bg-black text-white">
             {children}
           </main>
         </div>

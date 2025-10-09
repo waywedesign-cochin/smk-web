@@ -393,7 +393,10 @@ export function Students() {
                 <SelectItem value="all">All Batches</SelectItem>
                 {filteredBatches?.map((batch) => (
                   <SelectItem key={batch.id} value={batch.name}>
-                    {batch.name}
+                    {batch.name}{" "}
+                    <span className="capitalize">
+                      ({batch?.status.toLowerCase()}){" "}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
