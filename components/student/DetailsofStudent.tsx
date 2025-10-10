@@ -44,6 +44,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import FeeConfigurationForm from "./FeeConfigurationForm";
 // import { Textarea } from "../ui/textarea";
 // import { Label } from "../ui/label";
 // import { Input } from "../ui/input";
@@ -68,6 +69,12 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
     loading,
     error,
   } = useAppSelector((state) => state.students);
+
+
+//configure fee
+const handleConfigureFee =async () => {
+  
+}
 
   // ✅ Fetch specific student when ID changes
   useEffect(() => {
@@ -136,7 +143,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {/* ₹{feeConfig.totalCourseFee.toLocaleString()} */}
+              ₹{student?.fees ? student.fees[0]?.totalCourseFee : 0}
             </div>
             <p className="text-xs text-muted-foreground">
               {/* {feeConfig.discount > 0 &&
@@ -152,7 +159,11 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {/* ₹{feeConfig.paidAmount.toLocaleString()} */}
+              ₹
+              {student?.fees
+                ? student.fees[0]?.totalCourseFee -
+                  student.fees[0]?.balanceAmount
+                : 0}
             </div>
             <p className="text-xs text-muted-foreground">
               {/* {mockPayments.length}  */}
@@ -168,7 +179,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {/* ₹{feeConfig.balanceAmount.toLocaleString()} */}
+              ₹{student?.fees ? student.fees[0]?.balanceAmount : 0}
             </div>
             <p className="text-xs text-muted-foreground">
               {/* {feeConfig.feeDueMode || "Not configured"} */}
@@ -356,16 +367,11 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                       {student.name}
                     </DialogDescription>
                   </DialogHeader>
-                  {/* <FeeConfigurationForm
+                  <FeeConfigurationForm
                     student={student}
-                    initialConfig={feeConfig}
-                    onSave={(config) => {
-                      setFeeConfig(config);
-                      setShowFeeConfigDialog(false);
-                        toast.success("Fee configuration saved successfully!");
-                    }}
+                    onSave={handleConfigureFee}
                     onClose={() => setShowFeeConfigDialog(false)}
-                  /> */}
+                  />
                 </DialogContent>
               </Dialog>
             </CardHeader>
@@ -376,19 +382,19 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                     Total Course Fee
                   </p>
                   <p className="text-lg font-semibold">
-                    {/* ₹{feeConfig.totalCourseFee.toLocaleString()} */}
+                    ₹{student?.fees ? student.fees[0]?.totalCourseFee : 0}
                   </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Discount</p>
                   <p className="text-lg font-semibold">
-                    {/* ₹{feeConfig.discount.toLocaleString()} */}
+                    ₹{student?.fees ? student.fees[0]?.discountAmount : 0}
                   </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Final Fee</p>
                   <p className="text-lg font-semibold text-blue-600">
-                    {/* ₹{feeConfig.finalFee.toLocaleString()} */}
+                    ₹{student?.fees ? student.fees[0]?.finalFee : 0}
                   </p>
                 </div>
                 <div className="space-y-1">
@@ -396,7 +402,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                     Balance Amount
                   </p>
                   <p className="text-lg font-semibold text-red-600">
-                    {/* ₹{feeConfig.balanceAmount.toLocaleString()} */}
+                    ₹{student?.fees ? student.fees[0]?.balanceAmount : 0}
                   </p>
                 </div>
               </div>
