@@ -294,8 +294,8 @@ export function Students() {
             }}
           >
             <SheetTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
+              <Button className="bg-gradient-to-r from-blue-900 to-[#122147] text-white cursor-pointer">
+                <Plus className="h-4 w-4" />
                 Add Student
               </Button>
             </SheetTrigger>
