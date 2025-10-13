@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -18,53 +17,127 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil } from "lucide-react";
-import type { Fee, Student, Payment } from "@/lib/types"; // adjust to your type location
+import { Plus, Edit, Loader2 } from "lucide-react";
+import type { Fee, Student, Payment } from "@/lib/types";
 import PaymentForm, { PaymentInput } from "./PaymentForm";
+import {
+  createPayment,
+  createPaymentDue,
+  fetchPaymentsByStudent,
+  updatePayment,
+} from "@/redux/features/payment/paymentSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import CreateDueForm, { DueInput } from "./CreateDueForm";
 
 interface PaymentsTabProps {
   student: Student;
   latestFee: Fee;
-  onAddPayment: (data: PaymentInput) => void;
-  onEditPayment?: (payment: Payment) => void;
 }
 
-export default function PaymentsTab({
-  student,
-  latestFee,
-  onAddPayment,
-  onEditPayment,
-}: PaymentsTabProps) {
+export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
+  const dispatch = useAppDispatch();
+  const { payments, loading, submitting } = useAppSelector(
+    (state) => state.payments
+  );
+
   const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
+  const [openDueDialog, setOpenDueDialog] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+
+  // Fetch payments
+  const fetchPayments = async () => {
+    if (student.id) {
+      dispatch(fetchPaymentsByStudent(student.id));
+    }
+  };
+
+  useEffect(() => {
+    fetchPayments();
+  }, [student.id]);
+
+  // Add payment
+  const handleAddPayment = async (payment: PaymentInput) => {
+    try {
+      await dispatch(createPayment(payment)).unwrap();
+      setShowAddPaymentDialog(false);
+    } catch (err) {
+      console.error("Failed to add payment:", err);
+    }
+  };
+
+  // Edit payment
+  const handleEditPayment = async (payment: PaymentInput) => {
+    try {
+      await dispatch(updatePayment(payment)).unwrap();
+      setShowAddPaymentDialog(false);
+    } catch (err) {
+      console.error("Failed to update payment:", err);
+    }
+  };
+
+  // Create payment due
+  const handleCreateDue = async (payment: DueInput) => {
+    try {
+      await dispatch(createPaymentDue(payment)).unwrap();
+      setOpenDueDialog(false);
+    } catch (err) {
+      console.error("Failed to add due payment:", err);
+    }
+  };
 
   return (
     <Card>
       <CardHeader className="flex justify-between items-center">
         <CardTitle>Payments</CardTitle>
-        <Button size="sm" onClick={() => setShowAddPaymentDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Payment
-        </Button>
+        <div className="flex gap-2">
+          {latestFee?.feePaymentMode === "others" && (
+            <>
+              <Button size="sm" onClick={() => setOpenDueDialog(true)}>
+                <Plus className="h-4 w-4" />
+                Create Payment Due
+              </Button>
+
+              <CreateDueForm
+                open={openDueDialog}
+                defaultFeeId={latestFee.id}
+                onSave={handleCreateDue}
+                onClose={() => setOpenDueDialog(false)}
+              />
+            </>
+          )}
+          <Button size="sm" onClick={() => setShowAddPaymentDialog(true)}>
+            <Plus className="h-4 w-4" />
+            Add Payment
+          </Button>
+        </div>
       </CardHeader>
 
       {/* Add Payment Dialog */}
       <Dialog
         open={showAddPaymentDialog}
-        onOpenChange={setShowAddPaymentDialog}
+        onOpenChange={(open) => {
+          if (!open) setSelectedPayment(null);
+          setShowAddPaymentDialog(open);
+        }}
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Add Payment</DialogTitle>
-            <DialogDescription>
-              Record a payment for {student.name}
-            </DialogDescription>
+            <DialogTitle>
+              {selectedPayment
+                ? `Edit Payment for ${student.name}`
+                : `Add Payment for ${student.name}`}
+            </DialogTitle>
           </DialogHeader>
 
           <PaymentForm
             student={student}
             fee={latestFee}
-            onSave={onAddPayment}
-            onClose={() => setShowAddPaymentDialog(false)}
+            existingPayment={selectedPayment}
+            onSave={handleAddPayment}
+            onUpdate={handleEditPayment}
+            onClose={() => {
+              setShowAddPaymentDialog(false), setSelectedPayment(null);
+            }}
           />
         </DialogContent>
       </Dialog>
@@ -78,14 +151,25 @@ export default function PaymentsTab({
               <TableCell>Due Date</TableCell>
               <TableCell>Amount</TableCell>
               <TableCell>Mode</TableCell>
+              <TableCell>Transaction ID</TableCell>
+              <TableCell>Notes</TableCell>
               <TableCell>Status</TableCell>
               <TableCell className="text-right">Actions</TableCell>
             </TableRow>
           </TableHeader>
 
           <TableBody>
-            {latestFee?.payments?.length ? (
-              latestFee.payments.map((p) => (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={8} className="p-10">
+                  <div className="flex items-center justify-center w-full gap-2">
+                    <Loader2 className="animate-spin h-6 w-6 text-gray-500" />
+                    <span className="text-gray-500">Loading payments...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : payments?.length ? (
+              payments.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell>
                     {p.paidAt
@@ -101,6 +185,8 @@ export default function PaymentsTab({
                     ₹{p.amount.toLocaleString()}
                   </TableCell>
                   <TableCell>{p.mode || "-"}</TableCell>
+                  <TableCell>{p.transactionId || "-"}</TableCell>
+                  <TableCell>{p.note || "-"}</TableCell>
                   <TableCell>
                     <Badge
                       className={
@@ -120,9 +206,13 @@ export default function PaymentsTab({
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => onEditPayment?.(p)}
+                      onClick={() => {
+                        setSelectedPayment(p);
+                        setShowAddPaymentDialog(true);
+                      }}
+                      className="cursor-pointer"
                     >
-                      <Pencil className="h-4 w-4" />
+                      <Edit className="h-3 w-3" />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -130,7 +220,7 @@ export default function PaymentsTab({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={8}
                   className="text-center text-muted-foreground"
                 >
                   No payments found

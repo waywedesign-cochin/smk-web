@@ -15,9 +15,11 @@ export default function DeleteDialogue({
   id,
   title,
   handelDelete,
+  loading,
 }: {
   title: string;
   id: string;
+  loading?: boolean;
   handelDelete: (id: string) => void;
 }) {
   return (
@@ -39,7 +41,7 @@ export default function DeleteDialogue({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={() => handelDelete(id)}>
-            Continue
+            {loading ? "Deleting..." : "Continue"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

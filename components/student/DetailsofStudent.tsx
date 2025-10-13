@@ -31,9 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Separator } from "../ui/separator";
 import { FeeSubmission } from "./Fee/FeeConfigurationForm";
 import { cofigureFee } from "@/redux/features/fee/feeSlice";
-import PaymentForm, { PaymentInput } from "./Payment/PaymentForm";
 import { Fee } from "@/lib/types";
-import { createPayment } from "@/redux/features/payment/paymentSlice";
 import PaymentsTab from "./Payment/PaymentTabs";
 import FeeConfigurationTab from "./Fee/FeeConfigurationTab";
 
@@ -44,7 +42,6 @@ interface DetailsofStudentProps {
 const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false);
 
   const {
@@ -81,20 +78,6 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
       console.error("Failed to configure fee:", err);
     }
   };
-
-  //add payment
-  const handleAddPayment = async (payment: PaymentInput) => {
-    try {
-      await dispatch(createPayment(payment)).unwrap();
-      setShowAddPaymentDialog(false);
-      dispatch(fetchStudentById(StudentId)); // refresh payments
-    } catch (err) {
-      console.error("Failed to add payment:", err);
-    }
-  };
-
-  //edit payment
-  const handleEditPayment = async () => {};
 
   const onBack = () => router.back();
 
@@ -292,12 +275,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
 
         {/* Payments Tab */}
         <TabsContent value="payments" className="space-y-6">
-          <PaymentsTab
-            student={student}
-            latestFee={latestFee as Fee}
-            onAddPayment={handleAddPayment}
-            onEditPayment={handleEditPayment}
-          />
+          <PaymentsTab latestFee={latestFee as Fee} student={student} />
         </TabsContent>
 
         {/* History Tab */}

@@ -21,12 +21,12 @@ import FeeConfigurationForm, { FeeSubmission } from "./FeeConfigurationForm";
 import { Fee, Student } from "@/lib/types";
 
 interface FeeConfigurationTabProps {
-    student: Student; 
-    latestFee: Fee;   
-    showFeeConfigDialog: boolean;
-    setShowFeeConfigDialog: (value: boolean) => void;
-    handleConfigureFee: (data: FeeSubmission) => void; // instead of 'any'
-  }
+  student: Student;
+  latestFee: Fee;
+  showFeeConfigDialog: boolean;
+  setShowFeeConfigDialog: (value: boolean) => void;
+  handleConfigureFee: (data: FeeSubmission) => void; // instead of 'any'
+}
 
 export default function FeeConfigurationTab({
   student,
@@ -72,7 +72,7 @@ export default function FeeConfigurationTab({
       </CardHeader>
 
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div>
             <p className="text-sm text-muted-foreground">Total Fee</p>
             <p className="font-semibold text-lg">
@@ -95,6 +95,12 @@ export default function FeeConfigurationTab({
             <p className="text-sm text-muted-foreground">Balance</p>
             <p className="font-semibold text-lg text-red-600">
               ₹{latestFee.balanceAmount?.toLocaleString() ?? 0}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Fee Payment Mode</p>
+            <p className="font-semibold text-lg text-blue-800 capitalize">
+              {latestFee.feePaymentMode}
             </p>
           </div>
         </div>

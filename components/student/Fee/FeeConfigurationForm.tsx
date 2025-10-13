@@ -66,6 +66,7 @@ export default function FeeConfigurationForm({
     const existingConfig =
       initialConfig ||
       (student.fees?.length ? student.fees[student.fees.length - 1] : null);
+    console.log("existingConfig", existingConfig);
 
     if (existingConfig) {
       setFeeData({
@@ -83,14 +84,19 @@ export default function FeeConfigurationForm({
   const handleInputChange = (field: keyof FeeData, value: string | number) => {
     setFeeData((prev) => {
       const updated = { ...prev, [field]: value };
-
-      // Auto-calculate fee logic
+      // Recalculate final fee
       const total = Number(updated.totalCourseFee) || 0;
       const discount = Number(updated.discountAmount) || 0;
-      const advance = Number(updated.advanceAmount) || 0;
-
       const finalFee = total - discount;
-      const balanceAmount = finalFee - advance;
+
+      // Calculate already paid amount from student.fees or payments
+      const alreadyPaid =
+        student.fees
+          ?.find((f) => f.id === updated.id)
+          ?.payments?.reduce((sum, p) => sum + (p.paidAt ? p.amount : 0), 0) ||
+        0;
+      // Remaining balance
+      const balanceAmount = finalFee - alreadyPaid;
 
       return { ...updated, finalFee, balanceAmount };
     });
