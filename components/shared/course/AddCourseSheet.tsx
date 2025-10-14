@@ -19,6 +19,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { courseSchema, CourseFormValues } from "@/lib/validation/courseSchema";
 import { Course } from "@/lib/types";
+import { BatchMode } from "@/lib/validation/batchSchema";
 
 interface AddCourseSheetProps {
   isAddSheetOpen: boolean;
@@ -49,6 +50,7 @@ export default function AddCourseSheet({
       baseFee: 0,
       duration: 0,
       isActive: true,
+      mode: "OFFLINE",
     },
   });
 
@@ -63,12 +65,19 @@ export default function AddCourseSheet({
         baseFee: 0,
         duration: 0,
         isActive: true,
+        mode: "OFFLINE",
       });
     }
   }, [editingCourse, reset]);
 
   const submitHandler = (data: CourseFormValues) => {
-    onSubmit(data, !!editingCourse);
+    onSubmit(
+      {
+        ...data,
+        mode: data.mode as BatchMode,
+      },
+      !!editingCourse
+    );
     setIsAddSheetOpen(false);
     setEditingCourse(null);
     reset();
@@ -160,6 +169,18 @@ export default function AddCourseSheet({
                 </p>
               )}
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="mode">Mode</Label>
+            <select
+              id="mode"
+              {...register("mode")}
+              className="border border-gray-300 rounded-md p-2"
+            >
+              <option value="ONLINE">Online</option>
+              <option value="OFFLINE">Offline</option>
+              <option value="COMBINED">Combined</option>
+            </select>
           </div>
           {editingCourse && (
             <Controller

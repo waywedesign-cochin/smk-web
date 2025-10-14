@@ -687,7 +687,7 @@ export default function AddBatchSheet({
       coordinator: "",
       slotLimit: 30,
       currentCount: 0,
-      mode: "OFFLINE",
+
       description: "",
       status: "PENDING",
     },
@@ -930,26 +930,6 @@ export default function AddBatchSheet({
                   </p>
                 )}
               </div>
-            )}
-          </div>
-
-          {/* Mode */}
-          <div className="space-y-2">
-            <Label htmlFor="mode">Delivery Mode *</Label>
-            <Select
-              onValueChange={(val) => setValue("mode", val as BatchMode)}
-              defaultValue={watch("mode")}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select mode" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ONLINE">Online</SelectItem>
-                <SelectItem value="OFFLINE">Offline</SelectItem>
-              </SelectContent>
-            </Select>
-            {errors.mode && (
-              <p className="text-sm text-red-500">{errors.mode.message}</p>
             )}
           </div>
 

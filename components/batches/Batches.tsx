@@ -20,13 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+
 import {
   Search,
   Edit,
@@ -143,7 +137,7 @@ export function Batches() {
       ...batchData,
       currentCount: batchData.currentCount ?? 0, // Ensure currentCount is always a number
       status: BatchStatus[batchData.status as keyof typeof BatchStatus],
-      mode: BatchMode[batchData.mode as keyof typeof BatchMode],
+      // mode: BatchMode[batchData.mode as keyof typeof BatchMode],
     };
     console.log(data);
 
@@ -414,10 +408,12 @@ export function Batches() {
                         </p>
                         <div className="flex gap-1">
                           <Badge
-                            variant={getModeColor(batch.mode)}
+                            variant={getModeColor(
+                              batch?.course?.mode as BatchMode
+                            )}
                             className="text-xs"
                           >
-                            {batch.mode}
+                            {batch.course?.mode}
                           </Badge>
                         </div>
                       </div>

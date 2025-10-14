@@ -8,6 +8,7 @@ export const courseSchema = z.object({
   baseFee: z.number().min(1, "Base Fee is required"),
   duration: z.number().nonnegative().min(1, "Duration (in months) is required"),
   isActive: z.boolean(),
+  mode: z.string().refine((val: string) => ["ONLINE", "OFFLINE", "COMBINED"]),
 });
 
 export type CourseFormValues = z.infer<typeof courseSchema>;

@@ -30,6 +30,7 @@ function CoursesPage() {
     baseFee: 0,
     duration: 0,
     isActive: true,
+    mode: "OFFLINE",
   };
 
   const [formData, setFormData] = useState<Course>(emptyCourse);

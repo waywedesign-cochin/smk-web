@@ -33,6 +33,7 @@ export interface Course {
   duration: number;
   batches?: Batch[];
   isActive: boolean;
+  mode: "ONLINE" | "OFFLINE" | "COMBINED";
 }
 
 export interface Batch {
@@ -48,7 +49,7 @@ export interface Batch {
   coordinator?: string;
   slotLimit: number;
   currentCount: number;
-  mode: BatchMode;
+
   status: BatchStatus;
   students?: Student[];
   description?: string;
@@ -59,6 +60,7 @@ export interface Batch {
 export enum BatchMode {
   ONLINE = "ONLINE",
   OFFLINE = "OFFLINE",
+  COMBINED = "COMBINED",
 }
 
 export enum BatchStatus {
