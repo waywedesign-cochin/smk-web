@@ -83,10 +83,6 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
 
   return (
     <div className="w-full mx-auto bg-white rounded-xl shadow p-2">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-800">
-        Add New Student
-      </h2>
-
       <div className="space-y-6">
         {/* Personal Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

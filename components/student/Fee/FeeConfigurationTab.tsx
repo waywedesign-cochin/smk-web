@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Card,
   CardContent,
@@ -100,7 +98,7 @@ export default function FeeConfigurationTab({
           <div>
             <p className="text-sm text-muted-foreground">Fee Payment Mode</p>
             <p className="font-semibold text-lg text-blue-800 capitalize">
-              {latestFee.feePaymentMode}
+              {latestFee.feePaymentMode ?? "N/A"}
             </p>
           </div>
         </div>

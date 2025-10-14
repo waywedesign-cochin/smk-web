@@ -30,7 +30,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Separator } from "../ui/separator";
 import { FeeSubmission } from "./Fee/FeeConfigurationForm";
-import { cofigureFee } from "@/redux/features/fee/feeSlice";
+import {
+  configureFee,
+  fetchFeeByStudentId,
+} from "@/redux/features/fee/feeSlice";
 import { Fee } from "@/lib/types";
 import PaymentsTab from "./Payment/PaymentTabs";
 import FeeConfigurationTab from "./Fee/FeeConfigurationTab";
@@ -42,6 +45,9 @@ interface DetailsofStudentProps {
 const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const fee = useAppSelector((state) => state.fees.fee);
+  console.log(fee);
+
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false);
 
   const {
@@ -55,9 +61,13 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
     if (StudentId) dispatch(fetchStudentById(StudentId));
   }, [dispatch, StudentId]);
 
+  useEffect(() => {
+    dispatch(fetchFeeByStudentId(StudentId));
+  }, []);
+
   // Latest fee helper
-  const latestFee = student?.fees?.length
-    ? student.fees[student.fees.length - 1]
+  const latestFee = fee?.length
+    ? fee[0]
     : {
         totalCourseFee: 0,
         discountAmount: 0,
@@ -71,7 +81,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
   //edit fee
   const handleConfigureFee = async (fee: FeeSubmission) => {
     try {
-      await dispatch(cofigureFee(fee)).unwrap();
+      await dispatch(configureFee(fee)).unwrap();
       setShowFeeConfigDialog(false);
       dispatch(fetchStudentById(StudentId));
     } catch (err) {
