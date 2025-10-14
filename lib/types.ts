@@ -101,14 +101,15 @@ export interface Fee {
   totalCourseFee: number;
   finalFee?: number;
   discountAmount?: number;
+  advanceAmount?: number;
   balanceAmount: number;
   feePaymentMode?: string;
   student: Student;
   studentId: string;
   payments: Payment[];
   status: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Admission {
@@ -144,18 +145,20 @@ export enum PaymentMode {
 }
 
 export interface Payment {
-  id: number;
-  admission: Admission;
-  admissionId: number;
+  id: string;
   amount: number;
-  date: Date;
+  mode?: string;
+  paidAt?: Date | null;
+  dueDate?: Date | null;
   transactionId?: string;
-  mode: PaymentMode;
-  notes?: string;
-  bankStatement?: BankStatement;
-  cashBook?: CashBook;
-  directorLedger?: DirectorLedger;
+  note?: string;
+  status: "PENDING" | "COMPLETED" | "FAILED" | string; // optional enum expansion
+  studentId: string;
+  feeId: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
+
 
 export interface BankStatement {
   id: number;

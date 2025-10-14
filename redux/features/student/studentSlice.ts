@@ -21,7 +21,8 @@ interface StudentsResponse {
 interface StudentState {
   students: Student[];
   pagination: Pagination | null;
-  loading: boolean;
+  loading: boolean; // for fetching students / table
+  submitting: boolean; // for add/update/delete actions
   error: string | null;
   currentStudent: Student | null;
 }
@@ -42,6 +43,7 @@ const initialState: StudentState = {
   students: [],
   pagination: null,
   loading: false,
+  submitting: false,
   error: null,
   currentStudent: null,
 };
@@ -58,7 +60,7 @@ export const addStudent = createAsyncThunk<Student, Student>(
       if (response.data.success === true) {
         toast.success(response.data.message || "Student added successfully");
       }
-      return response.data.data as Student;
+      return response.data.data.student as Student;
     } catch (error: unknown) {
       let errorMessage = "Failed to add student";
       if (error instanceof Error) errorMessage = error.message;
@@ -149,22 +151,8 @@ const studentSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
+    // ---------------- Fetch Students ----------------
     builder
-      // Add student
-      .addCase(addStudent.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(addStudent.fulfilled, (state, action) => {
-        state.loading = false;
-        state.students = [action.payload, ...state.students];
-      })
-      .addCase(addStudent.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || "Failed to add student";
-      })
-
-      // Fetch students
       .addCase(fetchStudents.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -177,40 +165,58 @@ const studentSlice = createSlice({
       .addCase(fetchStudents.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to fetch students";
-      })
+      });
 
-      // Update student
+    // ---------------- Add Student ----------------
+    builder
+      .addCase(addStudent.pending, (state) => {
+        state.submitting = true;
+        state.error = null;
+      })
+      .addCase(addStudent.fulfilled, (state, action) => {
+        state.submitting = false;
+        state.students = [action.payload, ...state.students];
+      })
+      .addCase(addStudent.rejected, (state, action) => {
+        state.submitting = false;
+        state.error = action.error.message || "Failed to add student";
+      });
+
+    // ---------------- Update Student ----------------
+    builder
       .addCase(updateStudent.pending, (state) => {
-        state.loading = true;
+        state.submitting = true;
         state.error = null;
       })
       .addCase(updateStudent.fulfilled, (state, action) => {
-        state.loading = false;
+        state.submitting = false;
         state.students = state.students.map((student) =>
           student.id === action.payload.id ? action.payload : student
         );
       })
       .addCase(updateStudent.rejected, (state, action) => {
-        state.loading = false;
+        state.submitting = false;
         state.error = action.error.message || "Failed to update student";
-      })
+      });
 
-      // Delete student
+    // ---------------- Delete Student ----------------
+    builder
       .addCase(deleteStudent.pending, (state) => {
-        state.loading = true;
+        state.submitting = true;
         state.error = null;
       })
       .addCase(deleteStudent.fulfilled, (state, action) => {
-        state.loading = false;
+        state.submitting = false;
         state.students = state.students.filter(
           (student) => student.id !== action.payload
         );
       })
       .addCase(deleteStudent.rejected, (state, action) => {
-        state.loading = false;
+        state.submitting = false;
         state.error = action.error.message || "Failed to delete student";
       });
-    // Fetch student by ID
+
+    // ---------------- Fetch Single Student ----------------
     builder
       .addCase(fetchStudentById.pending, (state) => {
         state.loading = true;

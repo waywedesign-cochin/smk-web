@@ -90,7 +90,7 @@ export interface StudentInput {
 export function Students() {
   const dispatch = useAppDispatch();
   const batches = useAppSelector((state) => state.batches.batches);
-  const { students, pagination, loading, error } = useAppSelector(
+  const { students, pagination, loading, submitting, error } = useAppSelector(
     (state) => state.students
   );
   const locations = useAppSelector((state) => state.locations.locations);
@@ -270,7 +270,7 @@ export function Students() {
 
   const handleDeleteStudent = async (studentId: string) => {
     try {
-      await dispatch(deleteStudent(studentId)).unwrap();
+      await dispatch(deleteStudent(studentId))
     } catch (error) {
       console.error("Failed to delete student:", error);
     }
@@ -294,8 +294,8 @@ export function Students() {
             }}
           >
             <SheetTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
+              <Button className="bg-gradient-to-r from-blue-900 to-[#122147] text-white cursor-pointer">
+                <Plus className="h-4 w-4" />
                 Add Student
               </Button>
             </SheetTrigger>
@@ -319,7 +319,7 @@ export function Students() {
                   }
                   onCancel={() => setIsAddFormOpen(false)}
                   batches={batches}
-                  loading={loading}
+                  loading={submitting}
                 />
               </div>
             </SheetContent>
@@ -556,6 +556,7 @@ export function Students() {
                         id={student.id ? student.id : ""}
                         title={student.name}
                         handelDelete={handleDeleteStudent}
+                        loading={submitting}
                       />
                     </TableCell>
                   </TableRow>
