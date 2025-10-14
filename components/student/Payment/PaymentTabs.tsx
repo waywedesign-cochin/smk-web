@@ -28,6 +28,7 @@ import {
 } from "@/redux/features/payment/paymentSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import CreateDueForm, { DueInput } from "./CreateDueForm";
+import { fetchFeeByStudentId } from "@/redux/features/fee/feeSlice";
 
 interface PaymentsTabProps {
   student: Student;
@@ -59,6 +60,7 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
   const handleAddPayment = async (payment: PaymentInput) => {
     try {
       await dispatch(createPayment(payment)).unwrap();
+      if (student.id) await dispatch(fetchFeeByStudentId(student.id));
       setShowAddPaymentDialog(false);
     } catch (err) {
       console.error("Failed to add payment:", err);
@@ -69,6 +71,8 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
   const handleEditPayment = async (payment: PaymentInput) => {
     try {
       await dispatch(updatePayment(payment)).unwrap();
+      if (student.id) await dispatch(fetchFeeByStudentId(student.id));
+
       setShowAddPaymentDialog(false);
     } catch (err) {
       console.error("Failed to update payment:", err);
@@ -90,21 +94,19 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
       <CardHeader className="flex justify-between items-center">
         <CardTitle>Payments</CardTitle>
         <div className="flex gap-2">
-          {latestFee?.feePaymentMode === "others" && (
-            <>
-              <Button size="sm" onClick={() => setOpenDueDialog(true)}>
-                <Plus className="h-4 w-4" />
-                Create Payment Due
-              </Button>
+          <>
+            <Button size="sm" onClick={() => setOpenDueDialog(true)}>
+              <Plus className="h-4 w-4" />
+              Create Payment Due
+            </Button>
 
-              <CreateDueForm
-                open={openDueDialog}
-                defaultFeeId={latestFee.id}
-                onSave={handleCreateDue}
-                onClose={() => setOpenDueDialog(false)}
-              />
-            </>
-          )}
+            <CreateDueForm
+              open={openDueDialog}
+              defaultFeeId={latestFee.id}
+              onSave={handleCreateDue}
+              onClose={() => setOpenDueDialog(false)}
+            />
+          </>
           <Button size="sm" onClick={() => setShowAddPaymentDialog(true)}>
             <Plus className="h-4 w-4" />
             Add Payment
