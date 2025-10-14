@@ -25,7 +25,7 @@ export function CourseList({
           {courses.map((course) => (
             <div
               key={course.id}
-              className="flex justify-between items-center  backdrop-blur-lg p-4 rounded-lg hover:bg-gray-100/50  transition-colors duration-200 border border-gray-100 "
+              className="flex justify-between items-center  backdrop-blur-lg p-4 rounded-lg hover:bg-gray-100/10  transition-colors duration-200 border-[1px] border-gray-100/10 "
             >
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-white ">

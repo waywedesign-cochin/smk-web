@@ -152,7 +152,7 @@ export default function AddCourseSheet({
                 id="duration"
                 type="number"
                 placeholder="Total Months"
-                {...register("duration")}
+                {...register("duration", { valueAsNumber: true })}
               />
               {errors.duration && (
                 <p className="text-sm text-red-500">
