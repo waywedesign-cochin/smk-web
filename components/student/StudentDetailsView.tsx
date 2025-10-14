@@ -69,7 +69,7 @@ const StudentDetailsView = ({ student }: { student: Student }) => {
                   {student?.currentBatch?.course?.name}
                 </p>
                 <div className="flex gap-2">
-                  <Badge>{student?.currentBatch?.mode}</Badge>
+                  <Badge>{student?.currentBatch?.course?.mode}</Badge>
                   <Badge variant="outline">
                     {student?.currentBatch?.status}
                   </Badge>

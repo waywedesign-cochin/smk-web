@@ -36,10 +36,6 @@ export const batchSchema = z.object({
     .min(0, "Current count cannot be negative")
     .optional(),
 
-  mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"], {
-    message: "Delivery mode is required",
-  }),
-
   description: z
     .string()
     .max(500, "Description must be less than 500 characters")

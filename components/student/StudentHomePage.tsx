@@ -517,7 +517,7 @@ export function Students() {
                         {student.currentBatch?.course?.name}
                       </p>
                       <Badge variant="outline">
-                        {student.currentBatch?.mode}
+                        {student.currentBatch?.course?.mode}
                       </Badge>
                     </TableCell>
                     <TableCell className="px-6 py-4 whitespace-nowrap">

@@ -49,7 +49,7 @@ export interface Batch {
   coordinator?: string;
   slotLimit: number;
   currentCount: number;
-  mode: BatchMode;
+
   status: BatchStatus;
   students?: Student[];
   description?: string;

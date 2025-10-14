@@ -261,7 +261,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Badge>{student?.currentBatch?.mode}</Badge>
+                  <Badge>{student?.currentBatch?.course?.mode}</Badge>
                   <Badge variant="outline">
                     {student?.currentBatch?.status}
                   </Badge>
