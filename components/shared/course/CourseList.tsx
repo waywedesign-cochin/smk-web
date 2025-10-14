@@ -55,6 +55,7 @@ export function CourseList({
                     />
                     {course.isActive ? "Active" : "Inactive"}
                   </span>
+                  <span>Mode : {course.mode}</span>
                 </p>
               </div>
               <div className="flex gap-2">
