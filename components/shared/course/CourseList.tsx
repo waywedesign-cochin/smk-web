@@ -25,16 +25,16 @@ export function CourseList({
           {courses.map((course) => (
             <div
               key={course.id}
-              className="flex justify-between items-center  backdrop-blur-lg p-4 rounded-lg hover:bg-gray-100/50  transition-colors duration-200 border border-gray-100 "
+              className="flex justify-between items-center  backdrop-blur-lg p-4 rounded-lg hover:bg-gray-100/10  transition-colors duration-200 border-[1px] border-gray-100/10 "
             >
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-white ">
                   {course.name}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                <p className="text-sm text-gray-300 line-clamp-2">
                   {course.description}
                 </p>
-                <div className="flex items-center gap-4 text-sm text-gray-700 ">
+                <div className="flex items-center gap-4 text-sm text-gray-100 ">
                   <span className="font-medium">Fee: ₹{course.baseFee}</span>
                   <span className="font-medium">•</span>
                   <span>Duration: {course.duration} Months</span>
