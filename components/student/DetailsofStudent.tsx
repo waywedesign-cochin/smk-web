@@ -14,6 +14,7 @@ import {
   MapPin,
   Phone,
   Plus,
+  Repeat,
   User,
 } from "lucide-react";
 import { Badge } from "../ui/badge";
@@ -118,7 +119,23 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
           </Button>
           <div>
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-semibold">{student.name}</h2>
+              <h2 className="text-2xl font-semibold">
+                {student.name}{" "}
+                {student?.fees?.some(
+                  (fee) =>
+                    (fee?.batchHistoryFrom &&
+                      fee?.batchHistoryFrom.length > 0) ||
+                    (fee?.batchHistoryTo && fee.batchHistoryTo.length > 0)
+                ) && (
+                  <Badge
+                    variant="outline"
+                    className="text-amber-600 border-amber-300 bg-amber-50"
+                  >
+                    <Repeat className="h-3 w-3 mr-1" />
+                    Switched
+                  </Badge>
+                )}
+              </h2>
             </div>
             <p className="text-muted-foreground">
               {student.admissionNo} •{" "}
@@ -193,7 +210,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="fees">Fee Configuration</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="history">Batch History</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -294,7 +311,104 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
 
         {/* History Tab */}
         <TabsContent value="history" className="space-y-6">
-          <Card>
+          {student?.fees?.some(
+            (fee) =>
+              (fee?.batchHistoryFrom && fee?.batchHistoryFrom.length > 0) ||
+              (fee?.batchHistoryTo && fee.batchHistoryTo.length > 0)
+          ) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Repeat className="h-4 w-4" />
+                  Batch Switch History
+                </CardTitle>
+                <CardDescription>
+                  Complete history of batch changes
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {student?.fees[0]?.batchHistoryTo?.map((fee) => {
+                  return (
+                    <div
+                      key={fee.id}
+                      className="border rounded-lg p-4 space-y-3 bg-amber-50/50 dark:bg-amber-950/20 border-amber-200"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant="outline"
+                              className="text-amber-600 border-amber-300"
+                            >
+                              Batch Switched
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {fee.changeDate
+                                ? new Date(fee.changeDate).toLocaleDateString(
+                                    "en-GB"
+                                  )
+                                : null}
+                            </span>
+                          </div>
+                          <div className="text-sm space-y-1 mt-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">
+                                From:
+                              </span>
+                              <span className="font-medium">
+                                {fee.fromBatch.name}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                ({fee.fromBatch?.course?.name})
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">To:</span>
+                              <span className="font-medium">
+                                {fee.toBatch.name}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                ({fee.toBatch?.course?.name})
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="border-t pt-2 space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            Previous Fee:
+                          </span>
+                          <span>
+                            ₹{student.fees && student?.fees[1].finalFee}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            New Fee:
+                          </span>
+                          <span>
+                            ₹{student.fees && student?.fees[0].finalFee}
+                          </span>
+                        </div>
+                      </div>
+
+                      {fee.reason && (
+                        <div className="border-t pt-2">
+                          <p className="text-xs text-muted-foreground">
+                            Reason:
+                          </p>
+                          <p className="text-sm mt-1">{fee.reason}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
+          {/* <Card>
             <CardHeader>
               <CardTitle>
                 <History className="h-4 w-4 mr-2 inline-block" />
@@ -306,7 +420,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                 No history records available.
               </p>
             </CardContent>
-          </Card>
+          </Card> */}
         </TabsContent>
       </Tabs>
     </div>

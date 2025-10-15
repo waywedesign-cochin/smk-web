@@ -50,6 +50,7 @@ import {
   Trash,
   ChevronLeft,
   ChevronRight,
+  Repeat,
 } from "lucide-react";
 import { Batch, Student } from "@/lib/types";
 import AddStudentForm from "./AddStudentForm";
@@ -278,10 +279,21 @@ export function Students() {
   return (
     <div className="space-y-6">
       {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+      <div
+        className="flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white rounded-2xl bg-cover bg-center"
+        style={{
+          backgroundImage: "url('/cource/course.png')",
+          backgroundSize: "cover",
+
+          backgroundPosition: "center",
+        }}
+      >
+        {" "}
         <div>
-          <h2 className="text-2xl font-semibold">Students Management</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-3xl max-md:text-2xl max-sm:text-xl font-semibold">
+            Students Management
+          </h2>
+          <p className="text-white/80 max-md:text-sm max-sm:text-xs">
             Manage student records and track their progress
           </p>
         </div>
@@ -328,13 +340,13 @@ export function Students() {
       </div>
 
       {/* Search and Filters */}
-      <Card>
+      <Card className="bg-blue-100/10 text-white backdrop-blur-3xl border-0">
         <CardHeader>
           <CardTitle>Search Students</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-4 items-center">
-            <div className="relative flex-1">
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="relative flex-1 xl:min-w-xl">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search by name, admission no, email, or phone..."
@@ -438,212 +450,236 @@ export function Students() {
       </Card>
 
       {/* Students Table */}
-      <Card className="overflow-x-auto shadow-md rounded-lg border border-gray-200">
-        <CardHeader className="bg-gray-50">
-          <CardDescription className="text-gray-600">
-            All registered students in the system
-          </CardDescription>
-          <p className="text-sm font-medium text-gray-600">
-            Total Students: {pagination?.totalCount || 0}
-          </p>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table className="min-w-full divide-y divide-gray-200">
-            <TableHeader className="bg-gray-50">
-              <TableRow>
-                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Student Details
-                </TableHead>
-                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact Info
-                </TableHead>
-                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Current Batch
-                </TableHead>
-                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </TableHead>
-                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="bg-white divide-y divide-gray-200">
-              {loading ? (
+      <div className=" bg-gradient-to-br from-[#122147] via-black to-[#122147]  rounded-xl p-6   transition-shadow duration-300 space-y-6 w-full">
+        <Card className="overflow-x-auto shadow-md rounded-lg border border-gray-200/10 bg-blue-100/10 ">
+          <CardHeader className="bg-gray-50/10 py-2">
+            <CardDescription className="text-white">
+              All registered students in the system
+            </CardDescription>
+            <p className="text-sm font-medium text-white">
+              Total Students: {pagination?.totalCount || 0}
+            </p>
+          </CardHeader>
+          <CardContent className="p-0 ">
+            <Table className="min-w-full divide-y divide-gray-200 bg-black/10">
+              <TableHeader className="bg-gray-50/10">
                 <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center py-6 text-gray-500"
-                  >
-                    <div className="flex items-center justify-center gap-2 text-gray-500">
-                      <Loader2 className="animate-spin h-5 w-5" />
-                      Loading students...
-                    </div>
-                  </TableCell>
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Student Details
+                  </TableHead>
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contact Info
+                  </TableHead>
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Current Batch
+                  </TableHead>
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </TableHead>
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </TableHead>
                 </TableRow>
-              ) : students?.length > 0 ? (
-                students.map((student, idx) => (
-                  <TableRow
-                    key={idx}
-                    className={`${
-                      idx % 2 === 0 ? "bg-white" : "bg-gray-50"
-                    } hover:bg-indigo-50 transition-colors rounded-lg`}
-                  >
-                    <TableCell className="px-6 py-4 whitespace-nowrap">
-                      <p className="font-medium text-gray-800">
-                        {student.name}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {student.admissionNo}
-                      </p>
-                    </TableCell>
-                    <TableCell className="px-6 py-4 whitespace-nowrap">
-                      <div className="space-y-1 text-sm text-gray-700">
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-3 w-3 text-gray-400" />
-                          {student.email || "N/A"}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-3 w-3 text-gray-400" />
-                          {student.phone}
-                        </div>
+              </TableHeader>
+              <TableBody className=" divide-y divide-gray-200 bg-black/10 border-0">
+                {loading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-6 text-gray-500"
+                    >
+                      <div className="flex items-center justify-center gap-2 text-gray-500">
+                        <Loader2 className="animate-spin h-5 w-5" />
+                        Loading students...
                       </div>
-                    </TableCell>
-                    <TableCell className="px-6 py-4 whitespace-nowrap">
-                      <p className="font-medium text-gray-800">
-                        {student.currentBatch?.name}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {student.currentBatch?.course?.name}
-                      </p>
-                      <Badge variant="outline">
-                        {student.currentBatch?.course?.mode}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="px-6 py-4 whitespace-nowrap">
-                      <Badge
-                        variant={
-                          student.isFundedAccount ? "default" : "secondary"
-                        }
-                      >
-                        {student.isFundedAccount ? "Funded" : "Regular"}
-                      </Badge>
-                      {student.salesperson && (
-                        <p className="text-xs text-gray-400">
-                          Sales: {student.salesperson}
-                        </p>
-                      )}
-                    </TableCell>
-                    <TableCell className="px-6 py-4 whitespace-nowrap flex gap-2">
-                      <Link
-                        className="flex items-center justify-center text-indigo-600 hover:text-indigo-900"
-                        href={`/students/${student.id}`}
-                        style={{ width: "1.5rem", height: "1.5rem" }}
-                      >
-                        <Eye className="h-full w-full my-auto" />
-                      </Link>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedStudent(student);
-                          setIsAddFormOpen(true);
-                        }}
-                      >
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      <DeleteDialogue
-                        id={student.id ? student.id : ""}
-                        title={student.name}
-                        handelDelete={handleDeleteStudent}
-                        loading={submitting}
-                      />
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center py-6 text-gray-500"
-                  >
-                    No students found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-          {/* Pagination */}
-          {pagination && pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6 px-2">
-              {/* Showing X to Y of Z */}
-              <div className="text-sm text-muted-foreground">
-                Showing {(pagination.currentPage - 1) * pagination.limit + 1} to{" "}
-                {Math.min(
-                  pagination.currentPage * pagination.limit,
-                  pagination.totalCount
-                )}{" "}
-                of {pagination.totalCount} students
-              </div>
+                ) : students?.length > 0 ? (
+                  students.map((student, idx) => (
+                    <TableRow
+                      key={idx}
+                      className={`${
+                        idx % 2 === 0
+                          ? "bg-black/10 hover:bg-black/20"
+                          : "bg-indigo-50/10 hover:bg-indigo-50/20"
+                      }  transition-colors rounded-lg border-0 `}
+                    >
+                      <TableCell className="px-6 py-4 whitespace-nowrap">
+                        <p className="font-medium text-lg capitalize text-white">
+                          {student.name}
+                          {student?.fees?.some(
+                            (fee) =>
+                              (fee?.batchHistoryFrom &&
+                                fee?.batchHistoryFrom.length > 0) ||
+                              (fee?.batchHistoryTo &&
+                                fee.batchHistoryTo.length > 0)
+                          ) && (
+                            <Badge
+                              variant="outline"
+                              className="text-amber-600 ml-2 border-amber-300 bg-amber-50"
+                            >
+                              <Repeat className="h-3 w-3 mr-1" />
+                              Switched
+                            </Badge>
+                          )}
+                        </p>
 
-              {/* Pagination buttons */}
-              <div className="flex gap-2">
-                {/* Previous */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(pagination.currentPage - 1)}
-                  disabled={pagination.currentPage === 1}
-                  className="cursor-pointer"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-
-                {/* Page numbers with ellipsis */}
-                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-                  .filter(
-                    (page) =>
-                      page === 1 ||
-                      page === pagination.totalPages ||
-                      Math.abs(page - pagination.currentPage) <= 1
-                  )
-                  .map((page, index, array) => {
-                    const showEllipsis =
-                      index < array.length - 1 && array[index + 1] - page > 1;
-                    return (
-                      <div key={page} className="flex items-center">
-                        <Button
+                        <p className="text-sm text-white">
+                          {student.admissionNo}
+                        </p>
+                      </TableCell>
+                      <TableCell className="px-6 py-4 whitespace-nowrap">
+                        <div className="space-y-1 text-sm text-white">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-6 text-black bg-white  p-1" />
+                            {student.email || "N/A"}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-3 w-3 text-blue-500  bg-white  p-1" />
+                            {student.phone}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-6 py-4 whitespace-nowrap">
+                        <p className="font-medium text-white">
+                          {student.currentBatch?.name}
+                        </p>
+                        <p className="text-sm text-white">
+                          {student.currentBatch?.course?.name}
+                        </p>
+                        <Badge variant="secondary">
+                          {student.currentBatch?.course?.mode}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="px-6 py-4 whitespace-nowrap">
+                        <Badge
                           variant={
-                            pagination.currentPage === page
-                              ? "default"
-                              : "outline"
+                            student.isFundedAccount ? "default" : "secondary"
                           }
-                          size="sm"
-                          onClick={() => handlePageChange(page)}
-                          className="cursor-pointer"
                         >
-                          {page}
+                          {student.isFundedAccount ? "Funded" : "Regular"}
+                        </Badge>
+                        {student.salesperson && (
+                          <p className="text-xs text-gray-400">
+                            Sales: {student.salesperson}
+                          </p>
+                        )}
+                      </TableCell>
+                      <TableCell className="px-6 py-4 whitespace-nowrap flex gap-2">
+                        <Link
+                          className="flex items-center justify-center text-indigo-600 hover:text-indigo-900"
+                          href={`/students/${student.id}`}
+                          style={{ width: "1.5rem", height: "1.5rem" }}
+                        >
+                          <Eye className="h-full w-full my-auto" />
+                        </Link>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedStudent(student);
+                            setIsAddFormOpen(true);
+                          }}
+                        >
+                          <Edit className="h-3 w-3" />
                         </Button>
-                        {showEllipsis && <span className="px-2">...</span>}
-                      </div>
-                    );
-                  })}
+                        <DeleteDialogue
+                          id={student.id ? student.id : ""}
+                          title={student.name}
+                          handelDelete={handleDeleteStudent}
+                          loading={submitting}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-6 text-gray-500"
+                    >
+                      No students found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+            {/* Pagination */}
+            {pagination && pagination.totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6 px-2">
+                {/* Showing X to Y of Z */}
+                <div className="text-sm text-muted-foreground">
+                  Showing {(pagination.currentPage - 1) * pagination.limit + 1}{" "}
+                  to{" "}
+                  {Math.min(
+                    pagination.currentPage * pagination.limit,
+                    pagination.totalCount
+                  )}{" "}
+                  of {pagination.totalCount} students
+                </div>
 
-                {/* Next */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(pagination.currentPage + 1)}
-                  disabled={pagination.currentPage === pagination.totalPages}
-                  className="cursor-pointer"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+                {/* Pagination buttons */}
+                <div className="flex gap-2">
+                  {/* Previous */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.currentPage - 1)}
+                    disabled={pagination.currentPage === 1}
+                    className="cursor-pointer"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+
+                  {/* Page numbers with ellipsis */}
+                  {Array.from(
+                    { length: pagination.totalPages },
+                    (_, i) => i + 1
+                  )
+                    .filter(
+                      (page) =>
+                        page === 1 ||
+                        page === pagination.totalPages ||
+                        Math.abs(page - pagination.currentPage) <= 1
+                    )
+                    .map((page, index, array) => {
+                      const showEllipsis =
+                        index < array.length - 1 && array[index + 1] - page > 1;
+                      return (
+                        <div key={page} className="flex items-center">
+                          <Button
+                            variant={
+                              pagination.currentPage === page
+                                ? "default"
+                                : "outline"
+                            }
+                            size="sm"
+                            onClick={() => handlePageChange(page)}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </Button>
+                          {showEllipsis && <span className="px-2">...</span>}
+                        </div>
+                      );
+                    })}
+
+                  {/* Next */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                    disabled={pagination.currentPage === pagination.totalPages}
+                    className="cursor-pointer"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
