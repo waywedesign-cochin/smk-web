@@ -61,7 +61,7 @@ function CoursesPage() {
     <div className="space-y-6 ">
       {/* Header */}
       <div
-        className="flex justify-between items-center p-5 text-white rounded-2xl bg-cover bg-center"
+        className="flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white rounded-2xl bg-cover bg-center"
         // /cource/course.png
 
         style={{
@@ -72,8 +72,10 @@ function CoursesPage() {
         }}
       >
         <div>
-          <h2 className="text-3xl font-semibold">Course Configuration</h2>
-          <p className="text-white/80">
+          <h2 className="text-3xl max-md:text-2xl max-sm:text-xl font-semibold">
+            Course Configuration
+          </h2>
+          <p className="text-white/80 max-md:text-sm max-sm:text-xs">
             Manage courses, fee structures, and enrollment settings
           </p>
         </div>

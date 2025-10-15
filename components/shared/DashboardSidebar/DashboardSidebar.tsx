@@ -85,11 +85,11 @@ export default function DashboardSidebar({
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="  border-0 ">
       <div className="flex h-screen w-full bg-black ">
         {/* Sidebar */}
-        <Sidebar className="overflow-hidden  rounded-e-2xl">
-          <SidebarHeader className=" p-6  bg-black text-white">
+        <Sidebar className="overflow-hidden  border-gray-100/10 ">
+          <SidebarHeader className="p-6 border-0 bg-black text-white">
             <div className="flex items-center gap-3">
               <div className="bg-primary text-primary-foreground rounded-lg p-2">
                 <GraduationCap className="h-6 w-6" />
@@ -101,7 +101,7 @@ export default function DashboardSidebar({
             </div>
           </SidebarHeader>
 
-          <SidebarContent className="bg-gradient-to-b from-black to-[#122147] text-white">
+          <SidebarContent className="bg-gradient-to-b from-black to-[#122147] text-white   border-0 ">
             <SidebarMenu className="p-3">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
@@ -109,6 +109,7 @@ export default function DashboardSidebar({
                     onClick={() => onPageChange(item.id)}
                     isActive={currentPage === item.id}
                     tooltip={item.description}
+                    className="hover:bg-blue-100/10 hover:text-white"
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.label}</span>
@@ -138,7 +139,7 @@ export default function DashboardSidebar({
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden ">
-          <header className="border-b bg-black text-white px-6 py-3 flex items-center justify-between">
+          <header className="border-b border-gray-100/10 bg-black text-white px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
               <h2 className="text-xl font-semibold capitalize">

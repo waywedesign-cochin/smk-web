@@ -93,23 +93,23 @@ export default function AddCourseSheet({
             reset();
             setEditingCourse(null);
           }}
+          className="max-sm:text-sm"
         >
           <Plus className="h-4 w-4 mr-2" />
           {editingCourse ? "Edit Course" : "Add New Course"}
         </Button>
       </SheetTrigger>
 
-      <SheetContent className="max-w-xl w-full p-4 overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>
-            {editingCourse ? "Edit Course" : "Add New Course"}
-          </SheetTitle>
-        </SheetHeader>
+      <SheetContent className="max-w-xl bg-black  bg-opacity-80 backdrop-filter backdrop-blur-lg w-full p-4 overflow-y-auto border-[1px] border-gray-100/10">
+        <SheetTitle className="text-white">
+          {editingCourse ? "Edit Course" : "Add New Course"}
+        </SheetTitle>
+
         <Separator />
 
         <form
           onSubmit={handleSubmit(submitHandler)}
-          className="space-y-6 mt-3 p-4 border rounded-lg border-gray-100 shadow"
+          className="space-y-4 mt-1 p-4 border-0 text-white bg-gradient-to-br from-[#122147]/20 via-black/10 to-[#122147]/20 rounded-lg shadow"
         >
           {/* Course Name */}
           <div className="space-y-2">
@@ -175,11 +175,17 @@ export default function AddCourseSheet({
             <select
               id="mode"
               {...register("mode")}
-              className="border border-gray-300 rounded-md p-2"
+              className="border text-white  border-gray-300 rounded-md p-2"
             >
-              <option value="ONLINE">Online</option>
-              <option value="OFFLINE">Offline</option>
-              <option value="COMBINED">Combined</option>
+              <option value="ONLINE" className="bg-black">
+                Online
+              </option>
+              <option value="OFFLINE" className="bg-black">
+                Offline
+              </option>
+              <option value="COMBINED" className="bg-black">
+                Combined
+              </option>
             </select>
           </div>
           {editingCourse && (
@@ -203,7 +209,7 @@ export default function AddCourseSheet({
           <div className="flex justify-end space-x-2 pt-4">
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={() => {
                 setIsAddSheetOpen(false);
                 setEditingCourse(null);
