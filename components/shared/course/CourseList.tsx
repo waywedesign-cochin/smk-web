@@ -25,10 +25,10 @@ export function CourseList({
           {courses.map((course) => (
             <div
               key={course.id}
-              className="flex justify-between items-center  backdrop-blur-lg p-4 rounded-lg bg-gray-100/10  transition-colors duration-200 border-[1px] border-gray-100/10 "
+              className="flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-4 items-center  backdrop-blur-lg p-4 rounded-lg bg-gray-100/10  transition-colors duration-200 border-[1px] border-gray-100/10 "
             >
               <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-white ">
+                <h3 className="text-xl max-sm:text-lg font-semibold text-white ">
                   {course.name}
                 </h3>
                 <span
@@ -45,19 +45,19 @@ export function CourseList({
                   />
                   {course.isActive ? "Active" : "Inactive"}
                 </span>
-                <p className="text-sm text-gray-300 line-clamp-2">
+                <p className="text-sm max-sm:text-xs text-gray-300 line-clamp-2">
                   {course.description}
                 </p>
-                <div className="flex items-center gap-4 text-sm text-gray-100 ">
+                <div className="flex items-center gap-4 text-sm max-sm:text-xs text-gray-100 ">
                   <span className="font-medium">Fee: ₹{course.baseFee}</span>
                   <span className="font-medium">•</span>
                   <span>Duration: {course.duration} Months</span>
                 </div>
                 <p className="text-xs font-medium">
-                  Status: <span>Mode : {course.mode}</span>
+                  <span>Mode : {course.mode}</span>
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex max-sm:justify-end gap-2">
                 <Button
                   size="sm"
                   variant="outline"
