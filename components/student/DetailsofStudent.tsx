@@ -107,8 +107,13 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" onClick={onBack}>
+        <div className="flex items-center  gap-4">
+          <Button
+            variant="outline"
+            size="icon"
+            className="text-[#f9f9fb] bg-gray-100/10"
+            onClick={onBack}
+          >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
@@ -121,17 +126,13 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
             </p>
           </div>
         </div>
-        <Button variant="outline">
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Profile
-        </Button>
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="bg-blue-100/10 text-white backdrop-blur-3xl border-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Fee</CardTitle>
+            <CardTitle className="text-sm font-medium">Course Fee</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -140,8 +141,19 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
             </div>
           </CardContent>
         </Card>
+        <Card className="bg-blue-100/10 text-white backdrop-blur-3xl border-0">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Final Fee</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-500">
+              ₹{latestFee.finalFee?.toLocaleString() ?? 0}
+            </div>
+          </CardContent>
+        </Card>
 
-        <Card>
+        <Card className="bg-blue-100/10 text-white backdrop-blur-3xl border-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Paid Amount</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
@@ -158,7 +170,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-blue-100/10 text-white backdrop-blur-3xl border-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Balance Due</CardTitle>
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
@@ -169,22 +181,14 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Account Type</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <Badge variant={student.isFundedAccount ? "default" : "secondary"}>
-              {student.isFundedAccount ? "Funded" : "Regular"}
-            </Badge>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs
+        className=" bg-gradient-to-br from-[#122147] via-black to-[#122147]  rounded-xl p-6   transition-shadow duration-300 space-y-6 w-full"
+        defaultValue="overview"
+        // className="w-full"
+      >
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="fees">Fee Configuration</TabsTrigger>
@@ -196,8 +200,8 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Personal Info */}
-            <Card>
-              <CardHeader>
+            <Card className="bg-blue-100/10 text-white backdrop-blur-3xl border-0">
+              <CardHeader className="flex flex-row bg-[#122147] items-center justify-between space-y-0 py-4">
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-4 w-4" />
                   Personal Information
@@ -226,8 +230,8 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
             </Card>
 
             {/* Current Batch */}
-            <Card>
-              <CardHeader>
+            <Card className="bg-blue-100/10 text-white backdrop-blur-3xl border-0">
+              <CardHeader className="flex flex-row bg-[#122147] items-center justify-between space-y-0 py-4">
                 <CardTitle className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
                   Current Batch
@@ -242,7 +246,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                 </div>
                 <div className="flex gap-2">
                   <Badge>{student?.currentBatch?.course?.mode}</Badge>
-                  <Badge variant="outline">
+                  <Badge variant="secondary">
                     {student?.currentBatch?.status}
                   </Badge>
                 </div>

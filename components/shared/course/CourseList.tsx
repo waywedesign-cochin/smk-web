@@ -25,12 +25,26 @@ export function CourseList({
           {courses.map((course) => (
             <div
               key={course.id}
-              className="flex justify-between items-center  backdrop-blur-lg p-4 rounded-lg hover:bg-gray-100/10  transition-colors duration-200 border-[1px] border-gray-100/10 "
+              className="flex justify-between items-center  backdrop-blur-lg p-4 rounded-lg bg-gray-100/10  transition-colors duration-200 border-[1px] border-gray-100/10 "
             >
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-white ">
                   {course.name}
                 </h3>
+                <span
+                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                    course.isActive
+                      ? "bg-green-100 text-green-700 "
+                      : "bg-red-100 text-red-700 "
+                  }`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full mr-1 ${
+                      course.isActive ? "bg-green-500" : "bg-red-500"
+                    }`}
+                  />
+                  {course.isActive ? "Active" : "Inactive"}
+                </span>
                 <p className="text-sm text-gray-300 line-clamp-2">
                   {course.description}
                 </p>
@@ -40,22 +54,7 @@ export function CourseList({
                   <span>Duration: {course.duration} Months</span>
                 </div>
                 <p className="text-xs font-medium">
-                  Status:{" "}
-                  <span
-                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
-                      course.isActive
-                        ? "bg-green-100 text-green-700 "
-                        : "bg-red-100 text-red-700 "
-                    }`}
-                  >
-                    <span
-                      className={`w-2 h-2 rounded-full mr-1 ${
-                        course.isActive ? "bg-green-500" : "bg-red-500"
-                      }`}
-                    />
-                    {course.isActive ? "Active" : "Inactive"}
-                  </span>
-                  <span>Mode : {course.mode}</span>
+                  Status: <span>Mode : {course.mode}</span>
                 </p>
               </div>
               <div className="flex gap-2">

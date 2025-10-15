@@ -23,11 +23,11 @@ function SettingsCard({
 }) {
   return (
     <Link href={path}>
-      <Card className="hover:shadow-lg transition-shadow duration-200">
+      <Card className="hover:shadow-lg transition-shadow duration-200 bg-gray-100/10 backdrop-blur-2xl border-0 text-white">
         <CardHeader>
           <div className="flex items-center gap-4">
-            <div className="bg-gray-100 p-2 rounded-md">
-              <Icon className="h-6 w-6 text-gray-500" />
+            <div className="bg-[#0f1d40] p-2 rounded-md">
+              <Icon className="h-6 w-6 text-gray-50" />
             </div>
             <CardTitle>{title}</CardTitle>
           </div>
