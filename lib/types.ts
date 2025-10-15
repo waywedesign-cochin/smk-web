@@ -112,6 +112,8 @@ export interface Fee {
   status: string;
   createdAt?: Date;
   updatedAt?: Date;
+  batchHistoryFrom?: BatchHistory[];
+  batchHistoryTo?: BatchHistory[];
 }
 
 export interface Admission {
@@ -161,7 +163,6 @@ export interface Payment {
   updatedAt: Date;
 }
 
-
 export interface BankStatement {
   id: number;
   date: Date;
@@ -208,6 +209,7 @@ export interface Director {
 
 export interface BatchHistory {
   id: number;
+  transferId: string;
   student: Student;
   studentId: number;
   fromBatch: Batch;
