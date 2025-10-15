@@ -270,7 +270,7 @@ export function Students() {
 
   const handleDeleteStudent = async (studentId: string) => {
     try {
-      await dispatch(deleteStudent(studentId))
+      await dispatch(deleteStudent(studentId));
     } catch (error) {
       console.error("Failed to delete student:", error);
     }
@@ -392,7 +392,7 @@ export function Students() {
               <SelectContent>
                 <SelectItem value="all">All Batches</SelectItem>
                 {filteredBatches?.map((batch) => (
-                  <SelectItem key={batch.id} value={batch.name}>
+                  <SelectItem key={batch.id} value={batch?.id as string}>
                     {batch.name}{" "}
                     <span className="capitalize">
                       ({batch?.status.toLowerCase()}){" "}

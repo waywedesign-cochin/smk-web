@@ -2,15 +2,15 @@
 import {
   GraduationCap,
   Users,
-  CreditCard,
+  // CreditCard,
   BarChart3,
   Settings,
   Home,
-  UserCheck,
-  DollarSign,
-  FileText,
+  // UserCheck,
+  // DollarSign,
+  // FileText,
 } from "lucide-react";
-import { Batch, BatchMode, BatchStatus, Course, Location } from "./types";
+// import { Batch, BatchMode, BatchStatus, Course, Location } from "./types";
 export const menuItems = [
   {
     id: "/",
@@ -30,24 +30,24 @@ export const menuItems = [
     icon: Users,
     description: "Manage course batches and schedules",
   },
-  {
-    id: "admissions",
-    label: "Admissions",
-    icon: UserCheck,
-    description: "Handle student admissions process",
-  },
-  {
-    id: "payments",
-    label: "Payments",
-    icon: CreditCard,
-    description: "Track payments and financial records",
-  },
-  {
-    id: "financial",
-    label: "Financial",
-    icon: DollarSign,
-    description: "Bank statements, cash book, ledgers",
-  },
+  // {
+  //   id: "admissions",
+  //   label: "Admissions",
+  //   icon: UserCheck,
+  //   description: "Handle student admissions process",
+  // },
+  // {
+  //   id: "payments",
+  //   label: "Payments",
+  //   icon: CreditCard,
+  //   description: "Track payments and financial records",
+  // },
+  // {
+  //   id: "financial",
+  //   label: "Financial",
+  //   icon: DollarSign,
+  //   description: "Bank statements, cash book, ledgers",
+  // },
   {
     id: "reports",
     label: "Reports",
@@ -60,12 +60,12 @@ export const menuItems = [
     icon: Users,
     description: "Manage system users and permissions",
   },
-  {
-    id: "communication",
-    label: "Communication",
-    icon: FileText,
-    description: "Email templates and communication logs",
-  },
+  // {
+  //   id: "communication",
+  //   label: "Communication",
+  //   icon: FileText,
+  //   description: "Email templates and communication logs",
+  // },
   {
     id: "settings",
     label: "Settings",
