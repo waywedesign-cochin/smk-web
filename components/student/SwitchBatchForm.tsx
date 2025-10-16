@@ -58,27 +58,27 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Current Batch Info */}
-      <div className="rounded-lg border p-4 bg-muted/70">
+      <div className="rounded-lg bg-gradient-to-b from-black/40 to-[#122147]/40 border-none p-4">
         <h4 className="font-medium mb-3">Current Batch</h4>
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Batch Name:</span>
+            <span className="text-white">Batch Name:</span>
             <span className="font-medium">{student?.currentBatch?.name}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Course:</span>
-            <span className="font-medium">
+            <span className="font-medium text-white">Course:</span>
+            <span className="text-[10px]  text-white">
               {student?.currentBatch?.course?.name}
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Mode:</span>
-            <Badge variant="outline">
+            <span className="text-white">Mode:</span>
+            <Badge variant="default">
               {student?.currentBatch?.course?.mode}
             </Badge>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Course Fee:</span>
+            <span className="text-white">Course Fee:</span>
             <span className="font-medium">
               ₹{student?.currentBatch?.course?.baseFee.toLocaleString()}
             </span>
@@ -87,7 +87,7 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
       </div>
 
       {/* Select New Batch */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label>Select New Batch</Label>
         <Select
           value={selectedBatchId}
@@ -95,19 +95,19 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
           required
           disabled={loading}
         >
-          <SelectTrigger>
+          <SelectTrigger className="border-white/50 w-full !h-16 ">
             <SelectValue placeholder="Choose a batch" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="border-white/50  bg-accent-foreground text-gray-50">
             {availableBatches
               .filter((b) => b.id !== student?.currentBatch?.id)
               .map((batch) => (
                 <SelectItem key={batch.id} value={batch.id ?? ""}>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col justify-start items-start">
                     <span>
                       {batch.name} - {batch?.course?.name}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground ">
                       {batch?.course?.mode} • {batch?.location?.name} • ₹
                       {batch?.course?.baseFee.toLocaleString()}
                     </span>
@@ -162,7 +162,7 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
       )} */}
 
       {/* Reason for Switch */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label>Reason for Batch Switch</Label>
         <Textarea
           placeholder="Enter reason for switching batch (e.g., timing conflict, course change, location preference, etc.)"
@@ -178,7 +178,7 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
       <div className="flex gap-3 justify-end">
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           onClick={onClose}
           disabled={loading}
         >

@@ -394,7 +394,7 @@ export function Students() {
                 placeholder="Search by name, admission no, email, or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
+                className="pl-9 border-white/50"
               />
             </div>
 
@@ -405,10 +405,10 @@ export function Students() {
                 setAccountTypeFilter(value as "all" | "funded" | "regular")
               }
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 border-white/50">
                 <SelectValue placeholder="All Accounts" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
                 <SelectItem value="all">All Accounts</SelectItem>
                 <SelectItem value="funded">Funded</SelectItem>
                 <SelectItem value="regular">Regular</SelectItem>
@@ -420,10 +420,10 @@ export function Students() {
               value={locationTypeFilter}
               onValueChange={(value) => setLocationTypeFilter(value)}
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 border-white/50">
                 <SelectValue placeholder="Select Location" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
                 {locations
                   ?.filter(({ id }) => Boolean(id))
                   .map(({ id, name }) => (
@@ -440,10 +440,10 @@ export function Students() {
               value={batchTypeFilter}
               onValueChange={(value) => setBatchTypeFilter(value)}
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 border-white/50 ">
                 <SelectValue placeholder="Select Batch" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
                 <SelectItem value="all">All Batches</SelectItem>
                 {filteredBatches?.map((batch) => (
                   <SelectItem key={batch.id} value={batch?.id as string}>
@@ -461,10 +461,10 @@ export function Students() {
               value={modeFilter}
               onValueChange={(value) => setModeFilter(value)}
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 border-white/50">
                 <SelectValue placeholder="Mode" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
                 <SelectItem value="all">All Modes</SelectItem>
                 <SelectItem value="ONLINE">Online</SelectItem>
                 <SelectItem value="OFFLINE">Offline</SelectItem>
@@ -476,10 +476,10 @@ export function Students() {
               value={statusFilter}
               onValueChange={(value) => setStatusFilter(value)}
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 border-white/50">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="PENDING">Pending</SelectItem>
                 <SelectItem value="ACTIVE">Active</SelectItem>
@@ -492,9 +492,9 @@ export function Students() {
       </Card>
 
       {/* Students Table */}
-      <div className=" bg-gradient-to-br from-[#122147] via-black to-[#122147]  rounded-xl p-6   transition-shadow duration-300 space-y-6 w-full">
-        <Card className="overflow-x-auto shadow-md rounded-lg border border-gray-200/10 bg-blue-100/10 ">
-          <CardHeader className="bg-gray-50/10 py-2">
+      <div className=" bg-blue-100/10 rounded-xl p-6   transition-shadow duration-300 space-y-6 w-full">
+        <Card className="overflow-x-auto shadow-md rounded-lg border border-gray-200/10 bg-[#141617]">
+          <CardHeader className="bg-gray-50/10 hover:bg-gray-50/10 py-2">
             <CardDescription className="text-white">
               All registered students in the system
             </CardDescription>
@@ -503,27 +503,27 @@ export function Students() {
             </p>
           </CardHeader>
           <CardContent className="p-0 ">
-            <Table className="min-w-full divide-y divide-gray-200 bg-black/10">
-              <TableHeader className="bg-gray-50/10">
-                <TableRow>
-                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <Table className="min-w-full divide-y divide-gray-200/10 bg-black">
+              <TableHeader className="bg-gray-50/10 hover:bg-[#141617]">
+                <TableRow className="bg-black border-none">
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Student Details
                   </TableHead>
-                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Contact Info
                   </TableHead>
-                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Current Batch
                   </TableHead>
-                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Status
                   </TableHead>
-                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Actions
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody className=" divide-y divide-gray-200 bg-black/10 border-0">
+              <TableBody className=" divide-y divide-gray-200/10 bg-black/10 border-0">
                 {loading ? (
                   <TableRow>
                     <TableCell
@@ -558,26 +558,26 @@ export function Students() {
                           ) && (
                             <Badge
                               variant="outline"
-                              className="text-amber-600 ml-2 border-amber-300 bg-amber-50"
+                              className="text-amber-600 ml-2 border-amber-300 text-[10px] bg-amber-50/10"
                             >
-                              <Repeat className="h-3 w-3 mr-1" />
+                              <Repeat className="h-1 w-2 mr-1" />
                               Switched
                             </Badge>
                           )}
                         </p>
 
-                        <p className="text-sm text-white">
+                        <p className="text-[10px] text-white bg-gray-400/20 p-0.5 px-1 rounded-sm mt-2 w-fit">
                           {student.admissionNo}
                         </p>
                       </TableCell>
 
-                      <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
+                      <TableCell className="px-6 py-4 whitespace-nowrap text-xs text-gray-200">
                         <div className="flex items-center gap-2">
-                          <Mail className="h-5 w-5 text-gray-700 bg-white p-1 rounded" />
+                          <Mail className="h-5 w-5 text-white bg-sky-900 p-1 rounded" />
                           {student.email || "N/A"}
                         </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Phone className="h-4 w-4 text-blue-400 bg-white p-1 rounded" />
+                        <div className="flex items-center gap-2  mt-2">
+                          <Phone className="h-5 w-5 text-white bg-orange-900 p-1 rounded" />
                           {student.phone}
                         </div>
                       </TableCell>
@@ -586,26 +586,30 @@ export function Students() {
                         <p className="font-medium text-white">
                           {student.currentBatch?.name}
                         </p>
-                        <p className="text-sm text-white">
-                          {student.currentBatch?.course?.name}
+                        <p className="text-[10px] mt-2 text-white/50">
+                          COURSE : {student.currentBatch?.course?.name}
                         </p>
-                        <Badge variant="secondary">
+                        <Badge variant="secondary" className="text-xs mt-2">
                           {student.currentBatch?.course?.mode}
                         </Badge>
                       </TableCell>
-                      <TableCell className="px-6 py-4 whitespace-nowrap">
-                        <Badge
-                          variant={
-                            student.isFundedAccount ? "default" : "secondary"
-                          }
-                        >
-                          {student.isFundedAccount ? "Funded" : "Regular"}
-                        </Badge>
-                        {student.salesperson && (
-                          <p className="text-xs text-gray-400">
-                            Sales: {student.salesperson}
-                          </p>
-                        )}
+                      <TableCell className="px-6 py-4  whitespace-nowrap ">
+                        <div className="flex flex-col justify-start items-start">
+                          <Badge
+                            variant={
+                              student.isFundedAccount
+                                ? "destructive"
+                                : "default"
+                            }
+                          >
+                            {student.isFundedAccount ? "Funded" : "Regular"}
+                          </Badge>
+                          {student.salesperson && (
+                            <p className="text-xs text-gray-400 mt-2">
+                              Sales: {student.salesperson}
+                            </p>
+                          )}{" "}
+                        </div>
                       </TableCell>
                       <TableCell className="px-6 py-4 whitespace-nowrap flex gap-2">
                         <Link
@@ -649,7 +653,7 @@ export function Students() {
                   <TableRow>
                     <TableCell
                       colSpan={5}
-                      className="text-center py-6 text-gray-500"
+                      className="text-center py-6 text-gray-50"
                     >
                       No students found
                     </TableCell>
@@ -672,7 +676,7 @@ export function Students() {
             {pagination && pagination.totalPages > 1 && (
               <div className="flex items-center justify-between mt-6 px-2">
                 {/* Showing X to Y of Z */}
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-white">
                   Showing {(pagination.currentPage - 1) * pagination.limit + 1}{" "}
                   to{" "}
                   {Math.min(
