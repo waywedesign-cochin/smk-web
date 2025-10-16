@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { courseSchema, CourseFormValues } from "@/lib/validation/courseSchema";
 import { Course } from "@/lib/types";
 import { BatchMode } from "@/lib/validation/batchSchema";
+import { useAppSelector } from "@/lib/hooks";
 
 interface AddCourseSheetProps {
   isAddSheetOpen: boolean;
@@ -54,6 +55,7 @@ export default function AddCourseSheet({
     },
   });
 
+  const loading = useAppSelector((state) => state.courses.loading);
   // Populate the form whenever editingCourse changes
   useEffect(() => {
     if (editingCourse) {
@@ -70,15 +72,14 @@ export default function AddCourseSheet({
     }
   }, [editingCourse, reset]);
 
-  const submitHandler = (data: CourseFormValues) => {
-    onSubmit(
+  const submitHandler = async (data: CourseFormValues) => {
+    await onSubmit(
       {
         ...data,
         mode: data.mode as BatchMode,
       },
       !!editingCourse
     );
-    setIsAddSheetOpen(false);
     setEditingCourse(null);
     reset();
   };
@@ -118,6 +119,8 @@ export default function AddCourseSheet({
               id="name"
               {...register("name")}
               placeholder="Enter course name"
+              required
+              disabled={loading}
             />
             {errors.name && (
               <p className="text-sm text-red-500">{errors.name.message}</p>
@@ -149,6 +152,8 @@ export default function AddCourseSheet({
                 type="number"
                 placeholder="Enter base fee"
                 {...register("baseFee", { valueAsNumber: true })}
+                required
+                disabled={loading}
               />
               {errors.baseFee && (
                 <p className="text-sm text-red-500">{errors.baseFee.message}</p>
@@ -162,6 +167,8 @@ export default function AddCourseSheet({
                 type="number"
                 placeholder="Total Months"
                 {...register("duration", { valueAsNumber: true })}
+                required
+                disabled={loading}
               />
               {errors.duration && (
                 <p className="text-sm text-red-500">
@@ -176,6 +183,8 @@ export default function AddCourseSheet({
               id="mode"
               {...register("mode")}
               className="border text-white  border-gray-300 rounded-md p-2"
+              required
+              disabled={loading}
             >
               <option value="ONLINE" className="bg-black">
                 Online
@@ -215,11 +224,18 @@ export default function AddCourseSheet({
                 setEditingCourse(null);
                 reset();
               }}
+              disabled={loading}
             >
               Cancel
             </Button>
             <Button type="submit">
-              {editingCourse ? "Update Course" : "Add Course"}
+              {loading
+                ? editingCourse
+                  ? "Updating..."
+                  : "Adding..."
+                : editingCourse
+                ? "Update Course"
+                : "Add Course"}
             </Button>
           </div>
         </form>

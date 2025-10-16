@@ -10,6 +10,7 @@ import {
   Edit,
   FileText,
   History,
+  Loader2,
   Mail,
   MapPin,
   Phone,
@@ -94,7 +95,10 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
 
   if (loading)
     return (
-      <p className="text-center text-muted-foreground">Loading student...</p>
+      <div className="flex items-center justify-center gap-2 text-gray-300">
+        <Loader2 className="animate-spin h-5 w-5" />
+        Loading students...
+      </div>
     );
 
   if (error) return <p className="text-center text-red-500">{error}</p>;
@@ -132,7 +136,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                     className="text-amber-600 border-amber-300 bg-amber-50"
                   >
                     <Repeat className="h-3 w-3 mr-1" />
-                    Switched
+                    Batch Switched
                   </Badge>
                 )}
               </h2>

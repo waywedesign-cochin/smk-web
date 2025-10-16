@@ -38,6 +38,14 @@ interface FetchStudentsParams {
   limit?: number;
 }
 
+export interface SwitchBatchPayload {
+  studentId: string;
+  fromBatchId: string;
+  toBatchId: string;
+  changeDate: string;
+  reason: string;
+}
+
 // ------------------ Initial State ------------------
 const initialState: StudentState = {
   students: [],
@@ -145,6 +153,31 @@ export const deleteStudent = createAsyncThunk<string, string>(
   }
 );
 
+export const switchStudentBatch = createAsyncThunk<
+  SwitchBatchPayload,
+  SwitchBatchPayload,
+  { rejectValue: string }
+>("student/switchBatch", async (payload, { rejectWithValue }) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/api/batch-history/switch-batch`,
+      payload
+    );
+
+    if (response.data.success) {
+      toast.success(response.data.message || "Batch switched successfully");
+      return payload;
+    } else {
+      return rejectWithValue(response.data.message || "Failed to switch batch");
+    }
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+    return rejectWithValue("Failed to switch batch");
+  }
+});
+
 // ------------------ Slice ------------------
 const studentSlice = createSlice({
   name: "students",
@@ -228,6 +261,26 @@ const studentSlice = createSlice({
       })
       .addCase(fetchStudentById.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // ---------------- Switch Student Batch ----------------
+    builder
+      .addCase(switchStudentBatch.pending, (state) => {
+        state.submitting = true;
+        state.error = null;
+      })
+      .addCase(switchStudentBatch.fulfilled, (state, action) => {
+        state.submitting = false;
+        const { studentId, toBatchId } = action.payload;
+        state.students = state.students.map((student) =>
+          student.id === studentId
+            ? { ...student, currentBatch: { id: toBatchId } as any }
+            : student
+        );
+      })
+      .addCase(switchStudentBatch.rejected, (state, action) => {
+        state.submitting = false;
         state.error = action.payload as string;
       });
   },
