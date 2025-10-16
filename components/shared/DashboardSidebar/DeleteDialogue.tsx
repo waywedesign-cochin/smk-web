@@ -26,7 +26,7 @@ export default function DeleteDialogue({
     <AlertDialog>
       <AlertDialogTrigger
         type="button"
-        className="bg-red-500 h-8 rounded-md gap-1.5 px-3  hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white transition-colors duration-200 "
+        className="bg-red-500 h-8 rounded-md gap-1.5 px-3 cursor-pointer hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white transition-colors duration-200 "
       >
         <Trash className="w-4 h-4" />
       </AlertDialogTrigger>

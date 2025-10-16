@@ -60,6 +60,8 @@ import {
   addStudent,
   deleteStudent,
   fetchStudents,
+  SwitchBatchPayload,
+  switchStudentBatch,
   updateStudent,
 } from "@/redux/features/student/studentSlice";
 import {
@@ -73,6 +75,8 @@ import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
 import StudentDetailsView from "./StudentDetailsView";
 import Link from "next/link";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
+import SwitchBatchDialog from "./SwitchBatchDialog";
+import toast from "react-hot-toast";
 // import { mockStudents, mockPayments } from "../../lib/mock-data";
 // import { Student } from "../../types";
 // import { AddStudentForm } from "../add-student-form";
@@ -114,6 +118,10 @@ export function Students() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+  // Switch batch dialog state
+  const [showSwitchBatchDialog, setShowSwitchBatchDialog] = useState(false);
+  const [studentForBatchSwitch, setStudentForBatchSwitch] =
+    useState<Student | null>(null);
 
   // Filter batches based on selected location - THIS IS CRITICAL
   const filteredBatches = useMemo(() => {
@@ -276,6 +284,40 @@ export function Students() {
       console.error("Failed to delete student:", error);
     }
   };
+
+  //switch batch
+  const handleSwitchBatch = async (data: SwitchBatchPayload) => {
+    try {
+      // Wait for batch switch API to complete
+      await dispatch(switchStudentBatch(data)).unwrap();
+      toast.success("Batch switched successfully"); // show toast here
+      // Refresh students list after successful batch switch
+      await dispatch(
+        fetchStudents({
+          page: pagination?.currentPage || 1,
+          limit: itemsPerPage,
+          search: debouncedSearch,
+          isFundedAccount:
+            accountTypeFilter === "funded"
+              ? true
+              : accountTypeFilter === "regular"
+              ? false
+              : undefined,
+          location: locationTypeFilter,
+          batch: batchTypeFilter === "all" ? undefined : batchTypeFilter,
+          mode: modeFilter === "all" ? undefined : modeFilter,
+          status: statusFilter === "all" ? undefined : statusFilter,
+        })
+      ).unwrap();
+
+      // Close dialog only after API success
+      setShowSwitchBatchDialog(false);
+      setStudentForBatchSwitch(null);
+    } catch (error) {
+      toast.error((error as string) || "An unexpected error occurred");
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Actions */}
@@ -529,16 +571,16 @@ export function Students() {
                         </p>
                       </TableCell>
                       <TableCell className="px-6 py-4 whitespace-nowrap">
-                        <div className="space-y-1 text-sm text-white">
+                        <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
                           <div className="flex items-center gap-2">
-                            <Mail className="h-6 text-black bg-white  p-1" />
+                            <Mail className="h-5 w-5 text-gray-700 bg-white p-1 rounded" />
                             {student.email || "N/A"}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-3 w-3 text-blue-500  bg-white  p-1" />
+                          <div className="flex items-center gap-2 mt-1">
+                            <Phone className="h-4 w-4 text-blue-400 bg-white p-1 rounded" />
                             {student.phone}
                           </div>
-                        </div>
+                        </TableCell>
                       </TableCell>
                       <TableCell className="px-6 py-4 whitespace-nowrap">
                         <p className="font-medium text-white">
@@ -567,11 +609,10 @@ export function Students() {
                       </TableCell>
                       <TableCell className="px-6 py-4 whitespace-nowrap flex gap-2">
                         <Link
-                          className="flex items-center justify-center text-indigo-600 hover:text-indigo-900"
                           href={`/students/${student.id}`}
-                          style={{ width: "1.5rem", height: "1.5rem" }}
+                          className="bg-gray-700 hover:bg-gray-600 p-2 rounded flex items-center justify-center"
                         >
-                          <Eye className="h-full w-full my-auto" />
+                          <Eye className="h-4 w-4 text-white" />
                         </Link>
                         <Button
                           variant="outline"
@@ -580,15 +621,27 @@ export function Students() {
                             setSelectedStudent(student);
                             setIsAddFormOpen(true);
                           }}
+                          className="cursor-pointer"
                         >
-                          <Edit className="h-3 w-3" />
+                          <Edit className="h-4 w-4" />
                         </Button>
                         <DeleteDialogue
-                          id={student.id ? student.id : ""}
+                          id={student.id!}
                           title={student.name}
                           handelDelete={handleDeleteStudent}
                           loading={submitting}
                         />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setStudentForBatchSwitch(student);
+                            setShowSwitchBatchDialog(true);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Repeat className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
@@ -604,6 +657,17 @@ export function Students() {
                 )}
               </TableBody>
             </Table>
+
+            {/* Switch Batch Dialog */}
+            {studentForBatchSwitch && (
+              <SwitchBatchDialog
+                open={showSwitchBatchDialog}
+                onOpenChange={setShowSwitchBatchDialog}
+                student={studentForBatchSwitch}
+                availableBatches={batches}
+                onSubmit={handleSwitchBatch}
+              />
+            )}
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
               <div className="flex items-center justify-between mt-6 px-2">

@@ -37,12 +37,14 @@ function CoursesPage() {
 
   const resetForm = () => setFormData(emptyCourse);
 
-  const handleSubmit = (course: Course, isEdit: boolean) => {
+  const handleSubmit =async (course: Course, isEdit: boolean) => {
     if (isEdit && editingCourse) {
-      dispatch(updateCourse(course));
+     await dispatch(updateCourse(course));
+     setIsAddDialogOpen(false);
     } else {
       // add new course
-      dispatch(addCourse(course));
+     await dispatch(addCourse(course));
+     setIsAddDialogOpen(false);
     }
   };
 
