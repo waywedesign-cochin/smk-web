@@ -290,7 +290,7 @@ export function Students() {
     try {
       // Wait for batch switch API to complete
       await dispatch(switchStudentBatch(data)).unwrap();
-      toast.success("Batch switched successfully"); // show toast here
+
       // Refresh students list after successful batch switch
       await dispatch(
         fetchStudents({
@@ -570,18 +570,18 @@ export function Students() {
                           {student.admissionNo}
                         </p>
                       </TableCell>
-                      <TableCell className="px-6 py-4 whitespace-nowrap">
-                        <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-5 w-5 text-gray-700 bg-white p-1 rounded" />
-                            {student.email || "N/A"}
-                          </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Phone className="h-4 w-4 text-blue-400 bg-white p-1 rounded" />
-                            {student.phone}
-                          </div>
-                        </TableCell>
+
+                      <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-5 w-5 text-gray-700 bg-white p-1 rounded" />
+                          {student.email || "N/A"}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Phone className="h-4 w-4 text-blue-400 bg-white p-1 rounded" />
+                          {student.phone}
+                        </div>
                       </TableCell>
+
                       <TableCell className="px-6 py-4 whitespace-nowrap">
                         <p className="font-medium text-white">
                           {student.currentBatch?.name}
