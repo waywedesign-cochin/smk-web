@@ -225,21 +225,24 @@ export default function PaymentForm({
       </div>
 
       {/* Advance Checkbox */}
-      {!existingPayment && (
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="isAdvance"
-            checked={formData.isAdvance}
-            onCheckedChange={(checked) =>
-              handleChange("isAdvance", checked === true)
-            }
-            disabled={loading}
-          />
-          <Label htmlFor="isAdvance" className="text-sm">
-            Mark as Advance Payment
-          </Label>
-        </div>
-      )}
+      {!existingPayment &&
+        !student?.fees?.some(
+          (fee) => fee?.advanceAmount && fee.advanceAmount > 0
+        ) && (
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="isAdvance"
+              checked={formData.isAdvance}
+              onCheckedChange={(checked) =>
+                handleChange("isAdvance", checked === true)
+              }
+              disabled={loading}
+            />
+            <Label htmlFor="isAdvance" className="text-sm">
+              Mark as Advance Payment
+            </Label>
+          </div>
+        )}
 
       {/* Buttons */}
       <div className="flex justify-end gap-3 pt-2">

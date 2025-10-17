@@ -95,7 +95,7 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
           required
           disabled={loading}
         >
-          <SelectTrigger className="border-white/50 w-full !h-16 ">
+          <SelectTrigger className="border-white/80 w-full !h-16 ">
             <SelectValue placeholder="Choose a batch" />
           </SelectTrigger>
           <SelectContent className="border-white/50  bg-accent-foreground text-gray-50">
@@ -107,7 +107,7 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
                     <span>
                       {batch.name} - {batch?.course?.name}
                     </span>
-                    <span className="text-xs text-muted-foreground ">
+                    <span className="text-xs text-gray-300 ">
                       {batch?.course?.mode} • {batch?.location?.name} • ₹
                       {batch?.course?.baseFee.toLocaleString()}
                     </span>
@@ -184,8 +184,16 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={!selectedBatchId || !reason.trim()}>
-          <Repeat className="h-4 w-4 mr-2" />
+        <Button
+          className={`${
+            !selectedBatchId || !reason.trim()
+              ? ""
+              : "border-1 border-gray-400 cursor-pointer"
+          } `}
+          type="submit"
+          disabled={!selectedBatchId || !reason.trim() || loading}
+        >
+          <Repeat className={`${loading && "animate-spin"} h-4 w-4 mr-2`} />
           {loading ? "Switching..." : " Switch Batch"}
         </Button>
       </div>

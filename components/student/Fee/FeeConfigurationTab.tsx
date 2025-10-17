@@ -33,6 +33,8 @@ export default function FeeConfigurationTab({
   setShowFeeConfigDialog,
   handleConfigureFee,
 }: FeeConfigurationTabProps) {
+  console.log("Latest Fee Data:", latestFee);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">

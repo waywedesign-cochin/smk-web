@@ -64,8 +64,7 @@ export default function FeeConfigurationForm({
   // Load initial data or latest fee object
   useEffect(() => {
     const existingConfig =
-      initialConfig ||
-      (student.fees?.length ? student.fees[student.fees.length - 1] : null);
+      initialConfig || (student.fees?.length ? student.fees[0] : null);
     console.log("existingConfig", existingConfig);
 
     if (existingConfig) {
@@ -84,17 +83,24 @@ export default function FeeConfigurationForm({
   const handleInputChange = (field: keyof FeeData, value: string | number) => {
     setFeeData((prev) => {
       const updated = { ...prev, [field]: value };
-      // Recalculate final fee
-      const total = Number(updated.totalCourseFee) || 0;
-      const discount = Number(updated.discountAmount) || 0;
-      const finalFee = total - discount;
 
-      // Calculate already paid amount from student.fees or payments
+      // Base final fee from latest fee or initialConfig
+      const baseFinalFee =
+        initialConfig?.finalFee ?? student.fees?.[0]?.finalFee ?? prev.finalFee;
+
+      // Discount entered by user
+      const discount = Number(updated.discountAmount) || 0;
+
+      // Calculate new final fee after discount
+      const finalFee = baseFinalFee - discount;
+
+      // Already paid amount
       const alreadyPaid =
         student.fees
           ?.find((f) => f.id === updated.id)
           ?.payments?.reduce((sum, p) => sum + (p.paidAt ? p.amount : 0), 0) ||
         0;
+
       // Remaining balance
       const balanceAmount = finalFee - alreadyPaid;
 
@@ -150,6 +156,7 @@ export default function FeeConfigurationForm({
             onChange={(e) =>
               handleInputChange("totalCourseFee", Number(e.target.value))
             }
+            disabled
           />
         </div>
 
