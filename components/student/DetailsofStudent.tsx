@@ -186,7 +186,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                 ? (
                     (latestFee.finalFee ?? 0) - latestFee.balanceAmount
                   ).toLocaleString()
-                : 0}
+                : 0} 
             </div>
           </CardContent>
         </Card>
@@ -213,8 +213,14 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="fees">Fee Configuration</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="history">Batch History</TabsTrigger>
+          {student?.fees?.[0]?.feePaymentMode && (
+            <TabsTrigger value="payments">Payments</TabsTrigger>
+          )}
+          {student?.fees?.some(
+            (fee) =>
+              (fee?.batchHistoryFrom && fee?.batchHistoryFrom.length > 0) ||
+              (fee?.batchHistoryTo && fee.batchHistoryTo.length > 0)
+          ) && <TabsTrigger value="history">Batch History</TabsTrigger>}
         </TabsList>
 
         {/* Overview Tab */}
