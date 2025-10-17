@@ -87,7 +87,7 @@ export interface StudentInput {
   phone: string;
   address: string;
   currentBatchId: string;
-  salesperson: string;
+  salesperson?: string;
   isFundedAccount: boolean;
   admissionNo: string;
 }
@@ -292,7 +292,7 @@ export function Students() {
       await dispatch(switchStudentBatch(data)).unwrap();
 
       // Refresh students list after successful batch switch
-      await dispatch(
+      dispatch(
         fetchStudents({
           page: pagination?.currentPage || 1,
           limit: itemsPerPage,

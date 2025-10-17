@@ -6,7 +6,7 @@ export const StudentSchema = z.object({
   phone: z.string().min(10, "Phone must be at least 10 digits"),
   address: z.string().min(1, "Address is required"),
   currentBatchId: z.string().min(1, "Please select a batch"),
-  salesperson: z.string().min(1, "Salesperson is required"),
+  salesperson: z.string().optional(),
   isFundedAccount: z.boolean().default(false),
   admissionNo: z.string().min(1, "Admission No is required"),
  
