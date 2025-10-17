@@ -180,13 +180,33 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              ₹
-              {latestFee.balanceAmount != null
-                ? (
-                    (latestFee.finalFee ?? 0) - latestFee.balanceAmount
-                  ).toLocaleString()
-                : 0} 
+            <div>
+              {/* Main Paid Amount */}
+              <div className="text-2xl font-bold text-green-600">
+                ₹
+                {latestFee.balanceAmount != null
+                  ? (
+                      (latestFee.finalFee ?? 0) - latestFee.balanceAmount
+                    ).toLocaleString()
+                  : 0}
+              </div>
+
+              {/* Show previous paid amount if batch switched */}
+              {student?.fees?.some(
+                (fee) =>
+                  (fee?.batchHistoryFrom && fee?.batchHistoryFrom.length > 0) ||
+                  (fee?.batchHistoryTo && fee.batchHistoryTo.length > 0)
+              ) &&
+                student?.fees?.[1] && (
+                  <div className="text-sm text-muted-foreground mt-1">
+                    (Previously paid ₹
+                    {(
+                      (student.fees[1].finalFee ?? 0) -
+                      (student.fees[1].balanceAmount ?? 0)
+                    ).toLocaleString()}{" "}
+                    on {student.fees[0].batchHistoryTo?.[0]?.fromBatch?.name})
+                  </div>
+                )}
             </div>
           </CardContent>
         </Card>
@@ -385,23 +405,47 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                         </div>
                       </div>
 
-                      <div className="border-t pt-2 space-y-1">
+                      <div className="border-t pt-2 space-y-2">
+                        {/* Previous Fee */}
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">
                             Previous Fee:
                           </span>
                           <span>
-                            ₹{student.fees && student?.fees[1].finalFee}
+                            ₹
+                            {student?.fees?.[1]?.finalFee?.toLocaleString() ??
+                              0}
                           </span>
                         </div>
+
+                        {/* New Fee */}
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">
-                            New Fee:
+                            New Course Fee:
                           </span>
                           <span>
-                            ₹{student.fees && student?.fees[0].finalFee}
+                            ₹
+                            {student?.fees?.[0]?.finalFee?.toLocaleString() ??
+                              0}
                           </span>
                         </div>
+
+                        {/* Previously paid info (muted, below) */}
+                        {student?.fees?.[1] &&
+                          student.fees[1].finalFee !==
+                            student.fees[1].balanceAmount && (
+                            <div className="text-xs text-muted-foreground text-right">
+                              (Previously paid ₹
+                              {(
+                                (student.fees[1].finalFee ?? 0) -
+                                (student.fees[1].balanceAmount ?? 0)
+                              ).toLocaleString()}{" "}
+                              on{" "}
+                              {student.fees[0]?.batchHistoryTo?.[0]?.fromBatch
+                                ?.name ?? "previous batch"}
+                              )
+                            </div>
+                          )}
                       </div>
 
                       {fee.reason && (
