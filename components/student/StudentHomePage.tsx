@@ -77,6 +77,7 @@ import Link from "next/link";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
 import SwitchBatchDialog from "./SwitchBatchDialog";
 import toast from "react-hot-toast";
+import { set } from "lodash";
 // import { mockStudents, mockPayments } from "../../lib/mock-data";
 // import { Student } from "../../types";
 // import { AddStudentForm } from "../add-student-form";
@@ -91,7 +92,22 @@ export interface StudentInput {
   isFundedAccount: boolean;
   admissionNo: string;
 }
-
+const currentYear = new Date().getFullYear();
+const years = Array.from({ length: 5 }, (_, i) => currentYear + i);
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 export function Students() {
   const dispatch = useAppDispatch();
   const batches = useAppSelector((state) => state.batches.batches);
@@ -115,7 +131,13 @@ export function Students() {
 
   const [batchTypeFilter, setBatchTypeFilter] = useState<string>("all");
   const [modeFilter, setModeFilter] = useState<string>("all");
+  const [switchFilter, setSwitchFilter] = useState<boolean>(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [yearFilter, setYearFilter] = useState<string>("2025");
+  const [monthFilter, setMonthFilter] = useState<string>("all");
+  const [feeStatusFilter, setFeeStatusFilter] = useState<string>("all");
+  const [dueThisWeekFilter, setDueThisWeekFilter] = useState<boolean>(false);
+
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   // Switch batch dialog state
@@ -217,6 +239,11 @@ export function Students() {
           batch: batchTypeFilter === "all" ? undefined : batchTypeFilter,
           mode: modeFilter === "all" ? undefined : modeFilter,
           status: statusFilter === "all" ? undefined : statusFilter,
+          switched: switchFilter ? true : undefined,
+          month: monthFilter === "all" ? undefined : monthFilter,
+          year: yearFilter,
+          feeStatus: feeStatusFilter === "all" ? undefined : feeStatusFilter,
+          dueThisWeek: dueThisWeekFilter ? true : undefined,
         })
       );
     }
@@ -228,6 +255,11 @@ export function Students() {
     batchTypeFilter,
     modeFilter,
     statusFilter,
+    switchFilter,
+    monthFilter,
+    yearFilter,
+    feeStatusFilter,
+    dueThisWeekFilter,
     itemsPerPage,
     pagination?.currentPage,
   ]);
@@ -250,6 +282,11 @@ export function Students() {
           batch: batchTypeFilter === "all" ? undefined : batchTypeFilter,
           mode: modeFilter === "all" ? undefined : modeFilter,
           status: statusFilter === "all" ? undefined : statusFilter,
+          switched: switchFilter ? true : undefined,
+          month: monthFilter === "all" ? undefined : monthFilter,
+          year: yearFilter === "all" ? undefined : yearFilter,
+          feeStatus: feeStatusFilter === "all" ? undefined : feeStatusFilter,
+          dueThisWeek: dueThisWeekFilter ? true : undefined,
         })
       );
     }
@@ -307,6 +344,11 @@ export function Students() {
           batch: batchTypeFilter === "all" ? undefined : batchTypeFilter,
           mode: modeFilter === "all" ? undefined : modeFilter,
           status: statusFilter === "all" ? undefined : statusFilter,
+          switched: switchFilter ? true : undefined,
+          month: monthFilter === "all" ? undefined : monthFilter,
+          year: yearFilter,
+          feeStatus: feeStatusFilter === "all" ? undefined : feeStatusFilter,
+          dueThisWeek: dueThisWeekFilter ? true : undefined,
         })
       ).unwrap();
 
@@ -348,7 +390,7 @@ export function Students() {
             }}
           >
             <SheetTrigger asChild>
-              <Button className="bg-gradient-to-r from-blue-900 to-[#122147] text-white cursor-pointer">
+              <Button className="bg-blue-700  text-white cursor-pointer hover:bg-blue-800">
                 <Plus className="h-4 w-4" />
                 Add Student
               </Button>
@@ -387,106 +429,223 @@ export function Students() {
           <CardTitle>Search Students</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="relative flex-1 xl:min-w-xl">
+          <div className="flex flex-wrap   gap-4 items-center">
+            {/* Search Input */}
+            <div className="relative flex-none xl:min-w-[500px] mt-5">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search by name, admission no, email, or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 border-white/50"
+                className="pl-9 border-white/50 w-full"
               />
             </div>
-
-            {/* Account Type Filter */}
-            <Select
-              value={accountTypeFilter}
-              onValueChange={(value) =>
-                setAccountTypeFilter(value as "all" | "funded" | "regular")
-              }
-            >
-              <SelectTrigger className="w-40 border-white/50">
-                <SelectValue placeholder="All Accounts" />
-              </SelectTrigger>
-              <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
-                <SelectItem value="all">All Accounts</SelectItem>
-                <SelectItem value="funded">Funded</SelectItem>
-                <SelectItem value="regular">Regular</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Location Filter - Always has a selected value */}
-            <Select
-              value={locationTypeFilter}
-              onValueChange={(value) => setLocationTypeFilter(value)}
-            >
-              <SelectTrigger className="w-40 border-white/50">
-                <SelectValue placeholder="Select Location" />
-              </SelectTrigger>
-              <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
-                {locations
-                  ?.filter(({ id }) => Boolean(id))
-                  .map(({ id, name }) => (
-                    <SelectItem key={id!} value={id!}>
-                      {name}
+            
+            {/* Year Filter */}
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-200 mb-1">Year</span>
+              <Select
+                value={yearFilter?.toString() || ""}
+                onValueChange={(value) => setYearFilter(value)}
+              >
+                <SelectTrigger className="w-40 border-white/50">
+                  <SelectValue placeholder="Select Year" />
+                </SelectTrigger>
+                <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
+                  {years.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
                     </SelectItem>
                   ))}
-              </SelectContent>
-            </Select>
+                </SelectContent>
+              </Select>
+            </div>
 
-            {/* Batch Filter - Never disabled, shows batches for selected location */}
+            {/* Month Filter (only if year is selected) */}
+            {yearFilter !== "all" && (
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-200 mb-1">Month</span>
+                <Select
+                  value={monthFilter?.toString() || ""}
+                  onValueChange={(value) => setMonthFilter(value)}
+                >
+                  <SelectTrigger className="w-40 border-white/50">
+                    <SelectValue placeholder="Select Month" />
+                  </SelectTrigger>
+                  <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
+                    <SelectItem value="all">All Months</SelectItem>
+                    {months.map((monthName, index) => (
+                      <SelectItem
+                        key={index + 1}
+                        value={(index + 1).toString()}
+                      >
+                        {monthName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Account Type Filter */}
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-200 mb-1">Account Type</span>
+              <Select
+                value={accountTypeFilter}
+                onValueChange={(value) =>
+                  setAccountTypeFilter(value as "all" | "funded" | "regular")
+                }
+              >
+                <SelectTrigger className="w-40 border-white/50">
+                  <SelectValue placeholder="All Accounts" />
+                </SelectTrigger>
+                <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
+                  <SelectItem value="all">All Accounts</SelectItem>
+                  <SelectItem value="funded">Funded</SelectItem>
+                  <SelectItem value="regular">Regular</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Location Filter */}
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-200 mb-1">Location</span>
+              <Select
+                value={locationTypeFilter}
+                onValueChange={(value) => setLocationTypeFilter(value)}
+              >
+                <SelectTrigger className="w-40 border-white/50">
+                  <SelectValue placeholder="Select Location" />
+                </SelectTrigger>
+                <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
+                  {locations
+                    ?.filter(({ id }) => Boolean(id))
+                    .map(({ id, name }) => (
+                      <SelectItem key={id!} value={id!}>
+                        {name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Batch Filter */}
-            <Select
-              value={batchTypeFilter}
-              onValueChange={(value) => setBatchTypeFilter(value)}
-            >
-              <SelectTrigger className="w-40 border-white/50 ">
-                <SelectValue placeholder="Select Batch" />
-              </SelectTrigger>
-              <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
-                <SelectItem value="all">All Batches</SelectItem>
-                {filteredBatches?.map((batch) => (
-                  <SelectItem key={batch.id} value={batch?.id as string}>
-                    {batch.name}{" "}
-                    <span className="capitalize">
-                      ({batch?.status.toLowerCase()}){" "}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-200 mb-1">Batch</span>
+              <Select
+                value={batchTypeFilter}
+                onValueChange={(value) => setBatchTypeFilter(value)}
+              >
+                <SelectTrigger className="w-40 border-white/50">
+                  <SelectValue placeholder="Select Batch" />
+                </SelectTrigger>
+                <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
+                  <SelectItem value="all">All Batches</SelectItem>
+                  {filteredBatches?.map((batch) => (
+                    <SelectItem key={batch.id} value={batch.id as string}>
+                      {batch.name}{" "}
+                      <span className="capitalize">
+                        ({batch?.status.toLowerCase()})
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             {/* Mode Filter */}
-            <Select
-              value={modeFilter}
-              onValueChange={(value) => setModeFilter(value)}
-            >
-              <SelectTrigger className="w-40 border-white/50">
-                <SelectValue placeholder="Mode" />
-              </SelectTrigger>
-              <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
-                <SelectItem value="all">All Modes</SelectItem>
-                <SelectItem value="ONLINE">Online</SelectItem>
-                <SelectItem value="OFFLINE">Offline</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-200 mb-1">Mode</span>
+              <Select
+                value={modeFilter}
+                onValueChange={(value) => setModeFilter(value)}
+              >
+                <SelectTrigger className="w-40 border-white/50">
+                  <SelectValue placeholder="Mode" />
+                </SelectTrigger>
+                <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
+                  <SelectItem value="all">All Modes</SelectItem>
+                  <SelectItem value="ONLINE">Online</SelectItem>
+                  <SelectItem value="OFFLINE">Offline</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             {/* Status Filter */}
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => setStatusFilter(value)}
-            >
-              <SelectTrigger className="w-40 border-white/50">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="PENDING">Pending</SelectItem>
-                <SelectItem value="ACTIVE">Active</SelectItem>
-                <SelectItem value="COMPLETED">Completed</SelectItem>
-                <SelectItem value="CANCELLED">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-200 mb-1">Status</span>
+              <Select
+                value={statusFilter}
+                onValueChange={(value) => setStatusFilter(value)}
+              >
+                <SelectTrigger className="w-40 border-white/50">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
+                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Switched Filter */}
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-200 mb-1">
+                Switched Students
+              </span>
+              <Select
+                value={switchFilter ? "true" : "false"}
+                onValueChange={(value) => setSwitchFilter(value === "true")}
+              >
+                <SelectTrigger className="w-40 border-white/50">
+                  <SelectValue placeholder="All Students" />
+                </SelectTrigger>
+                <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
+                  <SelectItem value="false">All Students</SelectItem>
+                  <SelectItem value="true">Switched Students</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Fee Status Filter */}
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-200 mb-1">Fee Status</span>
+              <Select
+                value={feeStatusFilter}
+                onValueChange={(value) => setFeeStatusFilter(value)}
+              >
+                <SelectTrigger className="w-36 border-white/50">
+                  <SelectValue placeholder="Fee Status" />
+                </SelectTrigger>
+                <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
+                  <SelectItem value="all">All Students</SelectItem>
+                  <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectItem value="PAID">Paid</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Due This Week Filter */}
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-200 mb-1">Due This Week</span>
+              <Select
+                value={dueThisWeekFilter ? "true" : "false"}
+                onValueChange={(value) =>
+                  setDueThisWeekFilter(value === "true")
+                }
+              >
+                <SelectTrigger className="w-40 border-white/50">
+                  <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
+                  <SelectItem value="false">All</SelectItem>
+                  <SelectItem value="true">Due This Week</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>

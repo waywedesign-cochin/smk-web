@@ -34,6 +34,11 @@ interface FetchStudentsParams {
   batch?: string;
   mode?: string;
   status?: string;
+  switched?: boolean;
+  month?: string;
+  year?: string;
+  feeStatus?:string;
+  dueThisWeek?: boolean;
   page?: number;
   limit?: number;
 }

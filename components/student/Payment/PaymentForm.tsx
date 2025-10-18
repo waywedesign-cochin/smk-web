@@ -19,7 +19,7 @@ import { PaymentSchema } from "@/lib/validation/paymentSchema";
 
 export interface PaymentInput {
   id?: string;
-  amount: number;
+  amount: string | number;
   mode?: string;
   paidAt?: Date | null;
   transactionId?: string;
@@ -53,7 +53,7 @@ export default function PaymentForm({
 
   // ✅ Initialize with existing payment if editing
   const [formData, setFormData] = useState<PaymentInput>({
-    amount: existingPayment?.amount || 0,
+    amount: existingPayment?.amount || "",
     mode: existingPayment?.mode || "",
     paidAt: existingPayment?.paidAt ? new Date(existingPayment.paidAt) : null,
     transactionId: existingPayment?.transactionId || "",
@@ -94,7 +94,10 @@ export default function PaymentForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const result = PaymentSchema.safeParse(formData);
+    const result = PaymentSchema.safeParse({
+      ...formData,
+      amount: Number(formData.amount), // convert here
+    });
     if (!result.success) {
       const newErrors: Partial<Record<keyof PaymentInput, string>> = {};
       result.error.issues.forEach((err) => {
@@ -122,7 +125,7 @@ export default function PaymentForm({
         <Input
           type="number"
           value={formData.amount}
-          onChange={(e) => handleChange("amount", Number(e.target.value))}
+          onChange={(e) => handleChange("amount", e.target.value)} // keep as string
           placeholder="Enter payment amount"
           className={errors.amount ? "border-red-500" : ""}
           required
