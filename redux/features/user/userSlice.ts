@@ -23,6 +23,10 @@ interface UserState {
   loading: boolean;
   error: string | null;
 }
+interface FetchUsersParams {
+  search?: string;
+  role?: number;
+}
 
 // Initial State
 const initialState: UserState = {
@@ -110,6 +114,7 @@ export const fetchUsers = createAsyncThunk<User[]>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${BASE_URL}/api/user/get-users`);
+
       return response.data.data as User[];
     } catch (error: unknown) {
       let errorMessage = "Failed to fetch users";
