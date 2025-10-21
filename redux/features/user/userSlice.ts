@@ -152,6 +152,7 @@ export const updateUser = createAsyncThunk<User, Partial<User>>(
         userData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       return response.data.data as User;
     } catch (error: unknown) {
       let errorMessage = "Update failed";
@@ -160,7 +161,27 @@ export const updateUser = createAsyncThunk<User, Partial<User>>(
     }
   }
 );
-
+export const deleteUser = createAsyncThunk<string, string>(
+  "users/delete",
+  async (id, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+      const response = await axios.delete(
+        `${BASE_URL}/api/user/delete-user/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        toast.success(response.data.message || "User deleted successfully");
+      }
+      return id;
+    } catch (error: unknown) {
+      let errorMessage = "Delete failed";
+      if (error instanceof Error) errorMessage = error.message;
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
 // Slice
 const userSlice = createSlice({
   name: "users",
@@ -274,6 +295,23 @@ const userSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       });
+
+    // Delete User
+    builder.addCase(deleteUser.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(
+      deleteUser.fulfilled,
+      (state, action: PayloadAction<string>) => {
+        state.loading = false;
+        state.users = state.users.filter((user) => user.id !== action.payload);
+      }
+    );
+    builder.addCase(deleteUser.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
   },
 });
 

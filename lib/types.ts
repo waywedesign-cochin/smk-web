@@ -7,6 +7,7 @@ export interface User {
   role: number;
   name?: string;
   location?: Location;
+  locationId?: string;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -2,8 +2,6 @@ import React from "react";
 import UsersTable from "@/components/Users/UsersTable";
 
 const UsersPage = () => {
-
-
   return (
     <div className="p-6 bg-gray-900 min-h-screen">
       <div
@@ -27,7 +25,7 @@ const UsersPage = () => {
         <div className="flex gap-2"></div>
       </div>
       <div className="mt-6">
-        <UsersTable  />
+        <UsersTable />
       </div>
     </div>
   );
