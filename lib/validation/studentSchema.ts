@@ -9,6 +9,7 @@ export const StudentSchema = z.object({
   salesperson: z.string().optional(),
   isFundedAccount: z.boolean().default(false),
   admissionNo: z.string().min(1, "Admission No is required"),
+  referralInfo: z.string().optional(),
  
 });
 

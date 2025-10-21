@@ -108,6 +108,53 @@ export const createPaymentDue = createAsyncThunk(
   }
 );
 
+//update payment due
+export const updatePaymentDue = createAsyncThunk(
+  "payment/updatePaymentDue",
+  async (payment: DueInput, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/api/payment/update-payment-due/${payment.id}`,
+        payment
+      );
+      if (response.data.success === true) {
+        toast.success(
+          response.data.message || "Payment due updated successfully"
+        );
+      }
+      return response.data.data;
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message || "Failed to create payment due"
+      );
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to create payment due"
+      );
+    }
+  }
+);
+
+//delete payment
+export const deletePayment = createAsyncThunk(
+  "payment/deletePayment",
+  async (paymentId: string, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(
+        `${BASE_URL}/api/payment/delete-payment/${paymentId}`
+      );
+      if (response.data.success === true) {
+        toast.success(response.data.message || "Payment deleted successfully");
+      }
+      return response.data.data;
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to delete payment");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to delete payment"
+      );
+    }
+  }
+);
+
 const paymentSlice = createSlice({
   name: "payment",
   initialState,
@@ -196,6 +243,52 @@ const paymentSlice = createSlice({
     );
     builder.addCase(
       createPaymentDue.rejected,
+      (state, action: PayloadAction<any>) => {
+        state.submitting = false;
+        state.error = action.payload;
+      }
+    );
+
+    // UPDATE PAYMENT DUE
+    builder.addCase(updatePaymentDue.pending, (state) => {
+      state.submitting = true;
+      state.error = null;
+    });
+    builder.addCase(
+      updatePaymentDue.fulfilled,
+      (state, action: PayloadAction<Payment>) => {
+        state.submitting = false;
+        console.log(action.payload);
+
+        state.payments = state.payments.map((payment) =>
+          payment.id === action.payload.id ? action.payload : payment
+        );
+      }
+    );
+    builder.addCase(
+      updatePaymentDue.rejected,
+      (state, action: PayloadAction<any>) => {
+        state.submitting = false;
+        state.error = action.payload;
+      }
+    );
+
+    //delete payment
+    builder.addCase(deletePayment.pending, (state) => {
+      state.submitting = true;
+      state.error = null;
+    });
+    builder.addCase(
+      deletePayment.fulfilled,
+      (state, action: PayloadAction<Payment>) => {
+        state.submitting = false;
+        state.payments = state.payments.filter(
+          (payment) => payment.id !== action.payload.id
+        );
+      }
+    );
+    builder.addCase(
+      deletePayment.rejected,
       (state, action: PayloadAction<any>) => {
         state.submitting = false;
         state.error = action.payload;

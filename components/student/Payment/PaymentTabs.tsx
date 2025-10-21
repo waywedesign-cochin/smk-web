@@ -17,18 +17,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Edit, Loader2 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Plus, Edit, Loader2, DollarSign, Trash } from "lucide-react";
 import type { Fee, Student, Payment } from "@/lib/types";
 import PaymentForm, { PaymentInput } from "./PaymentForm";
 import {
   createPayment,
   createPaymentDue,
+  deletePayment,
   fetchPaymentsByStudent,
   updatePayment,
+  updatePaymentDue,
 } from "@/redux/features/payment/paymentSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import CreateDueForm, { DueInput } from "./CreateDueForm";
 import { fetchFeeByStudentId } from "@/redux/features/fee/feeSlice";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface PaymentsTabProps {
   student: Student;
@@ -44,7 +63,8 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
   const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
   const [openDueDialog, setOpenDueDialog] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
-
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
   // Fetch payments
   const fetchPayments = async () => {
     if (student.id) {
@@ -79,10 +99,32 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
     }
   };
 
+  //delete payment
+  const handelDeletePayment = async (paymentId: string) => {
+    try {
+      await dispatch(deletePayment(paymentId)).unwrap();
+      if (student.id) await dispatch(fetchFeeByStudentId(student.id));
+
+      setShowAddPaymentDialog(false);
+    } catch (err) {
+      console.error("Failed to update payment:", err);
+    }
+  };
+
   // Create payment due
   const handleCreateDue = async (payment: DueInput) => {
     try {
       await dispatch(createPaymentDue(payment)).unwrap();
+      setOpenDueDialog(false);
+    } catch (err) {
+      console.error("Failed to add due payment:", err);
+    }
+  };
+
+  //update payment due
+  const handleUpdatePaymentDue = async (payment: DueInput) => {
+    try {
+      await dispatch(updatePaymentDue(payment)).unwrap();
       setOpenDueDialog(false);
     } catch (err) {
       console.error("Failed to add due payment:", err);
@@ -95,7 +137,12 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
         <CardTitle>Payments</CardTitle>
         <div className="flex gap-2">
           <>
-            <Button size="sm" onClick={() => setOpenDueDialog(true)}>
+            <Button
+              size="sm"
+              onClick={() => {
+                setOpenDueDialog(true), setSelectedPayment(null);
+              }}
+            >
               <Plus className="h-4 w-4" />
               Create Payment Due
             </Button>
@@ -103,8 +150,26 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
             <CreateDueForm
               open={openDueDialog}
               defaultFeeId={latestFee.id}
-              onSave={handleCreateDue}
-              onClose={() => setOpenDueDialog(false)}
+              initialData={
+                selectedPayment
+                  ? {
+                      id: selectedPayment.id,
+                      feeId: selectedPayment.feeId,
+                      amount: selectedPayment.amount,
+                      dueDate: selectedPayment.dueDate
+                        ? new Date(selectedPayment.dueDate)
+                        : null,
+                      note: selectedPayment.note,
+                    }
+                  : undefined
+              }
+              onSave={
+                selectedPayment ? handleUpdatePaymentDue : handleCreateDue
+              }
+              onClose={() => {
+                setOpenDueDialog(false);
+                setSelectedPayment(null);
+              }}
             />
           </>
           <Button size="sm" onClick={() => setShowAddPaymentDialog(true)}>
@@ -156,7 +221,7 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
               <TableCell>Transaction ID</TableCell>
               <TableCell>Notes</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell className="text-right">Actions</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHeader>
 
@@ -204,18 +269,61 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
                   </TableCell>
 
                   {/* Action Button */}
-                  <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        setSelectedPayment(p);
-                        setShowAddPaymentDialog(true);
-                      }}
-                      className="cursor-pointer"
-                    >
-                      <Edit className="h-3 w-3" />
-                    </Button>
+                  <TableCell>
+                    <div className="flex justify-start gap-2">
+                      {/* Edit Due */}
+                      {p.status === "PENDING" && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => {
+                                  setSelectedPayment(p);
+                                  setOpenDueDialog(true);
+                                }}
+                                className=""
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit Due</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+
+                      {/* Record Payment */}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="default"
+                              size="icon"
+                              onClick={() => {
+                                setSelectedPayment(p);
+                                setShowAddPaymentDialog(true);
+                              }}
+                              className=" bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-400 cursor-pointer"
+                            >
+                              <DollarSign className="h-4 w-4 text-white" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Record/Edit Payment</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      {p.status === "PENDING" && (
+                        <Button
+                          onClick={() => {
+                            setPaymentToDelete(p);
+                            setOpenDeleteDialog(true);
+                          }}
+                          className="bg-red-600 text-white hover:bg-red-700 cursor-pointer"
+                        >
+                          <Trash />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -231,6 +339,37 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
             )}
           </TableBody>
         </Table>
+        <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This payment will permanently be
+                deleted.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={submitting}>
+                Cancel
+              </AlertDialogCancel>
+              <Button
+                onClick={async () => {
+                  if (!paymentToDelete) return;
+                  try {
+                    await handelDeletePayment(paymentToDelete.id);
+                    setOpenDeleteDialog(false);
+                    setPaymentToDelete(null);
+                  } catch (err) {
+                    console.error(err);
+                  }
+                }}
+                disabled={submitting}
+              >
+                {submitting ? "Deleting..." : "Continue"}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );
