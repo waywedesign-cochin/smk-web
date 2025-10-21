@@ -1,7 +1,12 @@
+import { OverviewPage } from "@/components/overview/OverViewPage";
 import React from "react";
 
 function Overview() {
-  return <div>Overview</div>;
+  return (
+    <div>
+      <OverviewPage />
+    </div>
+  );
 }
 
 export default Overview;
