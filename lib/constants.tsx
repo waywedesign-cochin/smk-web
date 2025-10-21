@@ -10,6 +10,7 @@ import {
   // DollarSign,
   // FileText,
 } from "lucide-react";
+import { id } from "zod/v4/locales";
 // import { Batch, BatchMode, BatchStatus, Course, Location } from "./types";
 export const menuItems = [
   {
@@ -29,6 +30,12 @@ export const menuItems = [
     label: "Batches",
     icon: Users,
     description: "Manage course batches and schedules",
+  },
+  {
+    id:"users",
+    label:"Users",
+    icon:Users,
+    description:"Manage system users and permissions"
   },
   // {
   //   id: "admissions",
@@ -53,12 +60,6 @@ export const menuItems = [
     label: "Reports",
     icon: BarChart3,
     description: "Generate reports and analytics",
-  },
-  {
-    id: "users",
-    label: "Users",
-    icon: Users,
-    description: "Manage system users and permissions",
   },
   // {
   //   id: "communication",
