@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { no } from "zod/v4/locales";
 
 export const PaymentSchema = z.object({
   amount: z.number().min(1, "Amount must be greater than 0"),

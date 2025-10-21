@@ -32,7 +32,7 @@ export interface PaymentInput {
 interface PaymentFormProps {
   student: Student;
   fee?: Fee;
-  existingPayment?: Payment | null; // 👈 optional for edit mode
+  existingPayment?: Payment | null;
   onSave: (data: PaymentInput) => void;
   onUpdate?: (data: PaymentInput) => void;
   onClose: () => void;
@@ -62,7 +62,7 @@ export default function PaymentForm({
     dueDate: existingPayment?.dueDate
       ? new Date(existingPayment.dueDate)
       : null,
-    isAdvance: false,
+    isAdvance: true,
   });
 
   useEffect(() => {
@@ -93,11 +93,12 @@ export default function PaymentForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    const result = PaymentSchema.safeParse({
+    // Parse amount to number
+    const parsedForm = {
       ...formData,
-      amount: Number(formData.amount), // convert here
-    });
+      amount: Number(formData.amount),
+    };
+    const result = PaymentSchema.safeParse(parsedForm);
     if (!result.success) {
       const newErrors: Partial<Record<keyof PaymentInput, string>> = {};
       result.error.issues.forEach((err) => {
@@ -109,9 +110,9 @@ export default function PaymentForm({
     }
     setErrors({});
     if (existingPayment) {
-      onUpdate?.({ ...formData, id: existingPayment.id });
+      onUpdate?.({ ...parsedForm, id: existingPayment.id });
     } else {
-      onSave(formData);
+      onSave(parsedForm);
     }
   };
 
@@ -125,7 +126,7 @@ export default function PaymentForm({
         <Input
           type="number"
           value={formData.amount}
-          onChange={(e) => handleChange("amount", e.target.value)} // keep as string
+          onChange={(e) => handleChange("amount", e.target.value)}
           placeholder="Enter payment amount"
           className={errors.amount ? "border-red-500" : ""}
           required

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,22 +11,23 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useAppSelector } from "@/lib/hooks";
 import { duePaymentSchema } from "@/lib/validation/paymentSchema";
+
+export interface DueInput {
+  id?: string;
+  feeId: string;
+  amount: string | number;
+  dueDate: Date | null;
+  note?: string;
+}
 
 interface CreateDueFormProps {
   open: boolean;
   onClose: () => void;
   onSave: (data: DueInput) => void;
   defaultFeeId?: string;
-}
-
-export interface DueInput {
-  feeId: string;
-  amount: number;
-  dueDate: Date | null;
-  note?: string;
+  initialData?: Partial<DueInput>;
 }
 
 const CreateDueForm: React.FC<CreateDueFormProps> = ({
@@ -34,17 +35,41 @@ const CreateDueForm: React.FC<CreateDueFormProps> = ({
   onClose,
   onSave,
   defaultFeeId,
+  initialData,
 }) => {
   const loading = useAppSelector((state) => state.payments.submitting);
+
   const [form, setForm] = useState<DueInput>({
     feeId: defaultFeeId || "",
-    amount: 0,
-    dueDate: null,
-    note: "",
+    id: initialData?.id || "",
+    amount: initialData?.amount?.toString() || "",
+    dueDate: initialData?.dueDate ? new Date(initialData.dueDate) : null,
+    note: initialData?.note || "",
   });
+
   const [errors, setErrors] = useState<Partial<Record<keyof DueInput, string>>>(
     {}
   );
+
+  // Reset form when initialData changes
+  useEffect(() => {
+    setForm({
+      id: initialData?.id || "",
+      feeId: initialData?.feeId || defaultFeeId || "",
+      amount: initialData?.amount || "",
+      dueDate: initialData?.dueDate ? new Date(initialData.dueDate) : null,
+      note: initialData?.note || "",
+    });
+    setErrors({});
+  }, [initialData, defaultFeeId]);
+
+  // Reset errors when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setErrors({});
+    }
+  }, [open]);
+
   const handleChange = (
     field: keyof DueInput,
     value: string | number | Date | null
@@ -54,8 +79,14 @@ const CreateDueForm: React.FC<CreateDueFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Parse amount to number
+    const parsedForm = {
+      ...form,
+      amount: Number(form.amount),
+    };
 
-    const result = duePaymentSchema.safeParse(form);
+    const result = duePaymentSchema.safeParse(parsedForm);
+
     if (!result.success) {
       const newErrors: Partial<Record<keyof DueInput, string>> = {};
       result.error.issues.forEach((err) => {
@@ -65,24 +96,32 @@ const CreateDueForm: React.FC<CreateDueFormProps> = ({
       setErrors(newErrors);
       return;
     }
+
     setErrors({});
-    onSave(form);
+    onSave(parsedForm);
+  };
+
+  const handleDialogOpenChange = (isOpen: boolean) => {
+    if (!isOpen) onClose();
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create Payment Due</DialogTitle>
+          <DialogTitle>
+            {initialData ? "Edit Payment Due" : "Create Payment Due"}
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <div className="space-y-2">
             <Label htmlFor="amount">Amount</Label>
             <Input
               id="amount"
               type="number"
-              onChange={(e) => handleChange("amount", Number(e.target.value))}
+              value={form.amount}
+              onChange={(e) => handleChange("amount", e.target.value)}
               placeholder="Enter due amount"
               required
               disabled={loading}
@@ -97,6 +136,9 @@ const CreateDueForm: React.FC<CreateDueFormProps> = ({
             <Input
               id="dueDate"
               type="date"
+              value={
+                form.dueDate ? form.dueDate.toISOString().split("T")[0] : ""
+              }
               onChange={(e) =>
                 handleChange(
                   "dueDate",
@@ -107,11 +149,10 @@ const CreateDueForm: React.FC<CreateDueFormProps> = ({
               disabled={loading}
             />
             {errors.dueDate && (
-              <p className="text-destructive text-sm">
-                {"Due Date is required"}
-              </p>
+              <p className="text-destructive text-sm">Due Date is required</p>
             )}
           </div>
+
           <div className="space-y-1">
             <Label>Note (optional)</Label>
             <Input
@@ -121,16 +162,26 @@ const CreateDueForm: React.FC<CreateDueFormProps> = ({
               disabled={loading}
             />
           </div>
-        </div>
 
-        <DialogFooter className="pt-2 cursor-pointer">
-          <Button variant="outline" onClick={onClose} disabled={loading}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} className="cursor-pointer">
-            {loading ? "Saving..." : "Create Due"}
-          </Button>
-        </DialogFooter>
+          <DialogFooter className="pt-2 cursor-pointer">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+
+            <Button type="submit" className="cursor-pointer" disabled={loading}>
+              {loading
+                ? "Saving..."
+                : initialData
+                ? "Update Due"
+                : "Create Due"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

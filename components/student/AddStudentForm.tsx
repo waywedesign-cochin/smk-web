@@ -44,6 +44,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
     salesperson: student?.salesperson || "",
     isFundedAccount: student?.isFundedAccount || false,
     admissionNo: student?.admissionNo || "",
+    referralInfo: student?.referralInfo || "",
   });
 
   const [errors, setErrors] = useState<
@@ -193,7 +194,19 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
               <p className="text-red-500 text-sm">{errors.currentBatchId}</p>
             )}
           </div>
-
+          <div>
+            <Input
+              placeholder="Referral Info"
+              value={formData.referralInfo}
+              onChange={(e) =>
+                handleInputChange("referralInfo", e.target.value)
+              }
+              disabled={loading}
+            />
+            {errors.referralInfo && (
+              <p className="text-red-500 text-sm">{errors.referralInfo}</p>
+            )}
+          </div>
           {/* Funded Account */}
           <div className="flex items-center gap-2 border px-4 py-2 rounded-lg w-full">
             <Checkbox
