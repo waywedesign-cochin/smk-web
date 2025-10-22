@@ -11,6 +11,15 @@ interface LoginCredentials {
   password: string;
 }
 
+interface FetchUsersResponse {
+  users: User[];
+  // pagination: {
+  //   currentPage: number;
+  //   limit: number;
+  //   totalPages: number;
+  //   totalCount: number;
+  // };
+}
 interface LoginResponse {
   user: User;
   token: string;
@@ -21,6 +30,7 @@ interface UserState {
   users: User[];
   token: string | null;
   loading: boolean;
+  usersLoading: boolean;
   error: string | null;
 }
 interface FetchUsersParams {
@@ -34,6 +44,7 @@ const initialState: UserState = {
   users: [],
   token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
   loading: false,
+  usersLoading: false,
   error: null,
 };
 
@@ -48,10 +59,13 @@ export const signUp = createAsyncThunk<User, SignUpInput>(
         toast.success(response.data.message || "Signup successful, login now");
       }
       return response.data.data as User;
-    } catch (error: unknown) {
-      let errorMessage = "Signup failed";
-      if (error instanceof Error) errorMessage = error.message;
-      return rejectWithValue(errorMessage);
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message || "Signup failed please try again"
+      );
+      return rejectWithValue(
+        err.response?.data?.message || "Signup failed please try again"
+      );
     }
   }
 );
@@ -69,10 +83,13 @@ export const login = createAsyncThunk<LoginResponse, LoginCredentials>(
       localStorage.setItem("token", token);
       toast.success("Login successful");
       return response.data.data as LoginResponse;
-    } catch (error: unknown) {
-      let errorMessage = "Login failed";
-      if (error instanceof Error) errorMessage = error.message;
-      return rejectWithValue(errorMessage);
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message || "Login failed please try again"
+      );
+      return rejectWithValue(
+        err.response?.data?.message || "Login failed please try again"
+      );
     }
   }
 );
@@ -109,12 +126,14 @@ export const fetchCurrentUser = createAsyncThunk<User>(
 );
 
 // Fetch All Users
-export const fetchUsers = createAsyncThunk<User[]>(
-  "users/fetchAll",
-  async (_, { rejectWithValue }) => {
+export const fetchUsers = createAsyncThunk<User[], FetchUsersParams | undefined>(
+  "users/fetch",
+  async (params, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/user/get-users`);
-
+      const response = await axios.get(`${BASE_URL}/api/user/get-users`, {
+        params: params || {},
+      });
+      // Since backend returns an array directly:
       return response.data.data as User[];
     } catch (error: unknown) {
       let errorMessage = "Failed to fetch users";
@@ -123,6 +142,7 @@ export const fetchUsers = createAsyncThunk<User[]>(
     }
   }
 );
+
 
 // Fetch User By Id
 export const fetchUserById = createAsyncThunk<User, string>(
@@ -250,15 +270,16 @@ const userSlice = createSlice({
 
       // Fetch Users
       .addCase(fetchUsers.pending, (state) => {
-        state.loading = true;
+        state.usersLoading = true;
         state.error = null;
       })
       .addCase(fetchUsers.fulfilled, (state, action: PayloadAction<User[]>) => {
-        state.loading = false;
+        state.usersLoading = false;
         state.users = action.payload;
       })
+      
       .addCase(fetchUsers.rejected, (state, action) => {
-        state.loading = false;
+        state.usersLoading = false;
         state.error = action.payload as string;
       })
 
@@ -281,35 +302,35 @@ const userSlice = createSlice({
 
       // Update User
       .addCase(updateUser.pending, (state) => {
-        state.loading = true;
+        state.usersLoading = true;
         state.error = null;
       })
       .addCase(updateUser.fulfilled, (state, action: PayloadAction<User>) => {
-        state.loading = false;
+        state.usersLoading = false;
         const index = state.users.findIndex((u) => u.id === action.payload.id);
         if (index >= 0) state.users[index] = action.payload;
         if (state.currentUser?.id === action.payload.id)
           state.currentUser = action.payload;
       })
       .addCase(updateUser.rejected, (state, action) => {
-        state.loading = false;
+        state.usersLoading = false;
         state.error = action.payload as string;
       });
 
     // Delete User
     builder.addCase(deleteUser.pending, (state) => {
-      state.loading = true;
+      state.usersLoading = true;
       state.error = null;
     });
     builder.addCase(
       deleteUser.fulfilled,
       (state, action: PayloadAction<string>) => {
-        state.loading = false;
+        state.usersLoading = false;
         state.users = state.users.filter((user) => user.id !== action.payload);
       }
     );
     builder.addCase(deleteUser.rejected, (state, action) => {
-      state.loading = false;
+      state.usersLoading = false;
       state.error = action.payload as string;
     });
   },

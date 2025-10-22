@@ -137,16 +137,17 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
         <CardTitle>Payments</CardTitle>
         <div className="flex gap-2">
           <>
-            <Button
-              size="sm"
-              onClick={() => {
-                setOpenDueDialog(true), setSelectedPayment(null);
-              }}
-            >
-              <Plus className="h-4 w-4" />
-              Create Payment Due
-            </Button>
-
+            {payments?.length > 0 && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setOpenDueDialog(true), setSelectedPayment(null);
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                Create Payment Due
+              </Button>
+            )}
             <CreateDueForm
               open={openDueDialog}
               defaultFeeId={latestFee.id}

@@ -44,7 +44,7 @@ const SwitchBatchDialog: React.FC<SwitchBatchDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-blue-100/10 backdrop-blur-md text-white border-none shadow-inner">
+      <DialogContent className="max-w-2xl bg-blue-100/10 backdrop-blur-lg text-white border-none shadow-inner">
         <DialogHeader>
           <DialogTitle>Switch Student Batch</DialogTitle>
           <DialogDescription>

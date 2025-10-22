@@ -58,7 +58,7 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Current Batch Info */}
-      <div className="rounded-lg bg-gradient-to-b from-black/40 to-[#122147]/40 border-none p-4">
+      <div className="rounded-lg bg-gradient-to-b from-black/80 to-[#122147]/40 border-none p-4">
         <h4 className="font-medium mb-3">Current Batch</h4>
         <div className="space-y-2">
           <div className="flex justify-between text-sm">

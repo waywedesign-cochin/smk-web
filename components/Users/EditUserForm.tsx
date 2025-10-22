@@ -24,6 +24,7 @@ const roles = [
   { value: "1", label: "Admin" },
   { value: "2", label: "Director" },
   { value: "3", label: "Staff" },
+  { value: "4", label: "Guest" },
 ];
 
 const EditUserForm: React.FC<EditUserFormProps> = ({
@@ -33,7 +34,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
   locations,
 }) => {
   const dispatch = useAppDispatch();
-
+  const { usersLoading } = useAppSelector((state) => state.users);
   const [username, setUsername] = useState(user.username || "");
   const [email, setEmail] = useState(user.email || "");
   const [role, setRole] = useState(String(user.role));
@@ -61,6 +62,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Username"
+          disabled={usersLoading}
         />
       </div>
 
@@ -71,12 +73,13 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
           type="email"
+          disabled={usersLoading}
         />
       </div>
 
       <div>
         <label className="block mb-1">Role</label>
-        <Select value={role} onValueChange={setRole}>
+        <Select value={role} onValueChange={setRole} disabled={usersLoading}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select role" />
           </SelectTrigger>
@@ -92,7 +95,11 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
 
       <div>
         <label className="block mb-1">Location</label>
-        <Select value={locationId} onValueChange={setLocationId}>
+        <Select
+          value={locationId}
+          onValueChange={setLocationId}
+          disabled={usersLoading}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select location" />
           </SelectTrigger>
@@ -109,10 +116,12 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
       </div>
 
       <div className="flex gap-2 justify-end ">
-        <Button variant="secondary" onClick={onCancel}>
+        <Button variant="secondary" onClick={onCancel} disabled={usersLoading}>
           Cancel
         </Button>
-        <Button onClick={handleSave}>Save</Button>
+        <Button onClick={handleSave} disabled={usersLoading}>
+          {usersLoading ? "Updating..." : "Update"}
+        </Button>
       </div>
     </div>
   );
