@@ -101,21 +101,27 @@ export default function DashboardSidebar({
             </div>
           </SidebarHeader>
 
-          <SidebarContent className="bg-gradient-to-b from-black to-[#122147] text-white   border-0 ">
+          <SidebarContent className="bg-gradient-to-b from-black to-[#122147] text-white border-0">
             <SidebarMenu className="p-3">
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton
-                    onClick={() => onPageChange(item.id)}
-                    isActive={currentPage === item.id}
-                    tooltip={item.description}
-                    className="hover:bg-blue-100/10 hover:text-white"
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {menuItems.map((item) => {
+                if (item.id === "users" && user.role !== 1) {
+                  return null;
+                }
+
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton
+                      onClick={() => onPageChange(item.id)}
+                      isActive={currentPage === item.id}
+                      tooltip={item.description}
+                      className="hover:bg-blue-100/10 hover:text-white"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarContent>
 
@@ -125,11 +131,11 @@ export default function DashboardSidebar({
               <p className="font-semibold text-white">
                 {user.username} (
                 {user.role === 1
-                  ? "Staff"
+                  ? "Admin"
                   : user.role === 2
                   ? "Director"
                   : user.role === 3
-                  ? "Admin"
+                  ? "Staff"
                   : "Unknown"}
                 )
               </p>

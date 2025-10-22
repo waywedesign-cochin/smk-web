@@ -440,7 +440,7 @@ export function Students() {
                 className="pl-9 border-white/50 w-full"
               />
             </div>
-            
+
             {/* Year Filter */}
             <div className="flex flex-col">
               <span className="text-xs text-gray-200 mb-1">Year</span>
@@ -812,7 +812,7 @@ export function Students() {
                   <TableRow>
                     <TableCell
                       colSpan={5}
-                      className="text-center py-6 text-gray-50"
+                      className="text-center py-6 text-gray-500"
                     >
                       No students found
                     </TableCell>

@@ -3,7 +3,7 @@ import UsersTable from "@/components/Users/UsersTable";
 
 const UsersPage = () => {
   return (
-    <div className="p-6 bg-gray-900 min-h-screen">
+    <div className="min-h-screen">
       <div
         className="flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white rounded-2xl bg-cover bg-center"
         style={{
@@ -24,7 +24,7 @@ const UsersPage = () => {
         </div>
         <div className="flex gap-2"></div>
       </div>
-      <div className="mt-6">
+      <div className="mt-6 p-6 rounded-lg bg-blue-100/10">
         <UsersTable />
       </div>
     </div>

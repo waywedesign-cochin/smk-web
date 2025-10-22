@@ -54,7 +54,6 @@ export function SignInForm() {
       setFormData({ email: "", password: "" });
     } catch (err) {
       console.error(err);
-      toast.error("Invalid email or password");
     } finally {
       setIsLoading(false);
     }

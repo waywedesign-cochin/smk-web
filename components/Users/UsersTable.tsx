@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit, Trash, Search, MapPinCheck } from "lucide-react";
+import { Edit, Search, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
@@ -33,9 +33,9 @@ import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
 
 const UsersTable = () => {
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState<string>("0");
   const dispatch = useAppDispatch();
-  const { users, loading } = useAppSelector((state) => state.users);
+  const { users, usersLoading } = useAppSelector((state) => state.users);
   const locations = useAppSelector((state) => state.locations.locations);
 
   const [debouncedSearch, setDebouncedSearch] = useState(search);
@@ -48,10 +48,18 @@ const UsersTable = () => {
 
   useEffect(() => {
     if (users && users.length === 0) {
-      dispatch(fetchUsers());
+      dispatch(fetchUsers({}));
     }
     dispatch(fetchLocations());
   }, []);
+
+  useEffect(() => {
+    const payload: { search?: string; role?: number } = {};
+    if (debouncedSearch) payload.search = debouncedSearch;
+    if (roleFilter !== "0") payload.role = parseInt(roleFilter, 10);
+
+    dispatch(fetchUsers(payload));
+  }, [debouncedSearch, roleFilter]);
 
   const handleEdit = (user: User) => {
     setEditingUser(user);
@@ -67,21 +75,10 @@ const UsersTable = () => {
   };
 
   // Handle saving edited user
-  const handleSaveEdit = (updatedUser: User) => {
-    dispatch(updateUser(updatedUser)); // Dispatch update action to redux
+  const handleSaveEdit = async (updatedUser: User) => {
+    await dispatch(updateUser(updatedUser)); // Dispatch update action to redux
     setEditingUser(null);
   };
-
-  // Filter users based on search and roleFilter logic (implement as needed)
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.username.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      user.email.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      String(user.role).includes(debouncedSearch);
-    const matchesRole =
-      roleFilter === "all" || String(user.role) === roleFilter;
-    return matchesSearch && matchesRole;
-  });
 
   return (
     <div className="space-y-4">
@@ -115,19 +112,23 @@ const UsersTable = () => {
               placeholder="Search by name, email, or role..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 w-full backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder-white/50"
+              className="pl-9 w-full  bg-white/10 border border-white/20 text-white placeholder-white/50"
             />
           </div>
 
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <Select
+            value={roleFilter}
+            onValueChange={(value) => setRoleFilter(value)}
+          >
             <SelectTrigger className="w-[160px] backdrop-blur-sm bg-white/10 hover:bg-white/10 border border-white/20 text-white">
               <SelectValue placeholder="Filter by role" />
             </SelectTrigger>
             <SelectContent className="backdrop-blur-md bg-black/70 border border-white/20 hover:bg-white/10 text-white">
-              <SelectItem value="all">All Roles</SelectItem>
+              <SelectItem value="0">All Roles</SelectItem>
               <SelectItem value="1">Admin</SelectItem>
               <SelectItem value="2">Director</SelectItem>
               <SelectItem value="3">Staff</SelectItem>
+              <SelectItem value="4">Guest</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -136,43 +137,46 @@ const UsersTable = () => {
           <Table className="min-w-full divide-y divide-gray-200/10 bg-black/10">
             <TableHeader className="bg-black/20 ">
               <TableRow>
-                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                <TableHead className="text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                   Name
                 </TableHead>
-                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                <TableHead className=" text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                   Email
                 </TableHead>
-                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                <TableHead className=" text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                   Role
                 </TableHead>
-                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                <TableHead className=" text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                   Location
                 </TableHead>
-                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                <TableHead className="px-6 py-3  text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                   Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody className="divide-y divide-gray-200/10 bg-black/10 border-0">
-              {loading ? (
+              {usersLoading ? (
                 <TableRow>
                   <TableCell
-                    colSpan={4}
-                    className="text-center py-6 text-gray-400"
+                    colSpan={5}
+                    className="text-center py-6 text-gray-500"
                   >
-                    Loading users...
+                    <div className="flex items-center justify-center gap-2 text-gray-500">
+                      <Loader2 className="animate-spin h-5 w-5" />
+                      Loading users...
+                    </div>
                   </TableCell>
                 </TableRow>
-              ) : filteredUsers.length > 0 ? (
-                filteredUsers.map((user: User, idx: number) => (
+              ) : users?.length > 0 ? (
+                users.map((user: User, idx: number) => (
                   <TableRow
                     key={user.id}
-                    className={`transition-all hover:bg-black/10 border-0 ${
+                    className={`transition-all hover:bg-white/10 border-0 ${
                       idx % 2 === 0 ? "bg-black/10" : "bg-black/20"
                     }`}
                   >
-                    <TableCell className="px-6 py-4 whitespace-nowrap text-white font-medium hover:bg-white/5 transition-colors">
+                    <TableCell>
                       {user.username
                         ?.split(" ")
                         .map(
@@ -182,10 +186,8 @@ const UsersTable = () => {
                         )
                         .join(" ")}
                     </TableCell>
-                    <TableCell className="px-6 py-4 whitespace-nowrap text-gray-300 text-sm hover:bg-white/5 transition-colors">
-                      {user.email}
-                    </TableCell>
-                    <TableCell className="px-6 py-4 whitespace-nowrap hover:bg-white/5 transition-colors">
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
                       <Badge variant="secondary">
                         {{
                           1: "Admin",
@@ -196,7 +198,7 @@ const UsersTable = () => {
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1 text-sm ">
                           {
                             locations.find(
                               (l) => String(l.id) === user?.locationId
@@ -217,7 +219,7 @@ const UsersTable = () => {
                       </Button>
                       <DeleteDialogue
                         id={user.id as string}
-                        title={user.name as string}
+                        title={user.username as string}
                         handelDelete={handleDelete}
                       />
                     </TableCell>
@@ -226,8 +228,8 @@ const UsersTable = () => {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={4}
-                    className="text-center py-6 text-gray-400"
+                    colSpan={5}
+                    className="text-center py-6 text-gray-500"
                   >
                     No users found
                   </TableCell>
