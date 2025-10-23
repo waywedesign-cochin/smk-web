@@ -78,6 +78,9 @@ import { fetchLocations } from "@/redux/features/location/locationSlice";
 import SwitchBatchDialog from "./SwitchBatchDialog";
 import toast from "react-hot-toast";
 import { set } from "lodash";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { Label } from "../ui/label";
+import { Checkbox } from "../ui/checkbox";
 // import { mockStudents, mockPayments } from "../../lib/mock-data";
 // import { Student } from "../../types";
 // import { AddStudentForm } from "../add-student-form";
@@ -630,21 +633,22 @@ export function Students() {
 
             {/* Due This Week Filter */}
             <div className="flex flex-col">
-              <span className="text-xs text-gray-200 mb-1">Due This Week</span>
-              <Select
-                value={dueThisWeekFilter ? "true" : "false"}
-                onValueChange={(value) =>
-                  setDueThisWeekFilter(value === "true")
-                }
-              >
-                <SelectTrigger className="w-40 border-white/50">
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
-                  <SelectItem value="false">All</SelectItem>
-                  <SelectItem value="true">Due This Week</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="dueThisWeek"
+                  checked={dueThisWeekFilter}
+                  onCheckedChange={(checked) =>
+                    setDueThisWeekFilter(checked === true)
+                  }
+                  className="border-gray-400 data-[state=checked]:bg-blue-500 cursor-pointer"
+                />
+                <Label
+                  htmlFor="dueThisWeek"
+                  className="text-gray-300 text-sm cursor-pointer"
+                >
+                  Due This Week
+                </Label>
+              </div>
             </div>
           </div>
         </CardContent>
