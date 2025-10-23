@@ -58,6 +58,7 @@ export function ProfilePage({
   onChangePassword,
 }: ProfilePageProps) {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+
   const [profileData, setProfileData] = useState({
     username: user?.username,
     email: user?.email,
@@ -80,11 +81,11 @@ export function ProfilePage({
   const getRoleName = (role: number) => {
     switch (role) {
       case 1:
-        return "Staff";
+        return "Admin";
       case 2:
         return "Director";
       case 3:
-        return "Admin";
+        return "Staff";
       default:
         return "Unknown";
     }
@@ -107,7 +108,15 @@ export function ProfilePage({
 
   const handleProfileSave = async () => {
     try {
-      await onUpdateProfile(profileData);
+      await onUpdateProfile({
+        username: profileData.username,
+        email: profileData.email,
+        locationId: user?.locationId,
+        name: user?.name,
+        role: user?.role,
+        location: user?.location,
+        id: user?.id,
+      });
       setIsEditingProfile(false);
       toast.success("Profile updated successfully");
     } catch (error) {
@@ -241,7 +250,7 @@ export function ProfilePage({
         <TabsContent value="profile" className="space-y-4">
           <Card className="bg-[#0a0a0a]/70 backdrop-blur-3xl border-[#191a1a] text-white">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center max-md:flex-col max-md:justify-start max-md:items-start max-md:gap-4 justify-between">
                 <div>
                   <CardTitle>Personal Information</CardTitle>
                   <CardDescription>
@@ -252,12 +261,13 @@ export function ProfilePage({
                   <Button
                     onClick={() => setIsEditingProfile(true)}
                     variant="secondary"
+                    className="max-md:ms-auto"
                   >
                     <Edit2 className="h-4 w-4 mr-2" />
                     Edit Profile
                   </Button>
                 ) : (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 max-md:ms-auto">
                     <Button onClick={handleProfileSave} size="sm">
                       <Save className="h-4 w-4 mr-2" />
                       Save
@@ -270,7 +280,7 @@ export function ProfilePage({
                           email: user?.email,
                         });
                       }}
-                      variant="outline"
+                      variant="destructive"
                       size="sm"
                     >
                       <X className="h-4 w-4 mr-2" />
@@ -283,9 +293,10 @@ export function ProfilePage({
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
+                  <Label htmlFor="username">Username </Label>
                   <Input
                     id="username"
+                    required
                     className="bg-[#151515] border-[#191a1a]"
                     value={profileData.username}
                     onChange={(e) =>
@@ -304,6 +315,7 @@ export function ProfilePage({
                     type="email"
                     className="bg-[#151515] border-[#191a1a]"
                     value={profileData.email}
+                    required
                     onChange={(e) =>
                       setProfileData({ ...profileData, email: e.target.value })
                     }
