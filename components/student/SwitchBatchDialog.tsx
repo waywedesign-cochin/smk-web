@@ -22,6 +22,7 @@ interface SwitchBatchDialogProps {
     toBatchId: string;
     changeDate: string;
     reason: string;
+    feeAction: string;
   }) => void;
 }
 
@@ -32,13 +33,18 @@ const SwitchBatchDialog: React.FC<SwitchBatchDialogProps> = ({
   availableBatches,
   onSubmit,
 }) => {
-  const handleFormSubmit = (data: { newBatchId: string; reason: string }) => {
+  const handleFormSubmit = (data: {
+    newBatchId: string;
+    reason: string;
+    feeAction: string;
+  }) => {
     onSubmit({
       studentId: student.id ?? "",
       fromBatchId: student.currentBatch?.id ?? "",
       toBatchId: data.newBatchId,
       changeDate: new Date().toISOString(),
       reason: data.reason,
+      feeAction: data.feeAction,
     });
   };
 

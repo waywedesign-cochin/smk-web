@@ -170,6 +170,22 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
           <CardContent>
             <div className="text-2xl font-bold text-blue-500">
               ₹{latestFee.finalFee?.toLocaleString() ?? 0}
+              {/* Show previous paid amount if batch switched */}
+              {student?.fees?.some(
+                (fee) =>
+                  (fee?.batchHistoryFrom && fee?.batchHistoryFrom.length > 0) ||
+                  (fee?.batchHistoryTo && fee.batchHistoryTo.length > 0)
+              ) &&
+                student?.fees?.[1] && (
+                  <div className="text-sm font-medium text-muted-foreground mt-1">
+                    (Previously paid ₹
+                    {(
+                      (student.fees[1].finalFee ?? 0) -
+                      (student.fees[1].balanceAmount ?? 0)
+                    ).toLocaleString()}{" "}
+                    on {student.fees[0].batchHistoryTo?.[0]?.fromBatch?.name})
+                  </div>
+                )}
             </div>
           </CardContent>
         </Card>
@@ -190,23 +206,6 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                     ).toLocaleString()
                   : 0}
               </div>
-
-              {/* Show previous paid amount if batch switched */}
-              {student?.fees?.some(
-                (fee) =>
-                  (fee?.batchHistoryFrom && fee?.batchHistoryFrom.length > 0) ||
-                  (fee?.batchHistoryTo && fee.batchHistoryTo.length > 0)
-              ) &&
-                student?.fees?.[1] && (
-                  <div className="text-sm text-muted-foreground mt-1">
-                    (Previously paid ₹
-                    {(
-                      (student.fees[1].finalFee ?? 0) -
-                      (student.fees[1].balanceAmount ?? 0)
-                    ).toLocaleString()}{" "}
-                    on {student.fees[0].batchHistoryTo?.[0]?.fromBatch?.name})
-                  </div>
-                )}
             </div>
           </CardContent>
         </Card>
@@ -217,8 +216,16 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              ₹{latestFee.balanceAmount?.toLocaleString() ?? 0}
+            <div
+              className={`text-2xl font-bold ${
+                latestFee.balanceAmount === 0
+                  ? "text-green-600"
+                  : "text-red-600"
+              }`}
+            >
+              {latestFee?.balanceAmount === 0
+                ? "PAID"
+                : `₹${latestFee.balanceAmount?.toLocaleString() ?? 0}`}
             </div>
           </CardContent>
         </Card>

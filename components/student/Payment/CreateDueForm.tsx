@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/hooks";
 import { duePaymentSchema } from "@/lib/validation/paymentSchema";
+import { set } from "lodash";
 
 export interface DueInput {
   id?: string;
@@ -77,7 +78,7 @@ const CreateDueForm: React.FC<CreateDueFormProps> = ({
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Parse amount to number
     const parsedForm = {
@@ -98,7 +99,14 @@ const CreateDueForm: React.FC<CreateDueFormProps> = ({
     }
 
     setErrors({});
-    onSave(parsedForm);
+    await onSave(parsedForm);
+    setForm({
+      id: initialData?.id || "",
+      feeId: initialData?.feeId || defaultFeeId || "",
+      amount: initialData?.amount || "",
+      dueDate: initialData?.dueDate ? new Date(initialData.dueDate) : null,
+      note: initialData?.note || "",
+    });
   };
 
   const handleDialogOpenChange = (isOpen: boolean) => {

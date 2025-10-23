@@ -89,7 +89,7 @@ export interface StudentInput {
   name: string;
   email: string;
   phone: string;
-  address: string;
+  address?: string;
   currentBatchId: string;
   salesperson?: string;
   isFundedAccount: boolean;
