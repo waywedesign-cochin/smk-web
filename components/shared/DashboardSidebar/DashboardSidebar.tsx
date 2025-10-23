@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import Link from "next/link";
 
 export default function DashboardSidebar({
   children,
@@ -154,9 +155,12 @@ export default function DashboardSidebar({
               </h2>
             </div>
             <div className="flex items-center gap-2">
-              <Button className="bg-gray-600/20" variant="outline" size="sm">
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 text-sm hover:underline-offset-1"
+              >
                 Profile
-              </Button>
+              </Link>
 
               {/* Logout with confirmation dialog */}
               <Dialog
