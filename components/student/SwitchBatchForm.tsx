@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,24 +11,18 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertCircle, Repeat } from "lucide-react";
+import { Repeat } from "lucide-react";
 import { Batch, Student } from "@/lib/types";
 import { useAppSelector } from "@/lib/hooks";
-
-interface Course {
-  name: string;
-  baseFee: number;
-  mode: string;
-}
-
-interface Location {
-  name: string;
-}
 
 interface SwitchBatchFormProps {
   student: Student;
   availableBatches: Batch[];
-  onSubmit: (data: { newBatchId: string; reason: string }) => void;
+  onSubmit: (data: {
+    newBatchId: string;
+    reason: string;
+    feeAction: string;
+  }) => void;
   onClose: () => void;
 }
 
@@ -42,6 +35,7 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
   const loading = useAppSelector((state) => state.students.submitting);
   const [selectedBatchId, setSelectedBatchId] = useState<string>("");
   const [reason, setReason] = useState("");
+  const [feeAction, setFeeAction] = useState(""); // default option
 
   const selectedBatch = useMemo(
     () => availableBatches.find((b) => b.id === selectedBatchId),
@@ -51,7 +45,7 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedBatchId && reason.trim()) {
-      onSubmit({ newBatchId: selectedBatchId, reason });
+      onSubmit({ newBatchId: selectedBatchId, reason, feeAction });
     }
   };
 
@@ -60,24 +54,24 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
       {/* Current Batch Info */}
       <div className="rounded-lg bg-gradient-to-b from-black/80 to-[#122147]/40 border-none p-4">
         <h4 className="font-medium mb-3">Current Batch</h4>
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
             <span className="text-white">Batch Name:</span>
             <span className="font-medium">{student?.currentBatch?.name}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="font-medium text-white">Course:</span>
-            <span className="text-[10px]  text-white">
+          <div className="flex justify-between">
+            <span className="text-white">Course:</span>
+            <span className="text-[10px] text-white">
               {student?.currentBatch?.course?.name}
             </span>
           </div>
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between">
             <span className="text-white">Mode:</span>
             <Badge variant="default">
               {student?.currentBatch?.course?.mode}
             </Badge>
           </div>
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between">
             <span className="text-white">Course Fee:</span>
             <span className="font-medium">
               ₹{student?.currentBatch?.course?.baseFee.toLocaleString()}
@@ -95,10 +89,10 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
           required
           disabled={loading}
         >
-          <SelectTrigger className="border-white/80 w-full !h-16 ">
+          <SelectTrigger className="border-white/80 w-full !h-16">
             <SelectValue placeholder="Choose a batch" />
           </SelectTrigger>
-          <SelectContent className="border-white/50  bg-accent-foreground text-gray-50">
+          <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
             {availableBatches
               .filter((b) => b.id !== student?.currentBatch?.id)
               .map((batch) => (
@@ -107,7 +101,7 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
                     <span>
                       {batch.name} - {batch?.course?.name}
                     </span>
-                    <span className="text-xs text-gray-300 ">
+                    <span className="text-xs text-gray-300">
                       {batch?.course?.mode} • {batch?.location?.name} • ₹
                       {batch?.course?.baseFee.toLocaleString()}
                     </span>
@@ -117,49 +111,6 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
           </SelectContent>
         </Select>
       </div>
-
-      {/* Fee Impact */}
-      {/* {selectedBatch && (
-        <div className="rounded-lg border p-4 space-y-3">
-          <h4 className="font-medium flex items-center gap-2">
-            <AlertCircle className="h-4 w-4" />
-            Fee Impact Analysis
-          </h4>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Current Fee:</span>
-              <span>₹{currentFee.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">New Fee:</span>
-              <span>₹{newFee.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-sm border-t pt-2">
-              <span className="text-muted-foreground font-medium">
-                Fee Difference:
-              </span>
-              <span
-                className={`font-medium ${
-                  feeDifference > 0
-                    ? "text-red-600"
-                    : feeDifference < 0
-                    ? "text-green-600"
-                    : ""
-                }`}
-              >
-                {feeDifference > 0 ? "+" : ""}₹{feeDifference.toLocaleString()}
-              </span>
-            </div>
-          </div>
-          {feeDifference !== 0 && (
-            <p className="text-xs text-muted-foreground">
-              {feeDifference > 0
-                ? "⚠️ Additional payment will be required from the student"
-                : "✓ Fee adjustment will be credited to student account"}
-            </p>
-          )}
-        </div>
-      )} */}
 
       {/* Reason for Switch */}
       <div className="space-y-3">
@@ -172,6 +123,28 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
           disabled={loading}
           required
         />
+      </div>
+
+      {/* Fee Action Select */}
+      <div className="space-y-3">
+        <Label>Select how you want to manage the fees</Label>
+        <Select
+          value={feeAction}
+          onValueChange={setFeeAction}
+          disabled={loading}
+          required
+        >
+          <SelectTrigger className="border-white/80 w-full">
+            <SelectValue placeholder="Select fee record action" />
+          </SelectTrigger>
+          <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
+            <SelectItem value="TRANSFER">Transfer fee record</SelectItem>
+            <SelectItem value="NEW_FEE">Create new fee record</SelectItem>
+            <SelectItem value="SPLIT">
+              Keep current batch fees, apply new fees in new batch
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Action Buttons */}
@@ -188,13 +161,15 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
           className={`${
             !selectedBatchId || !reason.trim()
               ? ""
-              : "border-1 border-gray-400 cursor-pointer"
-          } `}
+              : "border border-gray-400 cursor-pointer"
+          }`}
           type="submit"
-          disabled={!selectedBatchId || !reason.trim() || loading}
+          disabled={
+            !selectedBatchId || !reason.trim() || feeAction === "" || loading
+          }
         >
           <Repeat className={`${loading && "animate-spin"} h-4 w-4 mr-2`} />
-          {loading ? "Switching..." : " Switch Batch"}
+          {loading ? "Switching..." : "Switch Batch"}
         </Button>
       </div>
     </form>

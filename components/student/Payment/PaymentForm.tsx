@@ -154,6 +154,7 @@ export default function PaymentForm({
             <SelectItem value="CARD">Card</SelectItem>
             <SelectItem value="UPI">UPI</SelectItem>
             <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
+            <SelectItem value="DIRECTOR">Through Director</SelectItem>
           </SelectContent>
         </Select>
         {errors.mode && <p className="text-red-500 text-sm">{errors.mode}</p>}
