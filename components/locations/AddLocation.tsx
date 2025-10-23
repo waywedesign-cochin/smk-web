@@ -67,6 +67,7 @@ export default function AddLocation({
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
       <DialogTrigger asChild>
         <Button
+          className="text-white"
           onClick={() => {
             reset();
             setEditingLocation(null);
@@ -77,19 +78,23 @@ export default function AddLocation({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md bg-[#0a0a0a]/70 backdrop-blur-3xl border-[#191a1a]">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-white">
             {editingLocation ? "Edit Location" : "Add New Location"}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(submitHandler)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(submitHandler)}
+          className="space-y-4 text-white"
+        >
           <div className="space-y-2">
             <Label htmlFor="name">Location Name *</Label>
             <Input
               id="name"
               placeholder="Enter location name"
+              className="bg-[#151515] border-[#191a1a]"
               {...register("name")}
             />
             {errors.name && (
@@ -103,6 +108,7 @@ export default function AddLocation({
               id="address"
               placeholder="Enter complete address (optional)"
               rows={3}
+              className="bg-[#151515] border-[#191a1a]"
               {...register("address")}
             />
             {errors.address && (
@@ -113,7 +119,7 @@ export default function AddLocation({
           <div className="flex justify-end space-x-2 pt-4">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               onClick={() => {
                 setIsAddDialogOpen(false);
                 setEditingLocation(null);
