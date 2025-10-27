@@ -237,7 +237,7 @@ export function Batches() {
       </div>
 
       {/* Search and Filters */}
-      <Card>
+      <Card className="bg-blue-100/10 text-white border-0">
         <CardHeader>
           <CardTitle>Search & Filter Batches</CardTitle>
         </CardHeader>
@@ -246,32 +246,52 @@ export function Batches() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-input bg-background rounded-md"
+              className="px-3 py-2 border  bg-blue-200/10 border-blue-200/10 text-white backdrop-blur-lg rounded-md"
             >
-              <option value="all">All Status</option>
-              <option value="ACTIVE">Active</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="CANCELLED">Cancelled</option>
-              <option value="PENDING">Pending</option>
+              <option className="text-white bg-black" value="all">
+                All Status
+              </option>
+              <option className="text-white bg-black" value="ACTIVE">
+                Active
+              </option>
+              <option className="text-white bg-black" value="COMPLETED">
+                Completed
+              </option>
+              <option className="text-white bg-black" value="CANCELLED">
+                Cancelled
+              </option>
+              <option className="text-white bg-black" value="PENDING">
+                Pending
+              </option>
             </select>
 
             <select
               value={modeFilter}
               onChange={(e) => setModeFilter(e.target.value)}
-              className="px-3 py-2 border border-input bg-background rounded-md"
+              className="px-3 py-2 border  bg-blue-200/10 border-blue-200/10 text-white backdrop-blur-lg rounded-md"
             >
-              <option value="all">All Modes</option>
-              <option value="ONLINE">Online</option>
-              <option value="OFFLINE">Offline</option>
+              <option className="text-white bg-black" value="all">
+                All Modes
+              </option>
+              <option className="text-white bg-black" value="ONLINE">
+                Online
+              </option>
+              <option className="text-white bg-black" value="OFFLINE">
+                Offline
+              </option>
             </select>
             <select
               value={courseFilter}
               onChange={(e) => setCourseFilter(e.target.value)}
-              className="flex-1 px-3 py-2 border border-input bg-background rounded-md"
+              className="px-3 py-2 border  bg-blue-200/10 border-blue-200/10 text-white backdrop-blur-lg rounded-md"
             >
               <option value="">All Courses</option>
               {courses.map((course) => (
-                <option key={course.id} value={course.name}>
+                <option
+                  className="text-white bg-black"
+                  key={course.id}
+                  value={course.name}
+                >
                   {course.name}
                 </option>
               ))}
@@ -285,11 +305,17 @@ export function Batches() {
             <select
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
-              className="px-3 py-2 border border-input bg-background rounded-md"
+              className="px-3 py-2 border  bg-blue-200/10 border-blue-200/10 text-white backdrop-blur-lg rounded-md"
             >
-              <option value="">All Locations</option>
+              <option className="text-white bg-black" value="">
+                All Locations
+              </option>
               {locations.map((location) => (
-                <option key={location.id} value={location.name}>
+                <option
+                  className="text-white bg-black"
+                  key={location.id}
+                  value={location.name}
+                >
                   {location.name}
                 </option>
               ))}
@@ -308,7 +334,7 @@ export function Batches() {
             </div>
 
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => {
                 setSearchTerm("");
                 setStatusFilter("all");
