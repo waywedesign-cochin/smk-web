@@ -6,6 +6,7 @@ import {
   BarChart3,
   Settings,
   Home,
+  BookMarked,
   // UserCheck,
   // DollarSign,
   // FileText,
@@ -32,10 +33,16 @@ export const menuItems = [
     description: "Manage course batches and schedules",
   },
   {
-    id:"users",
-    label:"Users",
-    icon:Users,
-    description:"Manage system users and permissions"
+    id: "users",
+    label: "Users",
+    icon: Users,
+    description: "Manage system users and permissions",
+  },
+  {
+    id: "cashbook",
+    label: "Cash Book",
+    icon: BookMarked,
+    description: "Daily cash transactions and balance tracking",
   },
   // {
   //   id: "admissions",
