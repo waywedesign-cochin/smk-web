@@ -37,10 +37,16 @@ interface FetchBatchesParams {
 export const addBatch = createAsyncThunk<Batch, Batch>(
   "batch/add",
   async (newBatch, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.post(
         `${BASE_URL}/api/batch/add-batch`,
-        newBatch
+        newBatch,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Batch added successfully");
@@ -97,11 +103,17 @@ export const fetchBatches = createAsyncThunk<BatchResponse, FetchBatchesParams>(
 export const updateBatch = createAsyncThunk<Batch, Batch>(
   "batch/update",
   async (updatedBatch, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       console.log("just befor update:", updatedBatch);
       const response = await axios.put(
         `${BASE_URL}/api/batch/update-batch/${updatedBatch.id}`,
-        updatedBatch
+        updatedBatch,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       console.log("Update Response:", response.data);
       if (response.data.success === true) {
@@ -121,9 +133,15 @@ export const updateBatch = createAsyncThunk<Batch, Batch>(
 export const deleteBatch = createAsyncThunk<string, string>(
   "batch/delete",
   async (batchId, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.delete(
-        `${BASE_URL}/api/batch/delete-batch/${batchId}`
+        `${BASE_URL}/api/batch/delete-batch/${batchId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Batch deleted successfully");

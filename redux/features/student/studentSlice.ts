@@ -37,7 +37,7 @@ interface FetchStudentsParams {
   switched?: boolean;
   month?: string;
   year?: string;
-  feeStatus?:string;
+  feeStatus?: string;
   dueThisWeek?: boolean;
   page?: number;
   limit?: number;
@@ -65,10 +65,16 @@ const initialState: StudentState = {
 export const addStudent = createAsyncThunk<Student, Student>(
   "student/add",
   async (newStudent, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.post(
         `${BASE_URL}/api/student/add-student`,
-        newStudent
+        newStudent,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Student added successfully");
@@ -122,10 +128,16 @@ export const fetchStudentById = createAsyncThunk<
 export const updateStudent = createAsyncThunk<Student, Student>(
   "student/update",
   async (updatedStudent, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.put(
         `${BASE_URL}/api/student/update-student/${updatedStudent.id}`,
-        updatedStudent
+        updatedStudent,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Student updated successfully");
@@ -142,9 +154,15 @@ export const updateStudent = createAsyncThunk<Student, Student>(
 export const deleteStudent = createAsyncThunk<string, string>(
   "student/delete",
   async (studentId, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.delete(
-        `${BASE_URL}/api/student/delete-student/${studentId}`
+        `${BASE_URL}/api/student/delete-student/${studentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Student deleted successfully");
@@ -163,10 +181,16 @@ export const switchStudentBatch = createAsyncThunk<
   SwitchBatchPayload,
   { rejectValue: string }
 >("student/switchBatch", async (payload, { rejectWithValue }) => {
+  const token = localStorage.getItem("token");
   try {
     const response = await axios.post(
       `${BASE_URL}/api/batch-history/switch-batch`,
-      payload
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
 
     if (response.data.success) {
