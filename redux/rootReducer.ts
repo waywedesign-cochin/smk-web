@@ -7,7 +7,7 @@ import userReducer from "@/redux/features/user/userSlice";
 import feeReducer from "@/redux/features/fee/feeSlice";
 import paymentReducer from "@/redux/features/payment/paymentSlice";
 import cashbookReducer from "@/redux/features/cashbook/cashbookSlice";
-
+import communicationLogReducer from "@/redux/features/communication-log/communicationLogSlice";
 const rootReducer = combineReducers({
   // Add your feature reducers here
   courses: courseReducer,
@@ -18,6 +18,7 @@ const rootReducer = combineReducers({
   fees: feeReducer,
   payments: paymentReducer,
   cashbook: cashbookReducer,
+  communicationLogs: communicationLogReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

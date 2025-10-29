@@ -222,13 +222,20 @@ export interface BatchHistory {
 }
 
 export interface CommunicationLog {
-  id: number;
-  student: Student;
-  studentId: number;
-  type: CommunicationType;
-  sentAt: Date;
-  status: CommunicationStatus;
-  notes?: string;
+  id: string; // matches Prisma `String @id @default(cuid())`
+  date: Date; // Prisma DateTime
+  loggedBy: User; // relation
+  loggedById: string; // staff/director/admin who created the log
+  type: string; // e.g. "Call", "Message", "Note", "Reminder"
+  subject?: string | null; // optional
+  message: string;
+  student?: Student | null;
+  studentId?: string | null;
+  batchId?: string | null;
+  location?: Location | null;
+  locationId?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export enum CommunicationType {

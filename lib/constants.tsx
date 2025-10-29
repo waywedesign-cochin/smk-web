@@ -7,6 +7,8 @@ import {
   Settings,
   Home,
   BookMarked,
+  Logs,
+  AudioLines,
   // UserCheck,
   // DollarSign,
   // FileText,
@@ -43,6 +45,12 @@ export const menuItems = [
     label: "Cash Book",
     icon: BookMarked,
     description: "Daily cash transactions and balance tracking",
+  },
+  {
+    id: "communication",
+    label: "Communication",
+    icon: AudioLines,
+    description: "View communication history and logs",
   },
   // {
   //   id: "admissions",
