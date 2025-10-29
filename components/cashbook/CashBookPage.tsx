@@ -14,9 +14,14 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { getCashbookEntries } from "@/redux/features/cashbook/cashbookSlice";
+import {
+  CashbookEntry,
+  getCashbookEntries,
+  updateCashbookEntry,
+} from "@/redux/features/cashbook/cashbookSlice";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
-import { fetchCurrentUser } from "@/redux/features/user/userSlice";
+import { fetchCurrentUser, fetchUsers } from "@/redux/features/user/userSlice";
+import { filter } from "lodash";
 import { Download, Filter, Plus, Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -38,6 +43,8 @@ export const CashBookPage = () => {
   );
   const locations = useAppSelector((state) => state.locations.locations);
   const user = useAppSelector((state) => state.users.currentUser);
+  const { users } = useAppSelector((state) => state.users);
+  console.log(users);
 
   const currentYear = new Date().getFullYear();
   const currentMonth = (new Date().getMonth() + 1).toString();
@@ -53,6 +60,14 @@ export const CashBookPage = () => {
 
   const [showAddEntry, setShowAddEntry] = useState(false);
   const [activeTab, setActiveTab] = useState("students");
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [entryToEdit, setEntryToEdit] = useState<CashbookEntry | null>(null);
+
+  const HandleEdit = (entry: CashbookEntry) => {
+    setEntryToEdit(entry);
+
+    setShowEditDialog(true); // open dialog in edit mode
+  };
 
   // --------------------- FETCH USER AND LOCATIONS ---------------------
   useEffect(() => {
@@ -64,6 +79,7 @@ export const CashBookPage = () => {
 
   useEffect(() => {
     dispatch(fetchLocations());
+    dispatch(fetchUsers());
   }, [dispatch]);
 
   // --------------------- AUTO SET LOCATION BASED ON ROLE ---------------------
@@ -97,8 +113,6 @@ export const CashBookPage = () => {
       month: filters.month === "ALL" ? undefined : filters.month,
       year: filters.year === "ALL" ? undefined : filters.year,
       transactionType: filters.type === "ALL" ? undefined : filters.type,
-      debitCredit:
-        filters.debitCredit === "ALL" ? undefined : filters.debitCredit,
       search: filters.searchQuery || undefined,
       page: 1,
       limit: 50, // Increased limit to show more entries
@@ -120,7 +134,6 @@ export const CashBookPage = () => {
     filters.month,
     filters.year,
     filters.type,
-    filters.debitCredit,
     filters.searchQuery,
   ]);
 
@@ -212,7 +225,7 @@ export const CashBookPage = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport}>
+          <Button variant="destructive" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -228,8 +241,19 @@ export const CashBookPage = () => {
         showAddEntry={showAddEntry}
         setShowAddEntry={setShowAddEntry}
         locationId={filters.locationId}
+        directors={users.filter((user) => user.role == 2)}
       />
-
+      {/* Edit Entry Dialog */}
+      {entryToEdit && (
+        <EntryDialog
+          showAddEntry={showEditDialog}
+          setShowAddEntry={setShowEditDialog}
+          locationId={entryToEdit.locationId}
+          directors={users.filter((user) => user.role == 2)}
+          isEdit={true}
+          existingData={entryToEdit}
+        />
+      )}
       {/* Error Message */}
       {error && (
         <div className="bg-destructive/15 text-destructive px-4 py-3 rounded-md">
@@ -238,7 +262,7 @@ export const CashBookPage = () => {
       )}
 
       {/* Filters */}
-      <Card>
+      <Card className="bg-blue-100/10 text-white border-0">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <Filter className="h-5 w-5" />
@@ -318,49 +342,6 @@ export const CashBookPage = () => {
               </Select>
             </div>
 
-            {/* Type */}
-            <div className="space-y-2">
-              <Label htmlFor="type">Transaction Type</Label>
-              <Select
-                value={filters.type}
-                onValueChange={(value) =>
-                  setFilters({ ...filters, type: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Types</SelectItem>
-                  <SelectItem value="STUDENT_PAID">Students Paid</SelectItem>
-                  <SelectItem value="OFFICE_EXPENSE">
-                    Office Expenses
-                  </SelectItem>
-                  <SelectItem value="OWNER_TAKEN">Owner Taken</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Debit/Credit */}
-            <div className="space-y-2">
-              <Label htmlFor="debitCredit">Debit/Credit</Label>
-              <Select
-                value={filters.debitCredit}
-                onValueChange={(value) =>
-                  setFilters({ ...filters, debitCredit: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All</SelectItem>
-                  <SelectItem value="CREDIT">Credit (Income)</SelectItem>
-                  <SelectItem value="DEBIT">Debit (Expense)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             {/* Search */}
             <div className="space-y-2">
               <Label htmlFor="search">Search</Label>
@@ -392,7 +373,7 @@ export const CashBookPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl text-white">
-              ₹{totals.studentPaid?.toFixed(2) || "0.00"}
+              ₹{totals.studentsPaid?.toFixed(2) || "0.00"}
             </div>
             <p className="text-xs text-white mt-1">Credit</p>
           </CardContent>
@@ -429,7 +410,15 @@ export const CashBookPage = () => {
         <Card className="bg-gradient-to-br from-purple-50/10 to-purple-100/20 border-purple-200/10">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-purple-200">
-              {getMonthName(filters.month)}
+              {getMonthName(
+                filters.month === "ALL"
+                  ? "ALL"
+                  : String(
+                      Number(filters.month) === 1
+                        ? 12
+                        : Number(filters.month) - 1
+                    )
+              )}{" "}
               Closing
             </CardTitle>
           </CardHeader>
@@ -447,7 +436,7 @@ export const CashBookPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl text-white">₹{totals.closingBalance}</div>
+            <div className="text-2xl text-white">₹{totals.cashInHand}</div>
             <p className="text-xs text-white mt-1">Current</p>
           </CardContent>
         </Card>
@@ -459,10 +448,16 @@ export const CashBookPage = () => {
         onValueChange={handleTabChange}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="students">Students Paid</TabsTrigger>
-          <TabsTrigger value="expenses">Office Expenses</TabsTrigger>
-          <TabsTrigger value="owner">Owner Taken</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 bg-[#17191a] ">
+          <TabsTrigger className="text-white" value="students">
+            Students Paid
+          </TabsTrigger>
+          <TabsTrigger className="text-white" value="expenses">
+            Office Expenses
+          </TabsTrigger>
+          <TabsTrigger className="text-white" value="owner">
+            Owner Taken
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="students" className="space-y-4">
@@ -472,6 +467,7 @@ export const CashBookPage = () => {
             description="All student fee payments received"
             emptyMessage="No student payments found"
             colorClass="bg-green-50"
+            handleEdit={HandleEdit}
             loading={loading}
           />
         </TabsContent>
@@ -483,6 +479,7 @@ export const CashBookPage = () => {
             description="All office and operational expenses"
             emptyMessage="No office expenses found"
             colorClass="bg-red-50"
+            handleEdit={HandleEdit}
             loading={loading}
           />
         </TabsContent>
@@ -494,6 +491,7 @@ export const CashBookPage = () => {
             description="All director/owner withdrawals"
             emptyMessage="No owner withdrawals found"
             colorClass="bg-amber-50"
+            handleEdit={HandleEdit}
             loading={loading}
           />
         </TabsContent>
