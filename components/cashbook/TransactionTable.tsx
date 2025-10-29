@@ -1,4 +1,4 @@
-import { IndianRupee } from "lucide-react";
+import { IndianRupee, Pencil } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -15,7 +15,13 @@ import {
   TableRow,
 } from "../ui/table";
 import { Badge } from "../ui/badge";
-import { CashbookEntry } from "@/redux/features/cashbook/cashbookSlice";
+import {
+  CashbookEntry,
+  deleteCashbookEntry,
+} from "@/redux/features/cashbook/cashbookSlice";
+import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
+import { Button } from "../ui/button";
+import { useAppDispatch } from "@/lib/hooks";
 
 export default function TransactionTable({
   entries,
@@ -24,6 +30,7 @@ export default function TransactionTable({
   emptyMessage,
   colorClass,
   loading,
+  handleEdit,
 }: {
   entries: CashbookEntry[];
   title: string;
@@ -31,8 +38,14 @@ export default function TransactionTable({
   emptyMessage: string;
   colorClass?: string;
   loading?: boolean;
+  handleEdit: (entry: CashbookEntry) => void;
 }) {
   const total = entries.reduce((sum, e) => sum + e.amount, 0);
+  const dispatch = useAppDispatch();
+  const handleDelete = (id?: string) => {
+    if (!id) return;
+    dispatch(deleteCashbookEntry(id));
+  };
 
   return (
     <Card className="bg-[#0a0a0a]/70 backdrop-blur-3xl border-[#191a1a] text-white">
@@ -54,6 +67,8 @@ export default function TransactionTable({
             <IndianRupee className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>{emptyMessage}</p>
           </div>
+        ) : loading ? (
+          <>loading..</>
         ) : (
           <div className="overflow-x-auto rounded-lg backdrop-blur-md bg-black/30 border border-white/20  shadow-lg">
             <Table className="min-w-full divide-y divide-gray-200/10 bg-black/10">
@@ -72,6 +87,11 @@ export default function TransactionTable({
                       Batch
                     </TableHead>
                   )}
+                  {title === "Owner Taken" && (
+                    <TableHead className="text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                      Director
+                    </TableHead>
+                  )}
                   <TableHead className="text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Description
                   </TableHead>
@@ -81,7 +101,12 @@ export default function TransactionTable({
                   <TableHead className="text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Type
                   </TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead className="text-right text-gray-50 ">
+                    Amount
+                  </TableHead>
+                  <TableHead className="text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="divide-y divide-gray-200/10 bg-black/10 border-0">
@@ -98,7 +123,21 @@ export default function TransactionTable({
                       {new Date(entry.createdAt).toLocaleDateString("en-GB")}
                     </TableCell>
                     {title === "Students Paid" && (
-                      <TableCell>{entry.studentId}</TableCell>
+                      <TableCell>
+                        {/* {entry.name} */}
+                        std name will come here
+                      </TableCell>
+                    )}
+                    {title === "Students Paid" && (
+                      <TableCell>
+                        {/* {entry.batchname}  */}
+                        std batch will come here
+                      </TableCell>
+                    )}
+                    {title == "Owner Taken" && (
+                      <TableCell>
+                        {entry.directorId} this is id of director{" "}
+                      </TableCell>
                     )}
 
                     <TableCell>{entry.description}</TableCell>
@@ -120,6 +159,24 @@ export default function TransactionTable({
                     </TableCell>
                     <TableCell className="text-right font-medium">
                       ₹{entry.amount.toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex max-sm:justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-gray-300  text-gray-700  hover:bg-blue-100  transition-colors duration-200"
+                          onClick={() => handleEdit(entry)}
+                        >
+                          <Pencil className="w-4 h-4 mr-1" />
+                        </Button>
+
+                        <DeleteDialogue
+                          id={entry.id as string}
+                          title="this entry"
+                          handelDelete={handleDelete}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -23,11 +23,14 @@ export interface CashbookEntry {
 }
 
 export interface CashbookTotals {
-  studentPaid: number;
+  studentsPaid: number;
   officeExpense: number;
   ownerTaken: number;
   openingBalance: number;
   closingBalance: number;
+  cashInHand: number;
+  totalCredit: number;
+  totalDebit: number;
 }
 
 export interface Pagination {
@@ -58,10 +61,9 @@ export interface FetchParams {
 }
 
 export interface AddCashbookEntryData {
-  transactionDate: string;
+  transactionDate: string; // ISO string format
   amount: number;
   transactionType: "STUDENT_PAID" | "OFFICE_EXPENSE" | "OWNER_TAKEN";
-  debitCredit: "DEBIT" | "CREDIT";
   description?: string;
   locationId: string;
   referenceId?: string;
@@ -79,8 +81,17 @@ export const addCashbookEntry = createAsyncThunk<
   AddCashbookEntryData,
   { rejectValue: string }
 >("cashbook/addCashbookEntry", async (entryData, { rejectWithValue }) => {
+  const token = localStorage.getItem("token");
   try {
-    const response = await axios.post(`${BASE_URL}/cashbook/add`, entryData); // Fixed endpoint
+    const response = await axios.post(
+      `${BASE_URL}/api/cashbook/add-entry`,
+      entryData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    ); // Fixed endpoint
     if (response.data.success === true) {
       toast.success(response.data.message || "Entry added successfully");
     }
@@ -107,9 +118,13 @@ export const getCashbookEntries = createAsyncThunk<
   FetchParams,
   { rejectValue: string }
 >("cashbook/getCashbookEntries", async (params, { rejectWithValue }) => {
+  const token = localStorage.getItem("token");
   try {
     const response = await axios.get(`${BASE_URL}/api/cashbook/entries`, {
       params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }); // Fixed endpoint
     return response.data.data;
   } catch (error: unknown) {
@@ -130,8 +145,17 @@ export const updateCashbookEntry = createAsyncThunk<
   { id: string; data: Partial<CashbookEntry> },
   { rejectValue: string }
 >("cashbook/updateCashbookEntry", async ({ id, data }, { rejectWithValue }) => {
+  const token = localStorage.getItem("token");
   try {
-    const response = await axios.put(`${BASE_URL}/cashbook/update/${id}`, data);
+    const response = await axios.put(
+      `${BASE_URL}/api/cashbook/update-entry/${id}`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     if (response.data.success === true) {
       toast.success(response.data.message || "Entry updated successfully");
     }
@@ -154,8 +178,16 @@ export const deleteCashbookEntry = createAsyncThunk<
   string, // Accept the entry ID
   { rejectValue: string }
 >("cashbook/deleteCashbookEntry", async (id, { rejectWithValue }) => {
+  const token = localStorage.getItem("token");
   try {
-    const response = await axios.delete(`${BASE_URL}/cashbook/delete/${id}`);
+    const response = await axios.delete(
+      `${BASE_URL}/api/cashbook/delete-entry/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     if (response.data.success === true) {
       toast.success(response.data.message || "Entry deleted successfully");
     }
@@ -179,11 +211,14 @@ export const deleteCashbookEntry = createAsyncThunk<
 const initialState: CashbookState = {
   entries: [],
   totals: {
-    studentPaid: 0,
+    studentsPaid: 0,
     officeExpense: 0,
     ownerTaken: 0,
     openingBalance: 0,
     closingBalance: 0,
+    cashInHand: 0,
+    totalCredit: 0,
+    totalDebit: 0,
   },
   pagination: {
     page: 1,
