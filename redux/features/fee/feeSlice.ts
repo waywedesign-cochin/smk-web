@@ -26,10 +26,16 @@ const initialState: FeeState = {
 export const configureFee = createAsyncThunk<Fee, FeeUpdate>(
   "fee/configure",
   async (fee: FeeUpdate, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.put(
         `${BASE_URL}/api/fee/update-fee/${fee.id}`,
-        fee
+        fee,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (response.data.success === true) {

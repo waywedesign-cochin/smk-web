@@ -25,10 +25,17 @@ const initialState: PaymentState = {
 export const createPayment = createAsyncThunk(
   "payment/createPayment",
   async (payment: PaymentInput, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
+
     try {
       const response = await axios.post(
         `${BASE_URL}/api/payment/create-payment`,
-        payment
+        payment,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Payment added successfully");
@@ -64,10 +71,16 @@ export const fetchPaymentsByStudent = createAsyncThunk(
 export const updatePayment = createAsyncThunk(
   "payment/updatePayment",
   async (payment: PaymentInput, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.put(
         `${BASE_URL}/api/payment/update-payment/${payment.id}`,
-        payment
+        payment,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Payment updated successfully");
@@ -86,10 +99,16 @@ export const updatePayment = createAsyncThunk(
 export const createPaymentDue = createAsyncThunk(
   "payment/createPaymentDue",
   async (payment: DueInput, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.post(
         `${BASE_URL}/api/payment/create-payment-due/${payment.feeId}`,
-        payment
+        payment,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(
@@ -112,10 +131,17 @@ export const createPaymentDue = createAsyncThunk(
 export const updatePaymentDue = createAsyncThunk(
   "payment/updatePaymentDue",
   async (payment: DueInput, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
+
     try {
       const response = await axios.put(
         `${BASE_URL}/api/payment/update-payment-due/${payment.id}`,
-        payment
+        payment,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(
@@ -138,9 +164,16 @@ export const updatePaymentDue = createAsyncThunk(
 export const deletePayment = createAsyncThunk(
   "payment/deletePayment",
   async (paymentId: string, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
+
     try {
       const response = await axios.delete(
-        `${BASE_URL}/api/payment/delete-payment/${paymentId}`
+        `${BASE_URL}/api/payment/delete-payment/${paymentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Payment deleted successfully");

@@ -39,10 +39,16 @@ export const fetchCourses = createAsyncThunk<Course[]>(
 export const addCourse = createAsyncThunk<Course, Course>(
   "courses/add",
   async (newCourse, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.post(
         `${BASE_URL}/api/course/add-course`,
-        newCourse
+        newCourse,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Course added successfully");
@@ -61,11 +67,16 @@ export const addCourse = createAsyncThunk<Course, Course>(
 export const updateCourse = createAsyncThunk<Course, Course>(
   "courses/update",
   async (updatedCourse, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
-      console.log("id", updatedCourse.id);
       const response = await axios.put(
         `${BASE_URL}/api/course/update-course/${updatedCourse.id}`,
-        updatedCourse
+        updatedCourse,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Course updated successfully");
@@ -84,9 +95,15 @@ export const updateCourse = createAsyncThunk<Course, Course>(
 export const deleteCourse = createAsyncThunk<string, string>(
   "courses/delete",
   async (courseId, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.delete(
-        `${BASE_URL}/api/course/delete-course/${courseId}`
+        `${BASE_URL}/api/course/delete-course/${courseId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Course deleted successfully");

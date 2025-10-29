@@ -20,10 +20,16 @@ const initialState: LocationState = {
 export const addLocation = createAsyncThunk<Location, Location>(
   "location/add",
   async (newLocation, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.post(
         `${BASE_URL}/api/location/add-location`,
-        newLocation
+        newLocation,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Location added successfully");
@@ -60,10 +66,16 @@ export const fetchLocations = createAsyncThunk<Location[]>(
 export const updateLocation = createAsyncThunk<Location, Location>(
   "location/update",
   async (updatedLocation, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.put(
         `${BASE_URL}/api/location/update-location/${updatedLocation.id}`,
-        updatedLocation
+        updatedLocation,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Location updated successfully");
@@ -82,9 +94,15 @@ export const updateLocation = createAsyncThunk<Location, Location>(
 export const deleteLocation = createAsyncThunk<string, string>(
   "location/delete",
   async (locationId, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.delete(
-        `${BASE_URL}/api/location/delete-location/${locationId}`
+        `${BASE_URL}/api/location/delete-location/${locationId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Location deleted successfully");
