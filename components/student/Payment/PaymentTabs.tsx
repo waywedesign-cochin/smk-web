@@ -59,7 +59,7 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
   const { payments, loading, submitting } = useAppSelector(
     (state) => state.payments
   );
-
+  const { currentUser } = useAppSelector((state) => state.users);
   const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
   const [openDueDialog, setOpenDueDialog] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
@@ -135,49 +135,51 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
     <Card>
       <CardHeader className="flex justify-between items-center">
         <CardTitle>Payments</CardTitle>
-        <div className="flex gap-2">
-          <>
-            {payments.length>0 && (
-              <Button
-                size="sm"
-                onClick={() => {
-                  setOpenDueDialog(true), setSelectedPayment(null);
+        {(currentUser?.role === 1 || currentUser?.role === 3) && (
+          <div className="flex gap-2">
+            <>
+              {payments.length > 0 && (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setOpenDueDialog(true), setSelectedPayment(null);
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Payment Due
+                </Button>
+              )}
+              <CreateDueForm
+                open={openDueDialog}
+                defaultFeeId={latestFee.id}
+                initialData={
+                  selectedPayment
+                    ? {
+                        id: selectedPayment.id,
+                        feeId: selectedPayment.feeId,
+                        amount: selectedPayment.amount,
+                        dueDate: selectedPayment.dueDate
+                          ? new Date(selectedPayment.dueDate)
+                          : null,
+                        note: selectedPayment.note,
+                      }
+                    : undefined
+                }
+                onSave={
+                  selectedPayment ? handleUpdatePaymentDue : handleCreateDue
+                }
+                onClose={() => {
+                  setOpenDueDialog(false);
+                  setSelectedPayment(null);
                 }}
-              >
-                <Plus className="h-4 w-4" />
-                Create Payment Due
-              </Button>
-            )}
-            <CreateDueForm
-              open={openDueDialog}
-              defaultFeeId={latestFee.id}
-              initialData={
-                selectedPayment
-                  ? {
-                      id: selectedPayment.id,
-                      feeId: selectedPayment.feeId,
-                      amount: selectedPayment.amount,
-                      dueDate: selectedPayment.dueDate
-                        ? new Date(selectedPayment.dueDate)
-                        : null,
-                      note: selectedPayment.note,
-                    }
-                  : undefined
-              }
-              onSave={
-                selectedPayment ? handleUpdatePaymentDue : handleCreateDue
-              }
-              onClose={() => {
-                setOpenDueDialog(false);
-                setSelectedPayment(null);
-              }}
-            />
-          </>
-          <Button size="sm" onClick={() => setShowAddPaymentDialog(true)}>
-            <Plus className="h-4 w-4" />
-            Add Payment
-          </Button>
-        </div>
+              />
+            </>
+            <Button size="sm" onClick={() => setShowAddPaymentDialog(true)}>
+              <Plus className="h-4 w-4" />
+              Add Payment
+            </Button>
+          </div>
+        )}
       </CardHeader>
 
       {/* Add Payment Dialog */}
@@ -222,7 +224,9 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
               <TableCell>Transaction ID</TableCell>
               <TableCell>Notes</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
+              {(currentUser?.role === 1 || currentUser?.role === 3) && (
+                <TableCell>Actions</TableCell>
+              )}
             </TableRow>
           </TableHeader>
 
@@ -271,60 +275,62 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
 
                   {/* Action Button */}
                   <TableCell>
-                    <div className="flex justify-start gap-2">
-                      {/* Edit Due */}
-                      {p.status === "PENDING" && (
+                    {(currentUser?.role === 1 || currentUser?.role === 3) && (
+                      <div className="flex justify-start gap-2">
+                        {/* Edit Due */}
+                        {p.status === "PENDING" && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => {
+                                    setSelectedPayment(p);
+                                    setOpenDueDialog(true);
+                                  }}
+                                  className=""
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Edit Due</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+
+                        {/* Record Payment */}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
-                                variant="outline"
+                                variant="default"
                                 size="icon"
                                 onClick={() => {
                                   setSelectedPayment(p);
-                                  setOpenDueDialog(true);
+                                  setShowAddPaymentDialog(true);
                                 }}
-                                className=""
+                                className=" bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-400 cursor-pointer"
                               >
-                                <Edit className="h-4 w-4" />
+                                <DollarSign className="h-4 w-4 text-white" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Edit Due</TooltipContent>
+                            <TooltipContent>Record/Edit Payment</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-                      )}
-
-                      {/* Record Payment */}
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="default"
-                              size="icon"
-                              onClick={() => {
-                                setSelectedPayment(p);
-                                setShowAddPaymentDialog(true);
-                              }}
-                              className=" bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-400 cursor-pointer"
-                            >
-                              <DollarSign className="h-4 w-4 text-white" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Record/Edit Payment</TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      {p.status === "PENDING" && (
-                        <Button
-                          onClick={() => {
-                            setPaymentToDelete(p);
-                            setOpenDeleteDialog(true);
-                          }}
-                          className="bg-red-600 text-white hover:bg-red-700 cursor-pointer"
-                        >
-                          <Trash />
-                        </Button>
-                      )}
-                    </div>
+                        {p.status === "PENDING" && (
+                          <Button
+                            onClick={() => {
+                              setPaymentToDelete(p);
+                              setOpenDeleteDialog(true);
+                            }}
+                            className="bg-red-600 text-white hover:bg-red-700 cursor-pointer"
+                          >
+                            <Trash />
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </TableCell>
                 </TableRow>
               ))

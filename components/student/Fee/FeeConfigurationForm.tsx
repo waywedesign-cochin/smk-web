@@ -15,6 +15,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store"; // adjust path if needed
 import { Student } from "@/lib/types";
 import { FeeSchema, FeeInput } from "@/lib/validation/feeSchema"; // adjust path
+import { useAppSelector } from "@/lib/hooks";
 
 interface FeeData {
   id: string;
@@ -46,7 +47,6 @@ export default function FeeConfigurationForm({
   onClose,
 }: FeeConfigurationFormProps) {
   const loading = useSelector((state: RootState) => state.fees.loading);
-
   const [feeData, setFeeData] = useState<FeeData>({
     id: "",
     totalCourseFee: 0,
@@ -65,8 +65,6 @@ export default function FeeConfigurationForm({
   useEffect(() => {
     const existingConfig =
       initialConfig || (student.fees?.length ? student.fees[0] : null);
-    console.log("existingConfig", existingConfig);
-
     if (existingConfig) {
       setFeeData({
         id: existingConfig.id ?? "",

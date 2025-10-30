@@ -52,7 +52,7 @@ export function Batches() {
   const { batches, pagination, loading } = useAppSelector(
     (state) => state.batches
   );
-
+  const { currentUser } = useAppSelector((state) => state.users);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [modeFilter, setModeFilter] = useState<string>("all");
@@ -225,15 +225,17 @@ export function Batches() {
           <Plus className="h-4 w-4 mr-2" />
           Create Batch
         </Button> */}
-        <AddBatchSheet
-          setIsOpen={setIsCreateFormOpen}
-          isOpen={isCreateFormOpen}
-          editingBatch={editingBatch}
-          setEditingBatch={setEditingBatch}
-          onSubmit={handleCreateBatch}
-          courses={courses}
-          locations={locations}
-        />
+        {(currentUser?.role === 1 || currentUser?.role === 3) && (
+          <AddBatchSheet
+            setIsOpen={setIsCreateFormOpen}
+            isOpen={isCreateFormOpen}
+            editingBatch={editingBatch}
+            setEditingBatch={setEditingBatch}
+            onSubmit={handleCreateBatch}
+            courses={courses}
+            locations={locations}
+          />
+        )}
       </div>
 
       {/* Search and Filters */}
@@ -419,7 +421,9 @@ export function Batches() {
                 <TableHead>Enrollment</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Descriptions</TableHead>
-                <TableHead>Actions</TableHead>
+                {(currentUser?.role === 1 || currentUser?.role === 3) && (
+                  <TableHead>Actions</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -501,22 +505,24 @@ export function Batches() {
                         {batch.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(batch)}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <DeleteDialogue
-                          id={batch?.id as string}
-                          title={batch.name}
-                          handelDelete={handleDelete}
-                        />
-                      </div>
-                    </TableCell>
+                    {(currentUser?.role === 1 || currentUser?.role === 3) && (
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(batch)}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <DeleteDialogue
+                            id={batch?.id as string}
+                            title={batch.name}
+                            handelDelete={handleDelete}
+                          />
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               ) : (

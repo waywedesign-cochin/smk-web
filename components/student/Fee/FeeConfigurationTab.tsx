@@ -17,6 +17,7 @@ import {
 import { Edit } from "lucide-react";
 import FeeConfigurationForm, { FeeSubmission } from "./FeeConfigurationForm";
 import { Fee, Student } from "@/lib/types";
+import { useAppSelector } from "@/lib/hooks";
 
 interface FeeConfigurationTabProps {
   student: Student;
@@ -34,6 +35,7 @@ export default function FeeConfigurationTab({
   handleConfigureFee,
 }: FeeConfigurationTabProps) {
   console.log("Latest Fee Data:", latestFee);
+  const { currentUser } = useAppSelector((state) => state.users);
 
   return (
     <Card>
@@ -44,31 +46,32 @@ export default function FeeConfigurationTab({
             Configure course fees, discounts, and payment terms
           </CardDescription>
         </div>
-
-        <Dialog
-          open={showFeeConfigDialog}
-          onOpenChange={setShowFeeConfigDialog}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <Edit className="h-4 w-4 mr-2" />
-              Configure Fees
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Configure Fee Structure</DialogTitle>
-              <DialogDescription>
-                Set up the fee structure and payment terms for {student.name}
-              </DialogDescription>
-            </DialogHeader>
-            <FeeConfigurationForm
-              student={student}
-              onSave={handleConfigureFee}
-              onClose={() => setShowFeeConfigDialog(false)}
-            />
-          </DialogContent>
-        </Dialog>
+        {(currentUser?.role === 1 || currentUser?.role === 3) && (
+          <Dialog
+            open={showFeeConfigDialog}
+            onOpenChange={setShowFeeConfigDialog}
+          >
+            <DialogTrigger asChild>
+              <Button>
+                <Edit className="h-4 w-4 mr-2" />
+                Configure Fees
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Configure Fee Structure</DialogTitle>
+                <DialogDescription>
+                  Set up the fee structure and payment terms for {student.name}
+                </DialogDescription>
+              </DialogHeader>
+              <FeeConfigurationForm
+                student={student}
+                onSave={handleConfigureFee}
+                onClose={() => setShowFeeConfigDialog(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
       </CardHeader>
 
       <CardContent>

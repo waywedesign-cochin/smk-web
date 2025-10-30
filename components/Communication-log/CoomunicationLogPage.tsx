@@ -55,13 +55,16 @@ import {
 import { fetchLocations } from "@/redux/features/location/locationSlice";
 import { fetchUsers } from "@/redux/features/user/userSlice";
 import { getLogDisplay } from "@/lib/utils/getLogTypeDisplay";
+import { exportToExcel } from "@/lib/utils/exportToExcel";
+import { BASE_URL } from "@/redux/baseUrl";
+import axios from "axios";
 
 export default function CommunicationLogPage() {
   const dispatch = useAppDispatch();
   const { communicationLogs, loading, error, pagination } = useAppSelector(
     (state) => state.communicationLogs
   );
-  console.log("communicationLogs", communicationLogs);
+  // console.log("communicationLogs", communicationLogs);
 
   const [selectedLog, setSelectedLog] = useState<CommunicationLog | null>(null);
   const { locations } = useAppSelector((state) => state.locations);
@@ -112,8 +115,61 @@ export default function CommunicationLogPage() {
     return () => clearTimeout(handler); // cleanup previous timeout
   }, [filters.search]);
 
-  const handleExport = () => {
-    toast.success("Export feature coming soon");
+  // CommunicationLogsPage.tsx (or wherever handleExport lives)
+  const handleExport = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/communication/logs`, {
+        params: {
+          locationId: filters.locationId,
+          month: filters.month,
+          loggedById: filters.loggedById,
+          year: filters.year,
+          limit: 10000,
+        },
+      });
+
+      const raw = res.data?.data?.communicationLogs || res.data?.data || [];
+
+      if (!Array.isArray(raw) || raw.length === 0) {
+        toast.error("No logs found for export");
+        return;
+      }
+
+      // Map to desired Excel fields
+      const rows = raw.map((e) => ({
+        Id: e.id,
+        Date: e.createdAt ? new Date(e.createdAt).toLocaleString() : "",
+        "Logged By": e.loggedBy?.name || e.loggedById || "",
+        "Logged By Email": e.loggedBy?.email || e.loggedByEmail || "",
+        "Logged By Role":
+          e.loggedBy?.role === 1
+            ? "Admin"
+            : e.loggedBy?.role === 2
+            ? "Director"
+            : "Staff",
+        Type: e.type || e.transactionType || "",
+        Subject: e.subject || "",
+        Message: e.message || "",
+        "Student Name": e.student?.name || e.studentName || "",
+        "Student Email": e.student?.email || e.studentEmail || "",
+        "Student Admission Number": e.student?.admissionNo || "",
+        "Batch Name":
+          e.student?.currentBatch?.name || e.studentCurrentBatchName || "",
+        "Location Name": e.location?.name || e.locationName || "",
+      }));
+
+      // Export to Excel
+      exportToExcel(rows, {
+        fileName: "Communication_Logs.xlsx",
+        sheetName: "Logs",
+        autoFormatHeaders: false, // Already user-friendly keys
+      });
+
+      toast.success("Communication logs exported successfully");
+    } catch (err) {
+      console.error("Export error:", err);
+      toast.error("Error exporting file");
+    }
   };
 
   //handle page change
@@ -244,46 +300,49 @@ export default function CommunicationLogPage() {
             </div>
 
             {/* Location Filter */}
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-200 mb-1">Location</span>
-              <Select
-                value={filters.locationId}
-                onValueChange={(v) => handleFilterChange("locationId", v)}
-              >
-                <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
-                  <SelectValue placeholder="Select Location" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#0A1533] text-white border-white/20">
-                  <SelectItem value="ALL">All</SelectItem>
-                  {locations?.map((loc) => (
-                    <SelectItem key={loc.id} value={loc.id || ""}>
-                      {loc.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
+            {currentUser?.role === 1 && (
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-200 mb-1">Location</span>
+                <Select
+                  value={filters.locationId}
+                  onValueChange={(v) => handleFilterChange("locationId", v)}
+                >
+                  <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
+                    <SelectValue placeholder="Select Location" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#0A1533] text-white border-white/20">
+                    <SelectItem value="ALL">All</SelectItem>
+                    {locations?.map((loc) => (
+                      <SelectItem key={loc.id} value={loc.id || ""}>
+                        {loc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             {/* Staff Filter */}
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-200 mb-1">Staff</span>
-              <Select
-                value={filters.loggedById}
-                onValueChange={(v) => handleFilterChange("loggedById", v)}
-              >
-                <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
-                  <SelectValue placeholder="Select Staff" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#0A1533] text-white border-white/20">
-                  <SelectItem value="ALL">All</SelectItem>
-                  {users?.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.username}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {currentUser?.role === 1 && (
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-200 mb-1">Staff</span>
+                <Select
+                  value={filters.loggedById}
+                  onValueChange={(v) => handleFilterChange("loggedById", v)}
+                >
+                  <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
+                    <SelectValue placeholder="Select Staff" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#0A1533] text-white border-white/20">
+                    <SelectItem value="ALL">All</SelectItem>
+                    {users?.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.username}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
