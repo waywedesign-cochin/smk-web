@@ -1,6 +1,6 @@
 "use client";
 
-import { GraduationCap, BellIcon, Loader2 } from "lucide-react";
+import { GraduationCap, BellIcon, Loader2, User } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -155,12 +155,17 @@ export default function DashboardSidebar({
               </h2>
             </div>
             <div className="flex items-center gap-2">
-              <Link
-                href="/profile"
-                className="flex items-center gap-2 text-sm hover:underline-offset-1"
+              <Button className="bg-gray-600/20" variant="outline" size="sm">
+                <User className="h-4 w-4" />
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-black border border-white"
               >
-                Profile
-              </Link>
+                <BellIcon className="h-4 w-4  hover:text-black" />
+              </Button>
 
               {/* Logout with confirmation dialog */}
               <Dialog
@@ -197,10 +202,6 @@ export default function DashboardSidebar({
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-
-              <Button variant="outline" size="sm">
-                <BellIcon className="h-4 w-4" />
-              </Button>
             </div>
           </header>
 

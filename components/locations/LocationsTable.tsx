@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
 import { Location } from "@/lib/types";
 import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
+import { useAppSelector } from "@/lib/hooks";
 
 export default function LocationsTable({
   locations,
@@ -21,6 +22,7 @@ export default function LocationsTable({
   handleEdit: (location: Location) => void;
   handleDelete: (locationId: string) => void;
 }) {
+  const { currentUser } = useAppSelector((state) => state.users);
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-IN", {
       year: "numeric",
@@ -36,7 +38,9 @@ export default function LocationsTable({
             <TableHead>Name</TableHead>
             <TableHead>Address</TableHead>
             <TableHead>Created Date</TableHead>
-            <TableHead>Actions</TableHead>
+            {(currentUser?.role === 1 || currentUser?.role === 3) && (
+              <TableHead>Actions</TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -69,22 +73,24 @@ export default function LocationsTable({
                     {formatDate(location?.createdAt || "")}
                   </div>
                 </TableCell>
+                  {(currentUser?.role === 1 || currentUser?.role === 3) && (
                 <TableCell>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(location)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <DeleteDialogue
-                      id={location?.id as string}
-                      title={location.name}
-                      handelDelete={handleDelete}
-                    />
-                  </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(location)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <DeleteDialogue
+                        id={location?.id as string}
+                        title={location.name}
+                        handelDelete={handleDelete}
+                      />
+                    </div>
                 </TableCell>
+                  )}
               </TableRow>
             ))
           )}

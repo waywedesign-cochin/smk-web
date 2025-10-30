@@ -1,5 +1,6 @@
 import DeleteDialogue from "@/components/shared/DashboardSidebar/DeleteDialogue";
 import { Button } from "@/components/ui/button";
+import { useAppSelector } from "@/lib/hooks";
 import { Course } from "@/lib/types";
 import { Pencil } from "lucide-react";
 
@@ -14,6 +15,7 @@ export function CourseList({
   handleEdit,
   handleDelete,
 }: CourseListProps) {
+  const { currentUser } = useAppSelector((state) => state.users);
   return (
     <div className=" bg-gradient-to-br from-[#122147] via-black to-[#122147]  rounded-xl p-6   transition-shadow duration-300 space-y-6">
       {courses.length === 0 ? (
@@ -57,17 +59,18 @@ export function CourseList({
                   <span>Mode : {course.mode}</span>
                 </p>
               </div>
-              <div className="flex max-sm:justify-end gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-gray-300  text-gray-700  hover:bg-blue-100  transition-colors duration-200"
-                  onClick={() => handleEdit(course)}
-                >
-                  <Pencil className="w-4 h-4 mr-1" />
-                  Edit
-                </Button>
-                {/* <Button
+              {(currentUser?.role === 1 || currentUser?.role === 3) && (
+                <div className="flex max-sm:justify-end gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-gray-300  text-gray-700  hover:bg-blue-100  transition-colors duration-200"
+                    onClick={() => handleEdit(course)}
+                  >
+                    <Pencil className="w-4 h-4 mr-1" />
+                    Edit
+                  </Button>
+                  {/* <Button
                   size="sm"
                   variant="destructive"
                   className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white transition-colors duration-200"
@@ -76,12 +79,13 @@ export function CourseList({
                   <Trash2 className="w-4 h-4 mr-1" />
                   Delete
                 </Button> */}
-                <DeleteDialogue
-                  id={course.id as string}
-                  title={course.name}
-                  handelDelete={handleDelete}
-                />
-              </div>
+                  <DeleteDialogue
+                    id={course.id as string}
+                    title={course.name}
+                    handelDelete={handleDelete}
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -16,10 +16,12 @@ export const dynamic = "force-dynamic";
 function CoursesPage() {
   const dispatch = useAppDispatch();
   const courses = useAppSelector((state) => state.courses.courses);
+  const { currentUser } = useAppSelector((state) => state.users);
+
   useEffect(() => {
     dispatch(fetchCourses());
   }, []);
-  console.log("courses", courses);
+  //console.log("courses", courses);
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
@@ -37,14 +39,14 @@ function CoursesPage() {
 
   const resetForm = () => setFormData(emptyCourse);
 
-  const handleSubmit =async (course: Course, isEdit: boolean) => {
+  const handleSubmit = async (course: Course, isEdit: boolean) => {
     if (isEdit && editingCourse) {
-     await dispatch(updateCourse(course));
-     setIsAddDialogOpen(false);
+      await dispatch(updateCourse(course));
+      setIsAddDialogOpen(false);
     } else {
       // add new course
-     await dispatch(addCourse(course));
-     setIsAddDialogOpen(false);
+      await dispatch(addCourse(course));
+      setIsAddDialogOpen(false);
     }
   };
 
@@ -81,13 +83,15 @@ function CoursesPage() {
             Manage courses, fee structures, and enrollment settings
           </p>
         </div>
-        <AddCourseSheet
-          editingCourse={editingCourse}
-          setEditingCourse={setEditingCourse}
-          isAddSheetOpen={isAddDialogOpen}
-          setIsAddSheetOpen={setIsAddDialogOpen}
-          onSubmit={handleSubmit}
-        />
+        {(currentUser?.role === 1 || currentUser?.role === 3) && (
+          <AddCourseSheet
+            editingCourse={editingCourse}
+            setEditingCourse={setEditingCourse}
+            isAddSheetOpen={isAddDialogOpen}
+            setIsAddSheetOpen={setIsAddDialogOpen}
+            onSubmit={handleSubmit}
+          />
+        )}
       </div>
 
       {/* Course List */}

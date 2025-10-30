@@ -118,7 +118,7 @@ export function Students() {
     (state) => state.students
   );
   const locations = useAppSelector((state) => state.locations.locations);
-
+  const { currentUser } = useAppSelector((state) => state.users);
   // State variables
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -384,46 +384,48 @@ export function Students() {
             Manage student records and track their progress
           </p>
         </div>
-        <div className="flex gap-2">
-          <Sheet
-            open={isAddFormOpen}
-            onOpenChange={(open) => {
-              if (!open) setSelectedStudent(null); // Reset when closing
-              setIsAddFormOpen(open);
-            }}
-          >
-            <SheetTrigger asChild>
-              <Button className="bg-blue-700  text-white cursor-pointer hover:bg-blue-800">
-                <Plus className="h-4 w-4" />
-                Add Student
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="w-full !max-w-lg p-2 overflow-y-auto">
-              {" "}
-              <SheetHeader>
-                <SheetTitle>
-                  {selectedStudent ? "Edit Student" : "Add New Student"}
-                </SheetTitle>
-                <SheetDescription>
-                  {selectedStudent
-                    ? `Update information for ${selectedStudent.name}`
-                    : "Create a new student record and enroll them in a batch"}
-                </SheetDescription>
-              </SheetHeader>
-              <div className="mt-6 px-4">
-                <AddStudentForm
-                  student={selectedStudent || undefined}
-                  onSubmit={
-                    selectedStudent ? handleUpdateStudent : handleAddStudent
-                  }
-                  onCancel={() => setIsAddFormOpen(false)}
-                  batches={batches}
-                  loading={submitting}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
+        {(currentUser?.role === 1 || currentUser?.role === 3) && (
+          <div className="flex gap-2">
+            <Sheet
+              open={isAddFormOpen}
+              onOpenChange={(open) => {
+                if (!open) setSelectedStudent(null); // Reset when closing
+                setIsAddFormOpen(open);
+              }}
+            >
+              <SheetTrigger asChild>
+                <Button className="bg-blue-700  text-white cursor-pointer hover:bg-blue-800">
+                  <Plus className="h-4 w-4" />
+                  Add Student
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="w-full !max-w-lg p-2 overflow-y-auto">
+                {" "}
+                <SheetHeader>
+                  <SheetTitle>
+                    {selectedStudent ? "Edit Student" : "Add New Student"}
+                  </SheetTitle>
+                  <SheetDescription>
+                    {selectedStudent
+                      ? `Update information for ${selectedStudent.name}`
+                      : "Create a new student record and enroll them in a batch"}
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="mt-6 px-4">
+                  <AddStudentForm
+                    student={selectedStudent || undefined}
+                    onSubmit={
+                      selectedStudent ? handleUpdateStudent : handleAddStudent
+                    }
+                    onCancel={() => setIsAddFormOpen(false)}
+                    batches={batches}
+                    loading={submitting}
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        )}
       </div>
 
       {/* Search and Filters */}
@@ -781,34 +783,41 @@ export function Students() {
                         >
                           <Eye className="h-4 w-4 text-white" />
                         </Link>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedStudent(student);
-                            setIsAddFormOpen(true);
-                          }}
-                          className="cursor-pointer"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <DeleteDialogue
-                          id={student.id!}
-                          title={student.name}
-                          handelDelete={handleDeleteStudent}
-                          loading={submitting}
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setStudentForBatchSwitch(student);
-                            setShowSwitchBatchDialog(true);
-                          }}
-                          className="cursor-pointer"
-                        >
-                          <Repeat className="h-4 w-4" />
-                        </Button>
+                        {(currentUser?.role === 1 ||
+                          currentUser?.role === 3) && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedStudent(student);
+                                setIsAddFormOpen(true);
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+
+                            <DeleteDialogue
+                              id={student.id!}
+                              title={student.name}
+                              handelDelete={handleDeleteStudent}
+                              loading={submitting}
+                            />
+
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setStudentForBatchSwitch(student);
+                                setShowSwitchBatchDialog(true);
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <Repeat className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
