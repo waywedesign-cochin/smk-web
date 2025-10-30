@@ -137,7 +137,7 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
         <CardTitle>Payments</CardTitle>
         <div className="flex gap-2">
           <>
-            {payments && (
+            {payments.length>0 && (
               <Button
                 size="sm"
                 onClick={() => {
