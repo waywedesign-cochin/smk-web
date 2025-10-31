@@ -1,11 +1,5 @@
-import { IndianRupee, Pencil } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+"use client";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -13,181 +7,173 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
-import { Badge } from "../ui/badge";
-import {
-  CashbookEntry,
-  deleteCashbookEntry,
-} from "@/redux/features/cashbook/cashbookSlice";
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CashbookEntry } from "@/redux/features/cashbook/cashbookSlice";
+import { Edit, Loader2 } from "lucide-react";
 import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
-import { Button } from "../ui/button";
-import { useAppDispatch } from "@/lib/hooks";
+import { useAppSelector } from "@/lib/hooks";
 
-export default function TransactionTable({
+interface TransactionTableProps {
+  entries: CashbookEntry[];
+  title: string;
+  emptyMessage: string;
+  handleEdit: (entry: CashbookEntry) => void;
+  onDelete: (id: string) => void;
+  loading: boolean;
+  colorClass?: string;
+  description?: string;
+}
+
+const TransactionTable = ({
   entries,
   title,
   description,
   emptyMessage,
-  colorClass,
-  loading,
+  colorClass = "bg-gray-50",
+  onDelete,
   handleEdit,
-}: {
-  entries: CashbookEntry[];
-  title: string;
-  description: string;
-  emptyMessage: string;
-  colorClass?: string;
-  loading?: boolean;
-  handleEdit: (entry: CashbookEntry) => void;
-}) {
-  const total = entries.reduce((sum, e) => sum + e.amount, 0);
-  const dispatch = useAppDispatch();
-  const handleDelete = (id?: string) => {
-    if (!id) return;
-    dispatch(deleteCashbookEntry(id));
+  loading = false,
+}: TransactionTableProps) => {
+  const { currentUser } = useAppSelector((state) => state.users);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
   };
 
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  if (loading && entries.length === 0) {
+    return (
+      <Card className={colorClass}>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          {description && (
+            <p className="text-sm text-muted-foreground">{description}</p>
+          )}
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <span className="ml-2">Loading entries...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="bg-[#0a0a0a]/70 backdrop-blur-3xl border-[#191a1a] text-white">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">Total</p>
-            <p className="text-2xl">₹{total.toLocaleString()}</p>
-          </div>
-        </div>
+    <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white rounded-2xl overflow-hidden">
+      <CardHeader className="flex items-center gap-2 text-white">
+        <CardTitle>{title}</CardTitle>
+        {description && (
+          <p className="text-sm text-muted-foreground">{description}</p>
+        )}
       </CardHeader>
       <CardContent>
         {entries.length === 0 ? (
-          <div className="text-center text-muted-foreground py-12">
-            <IndianRupee className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>{emptyMessage}</p>
+          <div className="text-center py-8 text-muted-foreground">
+            {emptyMessage}
           </div>
-        ) : loading ? (
-          <>loading..</>
         ) : (
-          <div className="overflow-x-auto rounded-lg backdrop-blur-md bg-black/30 border border-white/20  shadow-lg">
-            <Table className="min-w-full divide-y divide-gray-200/10 bg-black/10">
-              <TableHeader className="bg-black/20 ">
-                <TableRow>
-                  <TableHead className="text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+          <div className="rounded-xl overflow-hidden border border-white/10 bg-black/30 shadow-lg">
+            <Table className="min-w-full divide-y divide-gray-200/10">
+              <TableHeader className="bg-gray-50/10 hover:bg-[#141617]">
+                <TableRow className="bg-black border-none">
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Date
                   </TableHead>
-                  {title === "Students Paid" && (
-                    <TableHead className="text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
-                      Name
-                    </TableHead>
-                  )}
-                  {title === "Students Paid" && (
-                    <TableHead className="text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
-                      Batch
-                    </TableHead>
-                  )}
-                  {title === "Owner Taken" && (
-                    <TableHead className="text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
-                      Director
-                    </TableHead>
-                  )}
-                  <TableHead className="text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Description
                   </TableHead>
-                  <TableHead className="text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Reference
                   </TableHead>
-                  <TableHead className="text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
-                    Type
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                    Student/Director
                   </TableHead>
-                  <TableHead className="text-right text-gray-50 ">
+                  <TableHead className="text-right text-gray-50">
                     Amount
                   </TableHead>
-                  <TableHead className="text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
-                    Actions
-                  </TableHead>
+                  {(currentUser?.role === 1 || currentUser?.role === 3) && (
+                    <TableHead className="text-center text-gray-50">
+                      Actions
+                    </TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
-              <TableBody className="divide-y divide-gray-200/10 bg-black/10 border-0">
+              <TableBody>
                 {entries.map((entry) => (
-                  <TableRow
-                    key={entry.id}
-                    className={`transition-all ${colorClass} hover:bg-white/10 border-0 ${
-                      entries.indexOf(entry) % 2 === 0
-                        ? "bg-black/10"
-                        : "bg-black/20"
-                    }`}
-                  >
-                    <TableCell>
-                      {new Date(entry.createdAt).toLocaleDateString("en-GB")}
+                  <TableRow key={entry.id}>
+                    <TableCell className="font-medium">
+                      {formatDate(entry.transactionDate)}
                     </TableCell>
-                    {title === "Students Paid" && (
-                      <TableCell>
-                        {/* {entry.name} */}
-                        std name will come here
-                      </TableCell>
-                    )}
-                    {title === "Students Paid" && (
-                      <TableCell>
-                        {/* {entry.batchname}  */}
-                        std batch will come here
-                      </TableCell>
-                    )}
-                    {title == "Owner Taken" && (
-                      <TableCell>
-                        {entry.directorId} this is id of director{" "}
-                      </TableCell>
-                    )}
-
                     <TableCell>{entry.description}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">
-                        {entry.referenceId || "-"}
-                      </Badge>
+                      {entry.referenceId || (
+                        <span className="text-muted-foreground">-</span>
+                      )}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={
-                          entry.debitCredit === "CREDIT"
-                            ? "default"
-                            : "secondary"
-                        }
-                      >
-                        {entry.debitCredit}
-                      </Badge>
+                      {entry.transactionType === "STUDENT_PAID" &&
+                      entry.student ? (
+                        <div>
+                          <div className="font-medium">
+                            {entry.student.name}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {entry.student.currentBatch?.name || "No batch"}
+                          </div>
+                        </div>
+                      ) : entry.transactionType === "OWNER_TAKEN" &&
+                        entry.director ? (
+                        <div>
+                          <div className="font-medium">
+                            {entry.director.username}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {entry.director.email}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      ₹{entry.amount.toLocaleString()}
+                      {formatAmount(entry.amount)}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex max-sm:justify-end gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-gray-300  text-gray-700  hover:bg-blue-100  transition-colors duration-200"
-                          onClick={() => handleEdit(entry)}
-                        >
-                          <Pencil className="w-4 h-4 mr-1" />
-                        </Button>
-
-                        <DeleteDialogue
-                          id={entry.id as string}
-                          title="this entry"
-                          handelDelete={handleDelete}
-                        />
-                      </div>
-                    </TableCell>
+                    {(currentUser?.role === 1 || currentUser?.role === 3) && (
+                      <TableCell>
+                        <div className="flex justify-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(entry)}
+                            disabled={loading}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <DeleteDialogue
+                            id={entry.id as string}
+                            title={"this entry"}
+                            handelDelete={() => onDelete(entry.id as string)}
+                          />
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
-                <TableRow className="font-medium">
-                  <TableCell colSpan={4} className="text-right">
-                    Total
-                  </TableCell>
-                  <TableCell className="text-right">
-                    ₹{total.toLocaleString()}
-                  </TableCell>
-                </TableRow>
               </TableBody>
             </Table>
           </div>
@@ -195,4 +181,6 @@ export default function TransactionTable({
       </CardContent>
     </Card>
   );
-}
+};
+
+export default TransactionTable;

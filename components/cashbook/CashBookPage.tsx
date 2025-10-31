@@ -1,10 +1,11 @@
 "use client";
+import { useEffect, useState } from "react";
 import EntryDialog from "@/components/cashbook/EntryDialog";
 import TransactionTable from "@/components/cashbook/TransactionTable";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import * as XLSX from "xlsx";
 import {
   Select,
   SelectContent,
@@ -16,150 +17,228 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
   CashbookEntry,
-  getCashbookEntries,
-  updateCashbookEntry,
+  fetchCashbookEntries,
+  deleteCashbookEntry,
 } from "@/redux/features/cashbook/cashbookSlice";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
 import { fetchCurrentUser, fetchUsers } from "@/redux/features/user/userSlice";
-import { filter } from "lodash";
-import { Download, Filter, Plus, Search } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { Download, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
-
-interface FilterState {
-  locationId: string;
-  year: string;
-  month: string;
-  type: string;
-  debitCredit: string;
-  searchQuery: string;
-}
+import axios from "axios";
+import { BASE_URL } from "@/redux/baseUrl";
 
 export const CashBookPage = () => {
   const dispatch = useAppDispatch();
+  const { entries, totals, pagination, loading, submitting, error } =
+    useAppSelector((s) => s.cashbook);
+  const locations = useAppSelector((s) => s.locations.locations);
+  const user = useAppSelector((s) => s.users.currentUser);
+  const { users } = useAppSelector((s) => s.users);
 
-  const { entries, totals, pagination, loading, error } = useAppSelector(
-    (state) => state.cashbook
-  );
-  const locations = useAppSelector((state) => state.locations.locations);
-  const user = useAppSelector((state) => state.users.currentUser);
-  const { users } = useAppSelector((state) => state.users);
-  console.log(users);
-
-  const currentYear = new Date().getFullYear();
-  const currentMonth = (new Date().getMonth() + 1).toString();
-
-  const [filters, setFilters] = useState<FilterState>({
-    locationId: "",
-    year: currentYear.toString(),
-    month: currentMonth,
-    type: "ALL",
-    debitCredit: "ALL",
-    searchQuery: "",
+  // Local state for filters (EXACTLY like students page)
+  const [filters, setFilters] = useState({
+    locationId: user?.locationId || "",
+    year: new Date().getFullYear().toString(),
+    month: (new Date().getMonth() + 1).toString(),
+    type: "STUDENT_PAID",
   });
 
-  const [showAddEntry, setShowAddEntry] = useState(false);
   const [activeTab, setActiveTab] = useState("students");
+  const [itemsPerPage, setItemsPerPage] = useState<number>(2);
+
+  // Dialog states
+  const [showAddEntry, setShowAddEntry] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [entryToEdit, setEntryToEdit] = useState<CashbookEntry | null>(null);
 
-  const HandleEdit = (entry: CashbookEntry) => {
-    setEntryToEdit(entry);
+  const directors = users.filter((u) => u.role === 2);
 
-    setShowEditDialog(true); // open dialog in edit mode
+  const fetchCashbook = () => {
+    dispatch(
+      fetchCashbookEntries({
+        page: pagination?.page || 1,
+        limit: itemsPerPage,
+        locationId: filters.locationId,
+        month: filters.month === "ALL" ? undefined : filters.month,
+        year: filters.year === "ALL" ? undefined : filters.year,
+        transactionType: filters.type,
+      })
+    );
   };
 
-  // --------------------- FETCH USER AND LOCATIONS ---------------------
+  // Fetch initial locations and users
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token && !user) {
+    if (!locations || locations.length === 0) {
+      dispatch(fetchLocations());
+    }
+    if (!user || !user.id) {
       dispatch(fetchCurrentUser());
     }
-  }, [dispatch, user]);
 
-  useEffect(() => {
-    dispatch(fetchLocations());
     dispatch(fetchUsers());
-  }, [dispatch]);
+  }, [dispatch, locations]);
 
-  // --------------------- AUTO SET LOCATION BASED ON ROLE ---------------------
+  // MAIN DATA FETCHING EFFECT (EXACTLY like students page)
   useEffect(() => {
-    if (!user || locations.length === 0) return;
-
-    let userLocationId = "";
-
-    if (user.role === 1) {
-      // admin - can select location manually, default to first location
-      userLocationId = locations[0]?.id || "";
-    } else {
-      // non-admin - use user's location
-      userLocationId = user.locationId || user.location?.id || "";
-    }
-
-    if (userLocationId && userLocationId !== filters.locationId) {
-      setFilters((prev) => ({
-        ...prev,
-        locationId: userLocationId,
-      }));
-    }
-  }, [user, locations]);
-
-  // --------------------- FETCH CASHBOOK DATA ---------------------
-  useEffect(() => {
-    if (!filters.locationId) return;
-
-    const fetchParams = {
-      locationId: filters.locationId,
-      month: filters.month === "ALL" ? undefined : filters.month,
-      year: filters.year === "ALL" ? undefined : filters.year,
-      transactionType: filters.type === "ALL" ? undefined : filters.type,
-      search: filters.searchQuery || undefined,
-      page: 1,
-      limit: 50, // Increased limit to show more entries
-    };
-
-    // Clean up undefined parameters
-    (Object.keys(fetchParams) as Array<keyof typeof fetchParams>).forEach(
-      (key) => {
-        if (fetchParams[key] === undefined) {
-          delete fetchParams[key];
-        }
-      }
-    );
-
-    dispatch(getCashbookEntries(fetchParams));
+    fetchCashbook();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     dispatch,
     filters.locationId,
     filters.month,
     filters.year,
-    filters.type,
-    filters.searchQuery,
+    // filters.type,
+    pagination?.page,
   ]);
 
-  // --------------------- HANDLE TAB CHANGE ---------------------
+  // Tab change handler
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-
-    // Map tab to transaction type
-    const tabToTypeMap: { [key: string]: string } = {
+    const typeMap: { [key: string]: string } = {
       students: "STUDENT_PAID",
       expenses: "OFFICE_EXPENSE",
       owner: "OWNER_TAKEN",
     };
-
-    const transactionType = tabToTypeMap[tab] || "ALL";
-
     setFilters((prev) => ({
       ...prev,
-      type: transactionType,
+      type: typeMap[tab] || "STUDENT_PAID",
     }));
+    dispatch(
+      fetchCashbookEntries({
+        page: 1,
+        limit: itemsPerPage,
+        locationId: filters.locationId,
+        month: filters.month === "ALL" ? undefined : filters.month,
+        year: filters.year === "ALL" ? undefined : filters.year,
+        transactionType: typeMap[tab] || "STUDENT_PAID",
+      })
+    );
   };
 
-  // --------------------- HELPER ---------------------
-  const getMonthName = (month: string) => {
-    if (month === "ALL") return "All Months";
-    const monthNames = [
+  // Manual refetch function (like students page)
+
+  // Edit handler
+  const handleEdit = (entry: CashbookEntry) => {
+    setEntryToEdit(entry);
+    setShowEditDialog(true);
+  };
+
+  // Delete handler with manual refetch
+  const handleDeleteEntry = async (id: string) => {
+    await dispatch(deleteCashbookEntry(id));
+    fetchCashbook();
+  };
+
+  // Filter entries by active tab (client-side filtering when type is "ALL")
+  const getFilteredEntries = () => {
+    if (filters.type === "ALL") {
+      const typeMap: { [key: string]: string } = {
+        students: "STUDENT_PAID",
+        expenses: "OFFICE_EXPENSE",
+        owner: "OWNER_TAKEN",
+      };
+      return entries.filter(
+        (entry) => entry.transactionType === typeMap[activeTab]
+      );
+    }
+    return entries;
+  };
+
+  // Pagination handler
+  const handlePageChange = (page: number) => {
+    console.log("Page changed to", page);
+
+    dispatch(
+      fetchCashbookEntries({
+        page,
+        limit: itemsPerPage,
+        locationId: filters.locationId,
+        month: filters.month === "ALL" ? undefined : filters.month,
+        year: filters.year === "ALL" ? undefined : filters.year,
+        transactionType: filters.type,
+      })
+    );
+  };
+
+  const handleExportCashbook = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/cashbook/entries`, {
+        params: {
+          locationId: filters.locationId,
+          month: filters.month,
+          year: filters.year,
+          transactionType:
+            activeTab === "students"
+              ? "STUDENT_PAID"
+              : activeTab === "expenses"
+              ? "OFFICE_EXPENSE"
+              : "OWNER_TAKEN",
+          limit: 10000,
+        },
+      });
+
+      const raw =
+        res.data?.data?.entries || res.data?.data?.cashbookEntries || [];
+
+      const totals = res.data?.data?.totals || {};
+
+      if (!Array.isArray(raw) || raw.length === 0) {
+        toast.error("No cashbook entries found for export");
+        return;
+      }
+
+      // -------------------- Sheet 1: Entries --------------------
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const entriesSheet = raw.map((e: any) => ({
+        ID: e.id,
+        "Transaction Date": e.transactionDate
+          ? new Date(e.transactionDate).toLocaleDateString()
+          : "",
+        "Transaction Type": e.transactionType || "",
+        Amount: e.amount || "",
+        "Debit/Credit": e.debitCredit || "",
+        Description: e.description || "",
+        "Student Name": e.student?.name || "",
+        "Student Admission No": e.student?.admissionNo || "",
+        "Batch Name": e.student?.currentBatch?.name || "",
+        "Director Name": e.director?.name || "",
+        "Director Email": e.director?.email || "",
+        "Created At": e.createdAt ? new Date(e.createdAt).toLocaleString() : "",
+      }));
+
+      // -------------------- Sheet 2: Totals --------------------
+      const totalsSheet = [
+        { Label: "Students Paid", Value: totals.studentsPaid || 0 },
+        { Label: "Office Expense", Value: totals.officeExpense || 0 },
+        { Label: "Owner Taken", Value: totals.ownerTaken || 0 },
+        { Label: "Opening Balance", Value: totals.openingBalance || 0 },
+        { Label: "Closing Balance", Value: totals.closingBalance || 0 },
+        { Label: "Cash In Hand", Value: totals.cashInHand || 0 },
+        { Label: "Total Debit", Value: totals.totalDebit || 0 },
+        { Label: "Total Credit", Value: totals.totalCredit || 0 },
+      ];
+
+      // -------------------- Create Workbook --------------------
+      const wb = XLSX.utils.book_new();
+      const wsEntries = XLSX.utils.json_to_sheet(entriesSheet);
+      const wsTotals = XLSX.utils.json_to_sheet(totalsSheet);
+
+      XLSX.utils.book_append_sheet(wb, wsEntries, "Cashbook Entries");
+      XLSX.utils.book_append_sheet(wb, wsTotals, "Totals");
+
+      // -------------------- Export File --------------------
+      XLSX.writeFile(wb, "Cashbook_Report.xlsx");
+
+      toast.success("Cashbook exported successfully with totals sheet");
+    } catch (err) {
+      console.error(err);
+      toast.error("Error exporting cashbook");
+    }
+  };
+
+  const getMonthName = (m: string) => {
+    if (m === "ALL") return "All Months";
+    const names = [
       "January",
       "February",
       "March",
@@ -173,121 +252,102 @@ export const CashBookPage = () => {
       "November",
       "December",
     ];
-    return monthNames[parseInt(month) - 1] || month;
+    return names[parseInt(m) - 1] || m;
   };
 
-  // --------------------- EXPORT ---------------------
-  const handleExport = () => {
-    toast.success("Cash book exported successfully");
-  };
-
-  // --------------------- FILTERED ENTRIES FOR TABS ---------------------
-  const getFilteredEntries = () => {
-    if (filters.type === "ALL") {
-      // When no type filter is applied, use active tab to filter
-      const tabToTypeMap: { [key: string]: string } = {
-        students: "STUDENT_PAID",
-        expenses: "OFFICE_EXPENSE",
-        owner: "OWNER_TAKEN",
-      };
-      const transactionType = tabToTypeMap[activeTab];
-      return entries.filter(
-        (entry) => entry.transactionType === transactionType
-      );
-    }
-    return entries;
-  };
-
-  const filteredEntries = getFilteredEntries();
-
-  // Show loading state
   if (loading && entries.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">
-            Loading cashbook entries...
-          </p>
+          <p className="mt-4 text-muted-foreground">Loading cashbook...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-black to-[#0A1533] text-white p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
         <div>
-          <h1 className="text-3xl font-bold">Cash Book</h1>
-          <p className="text-muted-foreground">
-            Track all cash transactions, income, and expenses
-          </p>
+          <h1 className="text-3xl font-bold text-white">Cash Book</h1>
+          <p className="text-sm text-gray-300">Track all transactions</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="destructive" onClick={handleExport}>
+          <Button
+            className="bg-white/10 border border-white/20 hover:bg-white/20 text-white"
+            onClick={handleExportCashbook}
+            disabled={entries.length === 0}
+          >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button onClick={() => setShowAddEntry(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Entry
-          </Button>
+          {(user?.role === 1 || user?.role === 3) && (
+            <Button
+              onClick={() => setShowAddEntry(true)}
+              disabled={!filters.locationId}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Entry
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Add Entry Modal */}
-      <EntryDialog
-        showAddEntry={showAddEntry}
-        setShowAddEntry={setShowAddEntry}
-        locationId={filters.locationId}
-        directors={users.filter((user) => user.role == 2)}
-      />
-      {/* Edit Entry Dialog */}
-      {entryToEdit && (
+      {/* Dialogs */}
+
+      {user && (
+        <EntryDialog
+          showAddEntry={showAddEntry}
+          setShowAddEntry={setShowAddEntry}
+          locationId={filters.locationId}
+          directors={directors}
+          user={user}
+          handleTabChange={setActiveTab}
+        />
+      )}
+
+      {entryToEdit && user && (
         <EntryDialog
           showAddEntry={showEditDialog}
           setShowAddEntry={setShowEditDialog}
           locationId={entryToEdit.locationId}
-          directors={users.filter((user) => user.role == 2)}
+          directors={directors}
           isEdit={true}
           existingData={entryToEdit}
+          user={user}
+          handleTabChange={setActiveTab}
         />
       )}
-      {/* Error Message */}
+
       {error && (
-        <div className="bg-destructive/15 text-destructive px-4 py-3 rounded-md">
-          {error}
-        </div>
+        <div className="bg-red-900/20 text-red-400 p-4 rounded-md">{error}</div>
       )}
 
       {/* Filters */}
-      <Card className="bg-blue-100/10 text-white border-0">
+      <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filters
-          </CardTitle>
+          <CardTitle className="text-lg">Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-            {/* Location (admin only) */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {user?.role === 1 && (
               <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
+                <Label>Location</Label>
                 <Select
                   value={filters.locationId}
                   onValueChange={(value) =>
-                    setFilters({ ...filters, locationId: value })
+                    setFilters((prev) => ({ ...prev, locationId: value }))
                   }
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Location" />
+                  <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
+                    <SelectValue placeholder="Select location" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {locations.map((loc) => (
-                      <SelectItem key={loc.id} value={loc.id as string}>
-                        {loc.name}
+                  <SelectContent className="bg-[#0A1533] text-white border-white/20">
+                    {locations.map((l) => (
+                      <SelectItem key={l.id} value={l.id as string}>
+                        {l.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -295,43 +355,43 @@ export const CashBookPage = () => {
               </div>
             )}
 
-            {/* Year */}
             <div className="space-y-2">
-              <Label htmlFor="year">Year</Label>
+              <Label>Year</Label>
               <Select
                 value={filters.year}
                 onValueChange={(value) =>
-                  setFilters({ ...filters, year: value })
+                  setFilters((prev) => ({ ...prev, year: value }))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 5 }, (_, i) => currentYear - i).map(
-                    (year) => (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    )
-                  )}
+                <SelectContent className="bg-[#0A1533] text-white border-white/20">
+                  <SelectItem value="ALL">All Years</SelectItem>
+                  {Array.from(
+                    { length: 5 },
+                    (_, i) => new Date().getFullYear() - i
+                  ).map((y) => (
+                    <SelectItem key={y} value={y.toString()}>
+                      {y}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Month */}
             <div className="space-y-2">
-              <Label htmlFor="month">Month</Label>
+              <Label>Month</Label>
               <Select
                 value={filters.month}
                 onValueChange={(value) =>
-                  setFilters({ ...filters, month: value })
+                  setFilters((prev) => ({ ...prev, month: value }))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#0A1533] text-white border-white/20">
                   <SelectItem value="ALL">All Months</SelectItem>
                   {Array.from({ length: 12 }, (_, i) => (
                     <SelectItem key={i + 1} value={(i + 1).toString()}>
@@ -341,114 +401,76 @@ export const CashBookPage = () => {
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Search */}
-            <div className="space-y-2">
-              <Label htmlFor="search">Search</Label>
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search description..."
-                  value={filters.searchQuery}
-                  onChange={(e) =>
-                    setFilters({ ...filters, searchQuery: e.target.value })
-                  }
-                  className="pl-8"
-                />
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Totals Summary Card */}
-
+      {/* Totals */}
       <div className="grid gap-4 md:grid-cols-5">
-        {/* student paid */}
-        <Card className="bg-gradient-to-br from-green-50/10 to-green-100/20 border-green-200/10">
+        <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-green-200">
-              Students Paid
-            </CardTitle>
+            <CardTitle className="text-sm">Students Paid</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl text-white">
-              ₹{totals.studentsPaid?.toFixed(2) || "0.00"}
+            <div className="text-2xl font-semibold text-green-600">
+              ₹{totals.studentsPaid?.toLocaleString("en-IN") || "0.00"}
             </div>
-            <p className="text-xs text-white mt-1">Credit</p>
           </CardContent>
         </Card>
-        {/* office expense */}
-        <Card className="bg-gradient-to-br from-blue-50/10 to-blue-100/20 border-blue-200/10">
+        <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-blue-200">
-              Office Expenses
-            </CardTitle>
+            <CardTitle className="text-sm">Office Expenses</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl text-white">
-              ₹ {totals.officeExpense?.toFixed(2) || "0.00"}
+            <div className="text-2xl font-semibold text-red-600">
+              ₹{totals.officeExpense?.toLocaleString("en-IN") || "0.00"}
             </div>
-            <p className="text-xs text-white mt-1">Debit</p>
           </CardContent>
         </Card>
-        {/* owner taken */}
-        <Card className="bg-gradient-to-br from-yellow-50/10 to-yellow-100/20 border-yellow-200/10">
+        <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-yellow-200">
-              Owner Taken
-            </CardTitle>
+            <CardTitle className="text-sm">Owner Taken</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl text-white">
-              ₹ {totals.ownerTaken?.toFixed(2) || "0.00"}
+            <div className="text-2xl font-semibold text-orange-600">
+              ₹{totals.ownerTaken?.toLocaleString("en-IN") || "0.00"}
             </div>
-            <p className="text-xs text-white mt-1">Debit</p>
           </CardContent>
         </Card>
-        {/* closing */}
-        <Card className="bg-gradient-to-br from-purple-50/10 to-purple-100/20 border-purple-200/10">
+        <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-purple-200">
-              {getMonthName(
-                filters.month === "ALL"
-                  ? "ALL"
-                  : String(
-                      Number(filters.month) === 1
-                        ? 12
-                        : Number(filters.month) - 1
-                    )
-              )}{" "}
-              Closing
-            </CardTitle>
+            <CardTitle className="text-sm">Closing Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl text-white">
-              ₹ {totals.closingBalance?.toFixed(2) || "0.00"}
+            <div
+              className={`text-2xl font-semibold ${
+                (totals.closingBalance || 0) >= 0
+                  ? "text-green-600"
+                  : "text-red-600"
+              }`}
+            >
+              ₹{totals.closingBalance?.toLocaleString("en-IN") || "0.00"}
             </div>
-            <p className="text-xs text-white mt-1">Balance</p>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-orange-50/10 to-orange-100/20 border-orange-200/10">
+        <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-orange-200 ">
-              Cash in Hand
-            </CardTitle>
+            <CardTitle className="text-sm">Cash in Hand</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl text-white">₹{totals.cashInHand}</div>
-            <p className="text-xs text-white mt-1">Current</p>
+            <div className="text-2xl font-semibold text-blue-600">
+              ₹{totals.cashInHand?.toLocaleString("en-IN") || "0.00"}
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Tabs (transactions) */}
-      <Tabs
-        value={activeTab}
-        onValueChange={handleTabChange}
-        className="w-full"
-      >
-        <TabsList className="grid w-full grid-cols-3 bg-[#17191a] ">
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <TabsList
+          className="grid w-full grid-cols-3  bg-white/10 border border-white/10 backdrop-blur-md text-white
+"
+        >
           <TabsTrigger className="text-white" value="students">
             Students Paid
           </TabsTrigger>
@@ -460,83 +482,103 @@ export const CashBookPage = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="students" className="space-y-4">
+        <TabsContent value="students">
           <TransactionTable
-            entries={filteredEntries}
+            entries={getFilteredEntries()}
             title="Students Paid"
-            description="All student fee payments received"
             emptyMessage="No student payments found"
-            colorClass="bg-green-50"
-            handleEdit={HandleEdit}
+            handleEdit={handleEdit}
+            onDelete={handleDeleteEntry}
             loading={loading}
           />
         </TabsContent>
 
-        <TabsContent value="expenses" className="space-y-4">
+        <TabsContent value="expenses">
           <TransactionTable
-            entries={filteredEntries}
+            entries={getFilteredEntries()}
             title="Office Expenses"
-            description="All office and operational expenses"
             emptyMessage="No office expenses found"
-            colorClass="bg-red-50"
-            handleEdit={HandleEdit}
+            handleEdit={handleEdit}
+            onDelete={handleDeleteEntry}
             loading={loading}
           />
         </TabsContent>
 
-        <TabsContent value="owner" className="space-y-4">
+        <TabsContent value="owner">
           <TransactionTable
-            entries={filteredEntries}
+            entries={getFilteredEntries()}
             title="Owner Taken"
-            description="All director/owner withdrawals"
             emptyMessage="No owner withdrawals found"
-            colorClass="bg-amber-50"
-            handleEdit={HandleEdit}
+            handleEdit={handleEdit}
+            onDelete={handleDeleteEntry}
             loading={loading}
           />
         </TabsContent>
       </Tabs>
 
       {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
-                Showing {entries.length} of {pagination.totalEntries} entries
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  disabled={pagination.page === 1}
-                  onClick={() => {
-                    setFilters((prev) => ({
-                      ...prev,
-                      page: pagination.page - 1,
-                    }));
-                  }}
-                >
-                  Previous
-                </Button>
-                <div className="flex items-center px-4">
-                  Page {pagination.page} of {pagination.totalPages}
-                </div>
-                <Button
-                  variant="outline"
-                  disabled={pagination.page >= pagination.totalPages}
-                  onClick={() => {
-                    setFilters((prev) => ({
-                      ...prev,
-                      page: pagination.page + 1,
-                    }));
-                  }}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {pagination && pagination.totalEntries > 1 && (
+        <div className="flex items-center justify-end mt-6 px-4">
+          {/* Pagination buttons */}
+          <div className="flex items-center gap-2">
+            {/* Previous */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handlePageChange(pagination.page - 1)}
+              disabled={pagination.page === 1}
+              className="bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+
+            {/* Page numbers */}
+            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+              .filter(
+                (page) =>
+                  page === 1 ||
+                  page === pagination.totalPages ||
+                  Math.abs(page - pagination.page) <= 1
+              )
+              .map((page, index, array) => {
+                const showEllipsis =
+                  index < array.length - 1 && array[index + 1] - page > 1;
+                const isActive = pagination.page === page;
+                return (
+                  <div key={page} className="flex items-center">
+                    <Button
+                      variant={isActive ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => handlePageChange(page)}
+                      className={`${
+                        isActive
+                          ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
+                          : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/10"
+                      }`}
+                    >
+                      {page}
+                    </Button>
+                    {showEllipsis && (
+                      <span className="px-2 text-gray-500 select-none">
+                        ...
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+
+            {/* Next */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handlePageChange(pagination.page + 1)}
+              disabled={pagination.page === pagination.totalPages}
+              className="bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );
