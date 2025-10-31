@@ -2,6 +2,7 @@ import { BASE_URL } from "@/redux/baseUrl";
 import toast from "react-hot-toast";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
+import { Student, User } from "@/lib/types";
 
 // ----------------------------------
 // Types and Interfaces
@@ -17,9 +18,11 @@ export interface CashbookEntry {
   referenceId?: string;
   locationId: string;
   studentId?: string;
-  directorId?: string; // Added this field
+  directorId?: string;
   createdAt: string;
   updatedAt: string;
+  student?: Student;
+  director?: User;
 }
 
 export interface CashbookTotals {
@@ -40,28 +43,32 @@ export interface Pagination {
   totalEntries: number;
 }
 
-export interface CashbookState {
+export interface CashbookResponse {
   entries: CashbookEntry[];
   totals: CashbookTotals;
   pagination: Pagination;
-  loading: boolean;
-  error: string | null;
-  successMessage: string | null;
 }
 
-export interface FetchParams {
+export interface CashbookState {
+  entries: CashbookEntry[];
+  totals: CashbookTotals;
+  pagination: Pagination | null;
+  loading: boolean;
+  submitting: boolean;
+  error: string | null;
+}
+
+export interface FetchCashbookParams {
   locationId: string;
   month?: string;
   year?: string;
-  search?: string;
-  transactionType?: string;
-  debitCredit?: string;
+  transactionType: string;
   page?: number;
   limit?: number;
 }
 
 export interface AddCashbookEntryData {
-  transactionDate: string; // ISO string format
+  transactionDate: string;
   amount: number;
   transactionType: "STUDENT_PAID" | "OFFICE_EXPENSE" | "OWNER_TAKEN";
   description?: string;
@@ -75,134 +82,102 @@ export interface AddCashbookEntryData {
 // Async Thunks
 // ----------------------------------
 
-// ➕ Add a Cashbook Entry
+export const fetchCashbookEntries = createAsyncThunk<
+  CashbookResponse,
+  FetchCashbookParams | undefined
+>("cashbook/fetchEntries", async (params, { rejectWithValue }) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get(`${BASE_URL}/api/cashbook/entries`, {
+      params: params || {},
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data.data as CashbookResponse;
+  } catch (error: unknown) {
+    let errorMessage = "Failed to fetch entries";
+    if (axios.isAxiosError(error)) {
+      errorMessage = error.response?.data?.message || error.message;
+    }
+    toast.error(errorMessage);
+    return rejectWithValue(errorMessage);
+  }
+});
+
 export const addCashbookEntry = createAsyncThunk<
   CashbookEntry,
-  AddCashbookEntryData,
-  { rejectValue: string }
->("cashbook/addCashbookEntry", async (entryData, { rejectWithValue }) => {
+  AddCashbookEntryData
+>("cashbook/addEntry", async (entryData, { rejectWithValue }) => {
   const token = localStorage.getItem("token");
   try {
     const response = await axios.post(
       `${BASE_URL}/api/cashbook/add-entry`,
       entryData,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       }
-    ); // Fixed endpoint
-    if (response.data.success === true) {
+    );
+    if (response.data.success) {
       toast.success(response.data.message || "Entry added successfully");
     }
     return response.data.data as CashbookEntry;
   } catch (error: unknown) {
-    let errorMessage = "Failed to add cashbook entry"; // Fixed error message
-    if (axios.isAxiosError(error) && error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
+    let errorMessage = "Failed to add entry";
+    if (axios.isAxiosError(error)) {
+      errorMessage = error.response?.data?.message || error.message;
     }
     toast.error(errorMessage);
     return rejectWithValue(errorMessage);
   }
 });
 
-// 📄 Get Cashbook Entries
-export const getCashbookEntries = createAsyncThunk<
-  {
-    entries: CashbookEntry[];
-    totals: CashbookTotals;
-    pagination: Pagination;
-  },
-  FetchParams,
-  { rejectValue: string }
->("cashbook/getCashbookEntries", async (params, { rejectWithValue }) => {
-  const token = localStorage.getItem("token");
-  try {
-    const response = await axios.get(`${BASE_URL}/api/cashbook/entries`, {
-      params,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }); // Fixed endpoint
-    return response.data.data;
-  } catch (error: unknown) {
-    let errorMessage = "Failed to fetch Cashbook Entries";
-    if (axios.isAxiosError(error) && error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-    toast.error(errorMessage);
-    return rejectWithValue(errorMessage);
-  }
-});
-
-// ✏️ Update Cashbook Entry
 export const updateCashbookEntry = createAsyncThunk<
   CashbookEntry,
-  { id: string; data: Partial<CashbookEntry> },
-  { rejectValue: string }
->("cashbook/updateCashbookEntry", async ({ id, data }, { rejectWithValue }) => {
+  { id: string; data: Partial<CashbookEntry> }
+>("cashbook/updateEntry", async ({ id, data }, { rejectWithValue }) => {
   const token = localStorage.getItem("token");
   try {
     const response = await axios.put(
       `${BASE_URL}/api/cashbook/update-entry/${id}`,
       data,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      { headers: { Authorization: `Bearer ${token}` } }
     );
-    if (response.data.success === true) {
+    if (response.data.success) {
       toast.success(response.data.message || "Entry updated successfully");
     }
     return response.data.data as CashbookEntry;
   } catch (error: unknown) {
-    let errorMessage = "Failed to update cashbook entry";
-    if (axios.isAxiosError(error) && error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
+    let errorMessage = "Failed to update entry";
+    if (axios.isAxiosError(error)) {
+      errorMessage = error.response?.data?.message || error.message;
     }
     toast.error(errorMessage);
     return rejectWithValue(errorMessage);
   }
 });
 
-// 🗑️ Delete Cashbook Entry
-export const deleteCashbookEntry = createAsyncThunk<
-  string, // Return the deleted entry ID
-  string, // Accept the entry ID
-  { rejectValue: string }
->("cashbook/deleteCashbookEntry", async (id, { rejectWithValue }) => {
-  const token = localStorage.getItem("token");
-  try {
-    const response = await axios.delete(
-      `${BASE_URL}/api/cashbook/delete-entry/${id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+export const deleteCashbookEntry = createAsyncThunk<string, string>(
+  "cashbook/deleteEntry",
+  async (id, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await axios.delete(
+        `${BASE_URL}/api/cashbook/delete-entry/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        toast.success(response.data.message || "Entry deleted successfully");
       }
-    );
-    if (response.data.success === true) {
-      toast.success(response.data.message || "Entry deleted successfully");
+      return id;
+    } catch (error: unknown) {
+      let errorMessage = "Failed to delete entry";
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data?.message || error.message;
+      }
+      toast.error(errorMessage);
+      return rejectWithValue(errorMessage);
     }
-    return id;
-  } catch (error: unknown) {
-    let errorMessage = "Failed to delete cashbook entry";
-    if (axios.isAxiosError(error) && error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-    toast.error(errorMessage);
-    return rejectWithValue(errorMessage);
   }
-});
+);
 
 // ----------------------------------
 // Initial State
@@ -220,15 +195,10 @@ const initialState: CashbookState = {
     totalCredit: 0,
     totalDebit: 0,
   },
-  pagination: {
-    page: 1,
-    limit: 10,
-    totalPages: 1,
-    totalEntries: 0,
-  },
+  pagination: null,
   loading: false,
+  submitting: false,
   error: null,
-  successMessage: null,
 };
 
 // ----------------------------------
@@ -239,102 +209,78 @@ const cashbookSlice = createSlice({
   name: "cashbook",
   initialState,
   reducers: {
-    clearMessages: (state) => {
+    clearError: (state) => {
       state.error = null;
-      state.successMessage = null;
     },
   },
   extraReducers: (builder) => {
+    // FETCH ENTRIES
     builder
-      // Add Entry
+      .addCase(fetchCashbookEntries.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCashbookEntries.fulfilled, (state, action) => {
+        state.loading = false;
+        state.entries = action.payload.entries || [];
+        state.totals = action.payload.totals || initialState.totals;
+        state.pagination = action.payload.pagination || null;
+      })
+      .addCase(fetchCashbookEntries.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to fetch entries";
+      });
+
+    // ADD ENTRY
+    builder
       .addCase(addCashbookEntry.pending, (state) => {
-        state.loading = true;
+        state.submitting = true;
         state.error = null;
       })
-      .addCase(
-        addCashbookEntry.fulfilled,
-        (state, action: PayloadAction<CashbookEntry>) => {
-          state.loading = false;
-          state.successMessage = "Cashbook entry added successfully";
-          state.entries.unshift(action.payload);
-        }
-      )
+      .addCase(addCashbookEntry.fulfilled, (state, action) => {
+        state.submitting = false;
+        state.entries = [action.payload, ...state.entries];
+      })
       .addCase(addCashbookEntry.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Error adding entry";
-      })
+        state.submitting = false;
+        state.error = action.error.message || "Failed to add entry";
+      });
 
-      // Get Entries
-      .addCase(getCashbookEntries.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(
-        getCashbookEntries.fulfilled,
-        (
-          state,
-          action: PayloadAction<{
-            entries: CashbookEntry[];
-            totals: CashbookTotals;
-            pagination: Pagination;
-          }>
-        ) => {
-          state.loading = false;
-          state.entries = action.payload.entries || [];
-          state.totals = action.payload.totals || initialState.totals;
-          state.pagination =
-            action.payload.pagination || initialState.pagination;
-        }
-      )
-      .addCase(getCashbookEntries.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Error fetching entries";
-      })
-
-      // Update Entry
+    // UPDATE ENTRY
+    builder
       .addCase(updateCashbookEntry.pending, (state) => {
-        state.loading = true;
+        state.submitting = true;
         state.error = null;
       })
-      .addCase(
-        updateCashbookEntry.fulfilled,
-        (state, action: PayloadAction<CashbookEntry>) => {
-          state.loading = false;
-          state.successMessage = "Cashbook entry updated successfully";
-          const index = state.entries.findIndex(
-            (entry) => entry.id === action.payload.id
-          );
-          if (index !== -1) {
-            state.entries[index] = action.payload;
-          }
-        }
-      )
+      .addCase(updateCashbookEntry.fulfilled, (state, action) => {
+        state.submitting = false;
+        state.entries = state.entries.map((entry) =>
+          entry.id === action.payload.id ? action.payload : entry
+        );
+      })
       .addCase(updateCashbookEntry.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Error updating entry";
-      })
+        state.submitting = false;
+        state.error = action.error.message || "Failed to update entry";
+      });
 
-      // Delete Entry
+    // DELETE ENTRY
+    builder
       .addCase(deleteCashbookEntry.pending, (state) => {
-        state.loading = true;
+        state.submitting = true;
         state.error = null;
       })
-      .addCase(
-        deleteCashbookEntry.fulfilled,
-        (state, action: PayloadAction<string>) => {
-          state.loading = false;
-          state.successMessage = "Cashbook entry deleted successfully";
-          state.entries = state.entries.filter(
-            (entry) => entry.id !== action.payload
-          );
-        }
-      )
+      .addCase(deleteCashbookEntry.fulfilled, (state, action) => {
+        state.submitting = false;
+        state.entries = state.entries.filter(
+          (entry) => entry.id !== action.payload
+        );
+      })
       .addCase(deleteCashbookEntry.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Error deleting entry";
+        state.submitting = false;
+        state.error = action.error.message || "Failed to delete entry";
       });
   },
 });
 
-export const { clearMessages } = cashbookSlice.actions;
+export const { clearError } = cashbookSlice.actions;
 export default cashbookSlice.reducer;

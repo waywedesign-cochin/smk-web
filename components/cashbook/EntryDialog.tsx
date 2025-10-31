@@ -1,6 +1,13 @@
 "use client";
 import { Button } from "../ui/button";
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +39,7 @@ import { fetchStudents } from "@/redux/features/student/studentSlice";
 import {
   addCashbookEntry,
   CashbookEntry,
+  fetchCashbookEntries,
   updateCashbookEntry,
 } from "@/redux/features/cashbook/cashbookSlice";
 
@@ -44,7 +52,7 @@ interface CashBookFormData {
   referenceId?: string;
   studentId?: string;
   directorId?: string;
-  batchId?: string; // Only for frontend filtering, not sent to backend
+  batchId?: string;
 }
 
 interface EntryDialogProps {
@@ -53,18 +61,28 @@ interface EntryDialogProps {
   locationId: string;
   directors: User[];
   isEdit?: boolean;
-  existingData?: CashbookEntry;
+  existingData?: CashbookEntry | null;
+  onSuccess?: () => void;
+  user: User;
+  handleTabChange: Dispatch<SetStateAction<string>>;
 }
 
-function EntryDialog({
+export default function EntryDialog({
   showAddEntry,
   setShowAddEntry,
-  locationId,
+  locationId: propLocationId,
   directors,
   isEdit = false,
   existingData,
+  handleTabChange,
+  user,
 }: EntryDialogProps) {
   const dispatch = useAppDispatch();
+  // const user = useAppSelector((state) => state.users.currentUser);
+  const locations = useAppSelector((state) => state.locations.locations);
+  const batches = useAppSelector((state) => state.batches.batches ?? []);
+  const students = useAppSelector((state) => state.students.students ?? []);
+
   const {
     register,
     handleSubmit,
@@ -77,14 +95,11 @@ function EntryDialog({
       transactionDate: new Date(),
       transactionType: "STUDENT_PAID",
       amount: 0,
-      locationId: locationId,
+      locationId: propLocationId,
+      description: "",
+      referenceId: "",
     },
   });
-
-  const user = useAppSelector((state) => state.users.currentUser);
-  const locations = useAppSelector((state) => state.locations.locations);
-  const { batches } = useAppSelector((state) => state.batches);
-  const { students } = useAppSelector((state) => state.students);
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date()
@@ -92,52 +107,150 @@ function EntryDialog({
   const [loadingBatches, setLoadingBatches] = useState(false);
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
-
+  console.log("filtered student ", filteredStudents);
   const watchType = watch("transactionType");
   const watchLocation = watch("locationId");
   const watchBatch = watch("batchId");
+  const watchStudent = watch("studentId");
+  console.log(watchBatch);
+  // Track loaded state
+  const hasLoadedBatches = useRef(false);
+  const hasLoadedStudents = useRef(false);
 
-  // Initialize form with existing data for edit mode
+  /** RESET FETCH FLAGS ON OPEN */
+  useEffect(() => {
+    if (showAddEntry) {
+      hasLoadedBatches.current = false;
+      hasLoadedStudents.current = false;
+    }
+  }, [showAddEntry]);
+
+  /** INITIALIZE FORM */
   useEffect(() => {
     if (isEdit && existingData) {
-      const transactionDate = existingData.transactionDate
+      const txDate = existingData.transactionDate
         ? new Date(existingData.transactionDate)
         : new Date();
-
       reset({
-        transactionDate,
+        transactionDate: txDate,
         transactionType: existingData.transactionType,
-        description: existingData.description || "",
-        amount: existingData.amount || 0,
+        description: existingData.description ?? "",
+        amount: existingData.amount ?? 0,
         locationId: existingData.locationId,
-        referenceId: existingData.referenceId || "",
-        studentId: existingData.studentId || undefined,
-        directorId: existingData.directorId || undefined,
+        referenceId: existingData.referenceId ?? "",
+        studentId: existingData.studentId ?? undefined,
+        directorId: existingData.directorId ?? undefined,
+        batchId: existingData.student?.currentBatchId ?? undefined,
       });
-      setSelectedDate(transactionDate);
-    }
-  }, [isEdit, existingData, reset]);
-
-  // Fetch batches when location changes
-  useEffect(() => {
-    if (watchType === "STUDENT_PAID" && watchLocation) {
-      fetchBatchesByLocation(watchLocation);
-    }
-  }, [watchType, watchLocation]);
-
-  // Filter students when batch changes
-  useEffect(() => {
-    if (watchType === "STUDENT_PAID" && watchBatch) {
-      const filtered = students.filter(
-        (student) => student.currentBatch?.id === watchBatch
-      );
-      setFilteredStudents(filtered);
+      setSelectedDate(txDate);
     } else {
-      setFilteredStudents(students);
+      reset({
+        transactionDate: new Date(),
+        transactionType: "STUDENT_PAID",
+        amount: 0,
+        description: "",
+        locationId: propLocationId,
+        referenceId: "",
+      });
+      setSelectedDate(new Date());
+      setFilteredStudents([]);
     }
-  }, [watchBatch, students, watchType]);
+  }, [isEdit, existingData, reset, propLocationId]);
 
-  // Reset fields when transaction type changes
+  /** FETCH BATCHES */
+  const loadBatches = useCallback(
+    async (locId: string) => {
+      if (!showAddEntry || hasLoadedBatches.current || !locId) return;
+      if (watchType !== "STUDENT_PAID") return;
+      hasLoadedBatches.current = true;
+
+      setLoadingBatches(true);
+      try {
+        await dispatch(fetchBatches({ location: locId })).unwrap();
+      } catch (e) {
+        console.error("Batch fetch failed:", e);
+      } finally {
+        setLoadingBatches(false);
+      }
+    },
+    [dispatch, watchType, showAddEntry]
+  );
+
+  useEffect(() => {
+    if (showAddEntry && watchType === "STUDENT_PAID" && watchLocation) {
+      loadBatches(watchLocation);
+    }
+  }, [showAddEntry, watchType, watchLocation, loadBatches]);
+
+  /** FETCH STUDENTS */
+  const loadStudents = useCallback(
+    async (batchId: string, locId: string) => {
+      if (!showAddEntry || hasLoadedStudents.current || !batchId || !locId)
+        return;
+      hasLoadedStudents.current = true;
+
+      setLoadingStudents(true);
+      try {
+        if (existingData?.student?.currentBatchId !== batchId) {
+          await dispatch(
+            fetchStudents({
+              batch: batchId,
+              location: locId,
+              page: 1,
+              limit: 200,
+            })
+          );
+        }
+      } catch (e) {
+        console.error("Student fetch failed:", e);
+      } finally {
+        setLoadingStudents(false);
+      }
+    },
+    [dispatch, showAddEntry]
+  );
+
+  /** FILTER STUDENTS ON BATCH CHANGE */
+  useEffect(() => {
+    if (watchType !== "STUDENT_PAID" || !watchBatch) {
+      setFilteredStudents([]);
+      return;
+    }
+
+    const filtered = students.filter((s) => s.currentBatch?.id === watchBatch);
+    setFilteredStudents(filtered || existingData?.student);
+    console.log("filtered", filtered);
+
+    if (!isEdit && filtered.length === 1) {
+      setValue("studentId", filtered[0].id);
+    }
+  }, [watchBatch, students, watchStudent, watchType, isEdit, setValue]);
+
+  /** CONDITIONAL STUDENT FETCH */
+  useEffect(() => {
+    if (
+      showAddEntry &&
+      watchType === "STUDENT_PAID" &&
+      watchBatch &&
+      watchLocation
+    ) {
+      const alreadyLoaded = students.some(
+        (s) => s.currentBatch?.id === watchBatch
+      );
+      if (!alreadyLoaded && !hasLoadedStudents.current) {
+        loadStudents(watchBatch, watchLocation);
+      }
+    }
+  }, [
+    showAddEntry,
+    watchBatch,
+    watchLocation,
+    watchType,
+    loadStudents,
+    students,
+  ]);
+
+  /** RESET DEPENDENT FIELDS WHEN TYPE CHANGES */
   useEffect(() => {
     if (watchType !== "STUDENT_PAID") {
       setValue("batchId", undefined);
@@ -149,39 +262,10 @@ function EntryDialog({
     }
   }, [watchType, setValue]);
 
-  const fetchBatchesByLocation = async (locationId: string) => {
-    setLoadingBatches(true);
-    try {
-      await dispatch(fetchBatches({ location: locationId })).unwrap();
-    } catch (error) {
-      console.error("Error fetching batches:", error);
-    } finally {
-      setLoadingBatches(false);
-    }
-  };
-
-  const fetchStudentsByBatch = async (batchId: string) => {
-    setLoadingStudents(true);
-    try {
-      await dispatch(
-        fetchStudents({
-          batch: batchId,
-          location: watchLocation,
-          page: 1,
-          limit: 100, // Increase limit to get all students
-        })
-      ).unwrap();
-    } catch (error) {
-      console.error("Error fetching students:", error);
-    } finally {
-      setLoadingStudents(false);
-    }
-  };
-
+  /** SUBMIT FORM */
   const onSubmit = async (data: CashBookFormData) => {
     try {
-      // Prepare data for API - remove batchId as it's not needed in backend
-      const { batchId, ...submitData } = {
+      const { batchId, ...payload } = {
         ...data,
         transactionDate: data.transactionDate.toISOString(),
         amount: Number(data.amount),
@@ -192,44 +276,47 @@ function EntryDialog({
         directorId: data.directorId || undefined,
       };
 
-      console.log("Submitting data:", submitData);
-
       if (isEdit && existingData?.id) {
-        // Update existing entry
         await dispatch(
-          updateCashbookEntry({
-            id: existingData.id,
-            data: submitData,
-          })
+          updateCashbookEntry({ id: existingData.id, data: payload })
         ).unwrap();
-
-        setShowAddEntry(false);
       } else {
-        // Add new entry
-        await dispatch(addCashbookEntry(submitData)).unwrap();
-        handleReset();
+        await dispatch(addCashbookEntry(payload)).unwrap();
       }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      // Error is handled by the thunk with toast
-    }
-  };
 
-  const handleReset = () => {
-    reset({
-      transactionDate: new Date(),
-      transactionType: "STUDENT_PAID",
-      amount: 0,
-      description: "",
-      locationId: locationId,
-    });
-    setSelectedDate(new Date());
-    setFilteredStudents([]);
+      // await dispatch(
+      //   fetchCashbookEntries({
+      //     transactionType: payload.transactionType,
+      //     locationId: payload.locationId,
+      //     year: new Date(payload.transactionDate).getFullYear().toString(),
+      //     month: (new Date(payload.transactionDate).getMonth() + 1).toString(),
+      //   })
+
+      // );
+      if (payload.transactionType === "STUDENT_PAID") {
+        handleTabChange("students");
+      } else if (payload.transactionType === "OWNER_TAKEN") {
+        handleTabChange("owner");
+      } else if (payload.transactionType === "OFFICE_EXPENSE") {
+        handleTabChange("expenses");
+      }
+      await dispatch(
+        fetchCashbookEntries({
+          transactionType: payload.transactionType,
+          locationId: payload.locationId,
+          year: new Date(payload.transactionDate).getFullYear().toString(),
+          month: (new Date(payload.transactionDate).getMonth() + 1).toString(),
+        })
+      );
+
+      setShowAddEntry(false);
+    } catch (e) {
+      console.error("Submit failed:", e);
+    }
   };
 
   const handleClose = () => {
     setShowAddEntry(false);
-    handleReset();
   };
 
   return (
@@ -240,19 +327,15 @@ function EntryDialog({
             {isEdit ? "Edit Cash Book Entry" : "Add Cash Book Entry"}
           </DialogTitle>
           <DialogDescription className="text-gray-400">
-            {isEdit
-              ? "Update this transaction entry"
-              : "Create a new transaction entry"}
+            {isEdit ? "Update this transaction" : "Create a new transaction"}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Date & Type */}
           <div className="grid grid-cols-2 gap-4">
-            {/* Date */}
             <div className="space-y-2">
-              <Label htmlFor="date" className="text-white">
-                Date *
-              </Label>
+              <Label className="text-white">Date *</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -260,42 +343,32 @@ function EntryDialog({
                     className="w-full justify-start text-left bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {selectedDate ? (
-                      <span>{format(selectedDate, "PPP")}</span>
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
+                    {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-600">
                   <CalendarComponent
                     mode="single"
                     selected={selectedDate}
-                    onSelect={(date) => {
-                      setSelectedDate(date);
-                      if (date) setValue("transactionDate", date);
+                    onSelect={(d) => {
+                      setSelectedDate(d);
+                      if (d) setValue("transactionDate", d);
                     }}
                     initialFocus
                     className="bg-gray-800 text-white"
                   />
                 </PopoverContent>
               </Popover>
-              {errors.transactionDate && (
-                <p className="text-xs text-red-400">
-                  {errors.transactionDate.message}
-                </p>
-              )}
             </div>
 
-            {/* Transaction Type */}
             <div className="space-y-2">
               <Label className="text-white">Transaction Type *</Label>
               <Select
                 value={watchType}
-                onValueChange={(value) =>
+                onValueChange={(v) =>
                   setValue(
                     "transactionType",
-                    value as CashBookFormData["transactionType"]
+                    v as CashBookFormData["transactionType"]
                   )
                 }
               >
@@ -311,13 +384,13 @@ function EntryDialog({
             </div>
           </div>
 
-          {/* Location Selection (Admin only) */}
+          {/* Location */}
           {user?.role === 1 && (
             <div className="space-y-2">
               <Label className="text-white">Location *</Label>
               <Select
                 value={watchLocation}
-                onValueChange={(value) => setValue("locationId", value)}
+                onValueChange={(v) => setValue("locationId", v)}
               >
                 <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                   <SelectValue placeholder="Select location" />
@@ -330,227 +403,125 @@ function EntryDialog({
                   ))}
                 </SelectContent>
               </Select>
-              {errors.locationId && (
-                <p className="text-xs text-red-400">
-                  {errors.locationId.message}
-                </p>
-              )}
             </div>
           )}
 
-          {/* Student Selection for STUDENT_PAID */}
+          {/* Batch Selection (Students Paid only) */}
           {watchType === "STUDENT_PAID" && (
-            <div className="space-y-4">
-              {/* Batch Selection */}
-              <div className="space-y-2">
-                <Label className="text-white">Select Batch</Label>
-                <Select
-                  value={watchBatch}
-                  onValueChange={(value) => {
-                    setValue("batchId", value);
-                    fetchStudentsByBatch(value);
-                  }}
-                  disabled={loadingBatches || !watchLocation}
-                >
-                  <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
-                    {loadingBatches ? (
-                      <div className="flex items-center">
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Loading batches...
-                      </div>
-                    ) : (
-                      <SelectValue
-                        placeholder={
-                          !watchLocation
-                            ? "Select location first"
-                            : "Select batch"
-                        }
-                      />
-                    )}
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-600 text-white">
-                    {batches.map((batch) => (
-                      <SelectItem key={batch.id} value={batch.id as string}>
-                        {batch.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Student Selection */}
-              <div className="space-y-2">
-                <Label className="text-white">Select Student *</Label>
-                <Select
-                  value={watch("studentId")}
-                  onValueChange={(value) => setValue("studentId", value)}
-                  disabled={loadingStudents || !watchBatch}
-                >
-                  <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
-                    {loadingStudents ? (
-                      <div className="flex items-center">
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Loading students...
-                      </div>
-                    ) : (
-                      <SelectValue
-                        placeholder={
-                          !watchBatch ? "Select batch first" : "Select student"
-                        }
-                      />
-                    )}
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-600 text-white">
-                    {filteredStudents.map((student) => (
-                      <SelectItem key={student.id} value={student.id as string}>
-                        {student.name}{" "}
-                        {student.currentBatch &&
-                          `- ${student.currentBatch.name}`}
-                      </SelectItem>
-                    ))}
-                    {filteredStudents.length === 0 && !loadingStudents && (
-                      <SelectItem value="no-students" disabled>
-                        No students found in this batch
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-                {errors.studentId && (
-                  <p className="text-xs text-red-400">
-                    {errors.studentId.message}
-                  </p>
-                )}
-              </div>
+            <div className="space-y-2">
+              <Label className="text-white">Batch</Label>
+              <Select
+                value={watchBatch}
+                onValueChange={(v) => setValue("batchId", v)}
+                disabled={loadingBatches}
+              >
+                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                  <SelectValue
+                    placeholder={
+                      loadingBatches ? "Loading batches..." : "Select batch"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600 text-white">
+                  {batches.map((batch) => (
+                    <SelectItem key={batch.id} value={batch.id as string}>
+                      {batch.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
-          {/* Director Selection for OWNER_TAKEN */}
+          {/* Student Selection */}
+          {watchType === "STUDENT_PAID" && watchBatch && (
+            <div className="space-y-2">
+              <Label className="text-white">Student</Label>
+              <Select
+                value={watchStudent}
+                onValueChange={(v) => setValue("studentId", v)}
+                disabled={loadingStudents || filteredStudents.length === 0}
+              >
+                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                  <SelectValue
+                    placeholder={
+                      loadingStudents
+                        ? "Loading students..."
+                        : filteredStudents.length === 0
+                        ? "No students in batch"
+                        : "Select student"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600 text-white">
+                  {filteredStudents.map((student) => (
+                    <SelectItem key={student.id} value={student.id as string}>
+                      {student.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Director Selection (Owner Taken only) */}
           {watchType === "OWNER_TAKEN" && (
             <div className="space-y-2">
-              <Label className="text-white">Select Director *</Label>
+              <Label className="text-white">Director</Label>
               <Select
                 value={watch("directorId")}
-                onValueChange={(value) => setValue("directorId", value)}
+                onValueChange={(v) => setValue("directorId", v)}
               >
                 <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                   <SelectValue placeholder="Select director" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-600 text-white">
                   {directors.map((director) => (
-                    <SelectItem key={director.id} value={director.id}>
-                      {director.username} - {director.email}
+                    <SelectItem key={director.id} value={director.id as string}>
+                      {director.username}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {errors.directorId && (
-                <p className="text-xs text-red-400">
-                  {errors.directorId.message}
-                </p>
-              )}
             </div>
           )}
 
           {/* Amount */}
           <div className="space-y-2">
-            <Label htmlFor="amount" className="text-white">
-              Amount (₹) *
-            </Label>
+            <Label className="text-white">Amount *</Label>
             <Input
-              id="amount"
               type="number"
-              step="1"
-              placeholder="0"
-              className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+              step="0.01"
+              className="bg-gray-800 border-gray-600 text-white"
               {...register("amount", {
                 required: "Amount is required",
-                min: { value: 1, message: "Amount must be greater than 0" },
-                valueAsNumber: true,
+                min: { value: 0.01, message: "Amount must be greater than 0" },
               })}
             />
             {errors.amount && (
-              <p className="text-xs text-red-400">{errors.amount.message}</p>
+              <p className="text-red-400 text-sm">{errors.amount.message}</p>
             )}
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-white">
-              Description *
-            </Label>
+            <Label className="text-white">Description</Label>
             <Textarea
-              id="description"
-              placeholder="Enter transaction details..."
-              rows={3}
-              className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-              {...register("description", {
-                required: "Description is required",
-                minLength: {
-                  value: 3,
-                  message: "Description must be at least 3 characters",
-                },
-              })}
+              className="bg-gray-800 border-gray-600 text-white min-h-[80px]"
+              placeholder="Enter description..."
+              {...register("description")}
             />
-            {errors.description && (
-              <p className="text-xs text-red-400">
-                {errors.description.message}
-              </p>
-            )}
           </div>
 
-          {/* Reference Number */}
+          {/* Reference ID */}
           <div className="space-y-2">
-            <Label htmlFor="referenceId" className="text-white">
-              Reference Number
-            </Label>
+            <Label className="text-white">Reference ID</Label>
             <Input
-              id="referenceId"
-              placeholder="e.g., TXN123, INV-001"
-              className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+              className="bg-gray-800 border-gray-600 text-white"
+              placeholder="Optional reference number"
               {...register("referenceId")}
             />
           </div>
-
-          {/* Summary Card */}
-          <Card
-            className={`border ${
-              watchType === "STUDENT_PAID"
-                ? "border-green-600 bg-green-900/20"
-                : watchType === "OFFICE_EXPENSE"
-                ? "border-red-600 bg-red-900/20"
-                : "border-yellow-600 bg-yellow-900/20"
-            }`}
-          >
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-400">Transaction Summary</p>
-                  <p className="text-lg font-medium text-white">
-                    {watchType === "STUDENT_PAID" && "Student Payment"}
-                    {watchType === "OFFICE_EXPENSE" && "Office Expense"}
-                    {watchType === "OWNER_TAKEN" && "Owner Withdrawal"}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-400">
-                    {watchType === "STUDENT_PAID" ? "Money In" : "Money Out"}
-                  </p>
-                  <p
-                    className={`text-2xl font-bold ${
-                      watchType === "STUDENT_PAID"
-                        ? "text-green-400"
-                        : watchType === "OFFICE_EXPENSE"
-                        ? "text-red-400"
-                        : "text-yellow-400"
-                    }`}
-                  >
-                    {watchType === "STUDENT_PAID" ? "+" : "-"}₹
-                    {watch("amount") || 0}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           <DialogFooter className="gap-2">
             <Button
@@ -572,9 +543,9 @@ function EntryDialog({
                   {isEdit ? "Updating..." : "Adding..."}
                 </>
               ) : isEdit ? (
-                "Update Entry"
+                "Update"
               ) : (
-                "Add Entry"
+                "Add"
               )}
             </Button>
           </DialogFooter>
@@ -583,5 +554,3 @@ function EntryDialog({
     </Dialog>
   );
 }
-
-export default EntryDialog;

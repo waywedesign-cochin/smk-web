@@ -40,7 +40,11 @@
     "react-hot-toast": "^2.6.0",
     "react-redux": "^9.2.0",
     "tailwind-merge": "^3.3.1",
+<<<<<<< Updated upstream
     "xlsx": "^0.18.5",
+=======
+    "use-debounce": "^10.0.6",
+>>>>>>> Stashed changes
     "zod": "^4.1.9"
   },
   "devDependencies": {
