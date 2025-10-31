@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import EntryDialog from "@/components/cashbook/EntryDialog";
 import TransactionTable from "@/components/cashbook/TransactionTable";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import * as XLSX from "xlsx";
 import {
   Select,
   SelectContent,
@@ -21,13 +22,7 @@ import {
 } from "@/redux/features/cashbook/cashbookSlice";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
 import { fetchCurrentUser, fetchUsers } from "@/redux/features/user/userSlice";
-import {
-  Download,
-  Plus,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-} from "lucide-react";
+import { Download, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { BASE_URL } from "@/redux/baseUrl";
@@ -86,6 +81,7 @@ export const CashBookPage = () => {
   // MAIN DATA FETCHING EFFECT (EXACTLY like students page)
   useEffect(() => {
     fetchCashbook();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     dispatch,
     filters.locationId,
@@ -98,7 +94,7 @@ export const CashBookPage = () => {
   // Tab change handler
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    const typeMap = {
+    const typeMap: { [key: string]: string } = {
       students: "STUDENT_PAID",
       expenses: "OFFICE_EXPENSE",
       owner: "OWNER_TAKEN",
@@ -136,7 +132,7 @@ export const CashBookPage = () => {
   // Filter entries by active tab (client-side filtering when type is "ALL")
   const getFilteredEntries = () => {
     if (filters.type === "ALL") {
-      const typeMap = {
+      const typeMap: { [key: string]: string } = {
         students: "STUDENT_PAID",
         expenses: "OFFICE_EXPENSE",
         owner: "OWNER_TAKEN",
@@ -180,18 +176,19 @@ export const CashBookPage = () => {
           limit: 10000,
         },
       });
- 
+
       const raw =
         res.data?.data?.entries || res.data?.data?.cashbookEntries || [];
- 
+
       const totals = res.data?.data?.totals || {};
- 
+
       if (!Array.isArray(raw) || raw.length === 0) {
         toast.error("No cashbook entries found for export");
         return;
       }
- 
+
       // -------------------- Sheet 1: Entries --------------------
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const entriesSheet = raw.map((e: any) => ({
         ID: e.id,
         "Transaction Date": e.transactionDate
@@ -208,7 +205,7 @@ export const CashBookPage = () => {
         "Director Email": e.director?.email || "",
         "Created At": e.createdAt ? new Date(e.createdAt).toLocaleString() : "",
       }));
- 
+
       // -------------------- Sheet 2: Totals --------------------
       const totalsSheet = [
         { Label: "Students Paid", Value: totals.studentsPaid || 0 },
@@ -220,18 +217,18 @@ export const CashBookPage = () => {
         { Label: "Total Debit", Value: totals.totalDebit || 0 },
         { Label: "Total Credit", Value: totals.totalCredit || 0 },
       ];
- 
+
       // -------------------- Create Workbook --------------------
       const wb = XLSX.utils.book_new();
       const wsEntries = XLSX.utils.json_to_sheet(entriesSheet);
       const wsTotals = XLSX.utils.json_to_sheet(totalsSheet);
- 
+
       XLSX.utils.book_append_sheet(wb, wsEntries, "Cashbook Entries");
       XLSX.utils.book_append_sheet(wb, wsTotals, "Totals");
- 
+
       // -------------------- Export File --------------------
       XLSX.writeFile(wb, "Cashbook_Report.xlsx");
- 
+
       toast.success("Cashbook exported successfully with totals sheet");
     } catch (err) {
       console.error(err);
@@ -286,7 +283,7 @@ export const CashBookPage = () => {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          {(currentUser?.role === 1 || currentUser?.role === 3) && (
+          {(user?.role === 1 || user?.role === 3) && (
             <Button
               onClick={() => setShowAddEntry(true)}
               disabled={!filters.locationId}
@@ -299,16 +296,19 @@ export const CashBookPage = () => {
       </div>
 
       {/* Dialogs */}
-      <EntryDialog
-        showAddEntry={showAddEntry}
-        setShowAddEntry={setShowAddEntry}
-        locationId={filters.locationId}
-        directors={directors}
-        user={user}
-        handleTabChange={setActiveTab}
-      />
 
-      {entryToEdit && (
+      {user && (
+        <EntryDialog
+          showAddEntry={showAddEntry}
+          setShowAddEntry={setShowAddEntry}
+          locationId={filters.locationId}
+          directors={directors}
+          user={user}
+          handleTabChange={setActiveTab}
+        />
+      )}
+
+      {entryToEdit && user && (
         <EntryDialog
           showAddEntry={showEditDialog}
           setShowAddEntry={setShowEditDialog}
