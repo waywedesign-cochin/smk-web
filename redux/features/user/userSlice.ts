@@ -31,11 +31,17 @@ interface UserState {
   token: string | null;
   loading: boolean;
   usersLoading: boolean;
+  submitting: boolean;
   error: string | null;
 }
 interface FetchUsersParams {
   search?: string;
   role?: number;
+}
+
+interface ChangePasswordData {
+  currentPassword: string;
+  newPassword: string;
 }
 
 // Initial State
@@ -45,6 +51,7 @@ const initialState: UserState = {
   token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
   loading: false,
   usersLoading: false,
+  submitting: false,
   error: null,
 };
 
@@ -126,23 +133,22 @@ export const fetchCurrentUser = createAsyncThunk<User>(
 );
 
 // Fetch All Users
-export const fetchUsers = createAsyncThunk<User[], FetchUsersParams | undefined>(
-  "users/fetch",
-  async (params, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(`${BASE_URL}/api/user/get-users`, {
-        params: params || {},
-      });
-      // Since backend returns an array directly:
-      return response.data.data as User[];
-    } catch (error: unknown) {
-      let errorMessage = "Failed to fetch users";
-      if (error instanceof Error) errorMessage = error.message;
-      return rejectWithValue(errorMessage);
-    }
+export const fetchUsers = createAsyncThunk<
+  User[],
+  FetchUsersParams | undefined
+>("users/fetch", async (params, { rejectWithValue }) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/api/user/get-users`, {
+      params: params || {},
+    });
+    // Since backend returns an array directly:
+    return response.data.data as User[];
+  } catch (error: unknown) {
+    let errorMessage = "Failed to fetch users";
+    if (error instanceof Error) errorMessage = error.message;
+    return rejectWithValue(errorMessage);
   }
-);
-
+});
 
 // Fetch User By Id
 export const fetchUserById = createAsyncThunk<User, string>(
@@ -202,6 +208,30 @@ export const deleteUser = createAsyncThunk<string, string>(
     }
   }
 );
+
+//change password
+export const changePassword = createAsyncThunk(
+  "users/changePassword",
+  async (passwordData: ChangePasswordData, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${BASE_URL}/api/user/change-password`,
+        passwordData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        toast.success(response.data.message || "Password changed successfully");
+      }
+      return response.data.data;
+    } catch (error: unknown) {
+      let errorMessage = "Change password failed";
+      if (error instanceof Error) errorMessage = error.message;
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 // Slice
 const userSlice = createSlice({
   name: "users",
@@ -277,7 +307,7 @@ const userSlice = createSlice({
         state.usersLoading = false;
         state.users = action.payload;
       })
-      
+
       .addCase(fetchUsers.rejected, (state, action) => {
         state.usersLoading = false;
         state.error = action.payload as string;
@@ -331,6 +361,20 @@ const userSlice = createSlice({
     );
     builder.addCase(deleteUser.rejected, (state, action) => {
       state.usersLoading = false;
+      state.error = action.payload as string;
+    });
+
+    // Change Password
+    builder.addCase(changePassword.pending, (state) => {
+      state.submitting = true;
+      state.error = null;
+    });
+    builder.addCase(changePassword.fulfilled, (state) => {
+      state.submitting = false;
+      state.error = null;
+    });
+    builder.addCase(changePassword.rejected, (state, action) => {
+      state.submitting = false;
       state.error = action.payload as string;
     });
   },

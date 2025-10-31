@@ -39,6 +39,7 @@ import {
 import { Fee } from "@/lib/types";
 import PaymentsTab from "./Payment/PaymentTabs";
 import FeeConfigurationTab from "./Fee/FeeConfigurationTab";
+import { fetchCommunicationLogs } from "@/redux/features/communication-log/communicationLogSlice";
 
 interface DetailsofStudentProps {
   StudentId: string;
@@ -48,7 +49,6 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const fee = useAppSelector((state) => state.fees.fee);
-  console.log(fee);
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false);
 
@@ -57,7 +57,15 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
     loading,
     error,
   } = useAppSelector((state) => state.students);
-
+  const { communicationLogs } = useAppSelector(
+    (state) => state.communicationLogs
+  );
+  const getActivityLogs = async () => {
+    dispatch(fetchCommunicationLogs({ studentId: StudentId }));
+  };
+  useEffect(() => {
+    getActivityLogs();
+  }, []);
   // Fetch student by ID
   useEffect(() => {
     if (StudentId) dispatch(fetchStudentById(StudentId));
@@ -86,6 +94,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
       await dispatch(configureFee(fee)).unwrap();
       setShowFeeConfigDialog(false);
       dispatch(fetchStudentById(StudentId));
+      getActivityLogs();
     } catch (err) {
       console.error("Failed to configure fee:", err);
     }
@@ -238,16 +247,35 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
         // className="w-full"
       >
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="fees">Fee Configuration</TabsTrigger>
+          <TabsTrigger
+            value="overview"
+            className="data-[state=active]:bg-black data-[state=active]:text-white"
+          >
+            Overview
+          </TabsTrigger>
+
+          <TabsTrigger
+            value="fees"
+            className="data-[state=active]:bg-black data-[state=active]:text-white"
+          >
+            Fee Configuration
+          </TabsTrigger>
+
           {student?.fees?.[0]?.feePaymentMode && (
-            <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger
+              value="payments"
+              className="data-[state=active]:bg-black data-[state=active]:text-white"
+            >
+              Payments
+            </TabsTrigger>
           )}
-          {student?.fees?.some(
-            (fee) =>
-              (fee?.batchHistoryFrom && fee?.batchHistoryFrom.length > 0) ||
-              (fee?.batchHistoryTo && fee.batchHistoryTo.length > 0)
-          ) && <TabsTrigger value="history">Batch History</TabsTrigger>}
+
+          <TabsTrigger
+            value="history"
+            className="data-[state=active]:bg-black data-[state=active]:text-white"
+          >
+            History
+          </TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -364,7 +392,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {student?.fees[0]?.batchHistoryTo?.map((fee) => {
+                {student?.fees?.[0]?.batchHistoryTo?.map((fee) => {
                   return (
                     <div
                       key={fee.id}
@@ -469,19 +497,30 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
               </CardContent>
             </Card>
           )}
-          {/* <Card>
+          <Card>
             <CardHeader>
-              <CardTitle>
-                <History className="h-4 w-4 mr-2 inline-block" />
-                Student History
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-4 w-4" />
+                Activity Log
               </CardTitle>
+              <CardDescription>Recent activities and updates</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                No history records available.
-              </p>
-            </CardContent>
-          </Card> */}
+            {communicationLogs?.map((log) => (
+              <CardContent key={log.id} className="space-y-2">
+                <div className="border rounded-lg p-3">
+                  <p className="text-sm">{log.subject}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(log.date).toLocaleString()}
+                  </p>
+                  <div className="border rounded-lg p-3 mt-2">
+                    <p className="text-xs text-muted-foreground">
+                      {log.message}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            ))}
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

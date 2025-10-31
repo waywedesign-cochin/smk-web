@@ -15,10 +15,7 @@ import { useRouter } from "next/navigation";
 export function SignInForm() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -27,33 +24,28 @@ export function SignInForm() {
     e.preventDefault();
     setErrors({});
 
-    // ✅ Zod validation
     const parsed = signInSchema.safeParse(formData);
-
     if (!parsed.success) {
       const { fieldErrors } = parsed.error.flatten();
       const newErrors: Record<string, string> = {};
-
       (Object.keys(fieldErrors) as (keyof typeof fieldErrors)[]).forEach(
         (key) => {
           const messages = fieldErrors[key];
-          if (messages && messages.length > 0) {
-            newErrors[key] = messages[0];
-          }
+          if (messages && messages.length > 0) newErrors[key] = messages[0];
         }
       );
-
       setErrors(newErrors);
       return;
     }
 
     setIsLoading(true);
     try {
-      const result = await dispatch(login(parsed.data)).unwrap();
+      await dispatch(login(parsed.data)).unwrap();
       router.push("/");
       setFormData({ email: "", password: "" });
     } catch (err) {
       console.error(err);
+      toast.error("Invalid credentials or server error");
     } finally {
       setIsLoading(false);
     }
@@ -130,8 +122,21 @@ export function SignInForm() {
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
+
+                {/* Forgot Password Link */}
+                <div className="text-right mt-1">
+                  <Button
+                    variant="link"
+                    className="text-sm text-primary p-0 cursor-pointer"
+                    type="button"
+                    onClick={() => router.push("/forgot-password")}
+                  >
+                    Forgot password?
+                  </Button>
+                </div>
               </div>
 
+              {/* Submit Button */}
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Signing In..." : "Sign In"}
               </Button>

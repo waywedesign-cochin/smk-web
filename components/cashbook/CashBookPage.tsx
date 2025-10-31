@@ -26,6 +26,7 @@ import { Download, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { BASE_URL } from "@/redux/baseUrl";
+import DarkVeil from "../DarkVeil";
 
 export const CashBookPage = () => {
   const dispatch = useAppDispatch();
@@ -44,7 +45,7 @@ export const CashBookPage = () => {
   });
 
   const [activeTab, setActiveTab] = useState("students");
-  const [itemsPerPage, setItemsPerPage] = useState<number>(2);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 
   // Dialog states
   const [showAddEntry, setShowAddEntry] = useState(false);
@@ -198,11 +199,19 @@ export const CashBookPage = () => {
         Amount: e.amount || "",
         "Debit/Credit": e.debitCredit || "",
         Description: e.description || "",
-        "Student Name": e.student?.name || "",
-        "Student Admission No": e.student?.admissionNo || "",
-        "Batch Name": e.student?.currentBatch?.name || "",
-        "Director Name": e.director?.name || "",
-        "Director Email": e.director?.email || "",
+        ...(e.student
+          ? {
+              "Student Name": e.student?.name || "",
+              "Student Admission No": e.student?.admissionNo || "",
+              "Batch Name": e.student?.currentBatch?.name || "",
+            }
+          : {}),
+        ...(e.director
+          ? {
+              "Director Name": e.director?.name || "",
+              "Director Email": e.director?.email || "",
+            }
+          : {}),
         "Created At": e.createdAt ? new Date(e.createdAt).toLocaleString() : "",
       }));
 
@@ -267,31 +276,41 @@ export const CashBookPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-[#0A1533] text-white p-6 space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-black to-[#0A1533] text-white  space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Cash Book</h1>
-          <p className="text-sm text-gray-300">Track all transactions</p>
+      <div className="relative flex items-center justify-between border border-white/10 rounded-2xl p-6 shadow-xl overflow-hidden">
+        {/* DarkVeil background */}
+        <div className="absolute inset-0 z-0 h-[300px] w-full">
+          <DarkVeil />
         </div>
-        <div className="flex gap-2">
-          <Button
-            className="bg-white/10 border border-white/20 hover:bg-white/20 text-white"
-            onClick={handleExportCashbook}
-            disabled={entries.length === 0}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          {(user?.role === 1 || user?.role === 3) && (
+        {/* Foreground content */}
+        <div className="relative z-10 flex w-full items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Cash Book</h1>
+            <p className="text-sm text-gray-300">Track all transactions</p>
+          </div>
+
+          <div className="flex gap-2">
             <Button
-              onClick={() => setShowAddEntry(true)}
-              disabled={!filters.locationId}
+              className="border border-white hover:bg-white hover:text-black"
+              onClick={handleExportCashbook}
+              disabled={entries.length === 0}
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Entry
+              <Download className="h-4 w-4 mr-2" />
+              Export
             </Button>
-          )}
+
+            {(user?.role === 1 || user?.role === 3) && (
+              <Button
+                onClick={() => setShowAddEntry(true)}
+                disabled={!filters.locationId}
+                className="border border-white hover:bg-white hover:text-black"
+              >
+                <Plus className="h-4 w-4" />
+                Add Entry
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
