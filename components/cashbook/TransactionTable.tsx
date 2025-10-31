@@ -114,66 +114,81 @@ const TransactionTable = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {entries.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell className="font-medium">
-                      {formatDate(entry.transactionDate)}
+                {loading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-6 text-gray-500"
+                    >
+                      <div className="flex items-center justify-center gap-2 text-gray-500">
+                        <Loader2 className="animate-spin h-5 w-5" />
+                        Loading entries...
+                      </div>
                     </TableCell>
-                    <TableCell>{entry.description}</TableCell>
-                    <TableCell>
-                      {entry.referenceId || (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {entry.transactionType === "STUDENT_PAID" &&
-                      entry.student ? (
-                        <div>
-                          <div className="font-medium">
-                            {entry.student.name}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {entry.student.currentBatch?.name || "No batch"}
-                          </div>
-                        </div>
-                      ) : entry.transactionType === "OWNER_TAKEN" &&
-                        entry.director ? (
-                        <div>
-                          <div className="font-medium">
-                            {entry.director.username}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {entry.director.email}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatAmount(entry.amount)}
-                    </TableCell>
-                    {(currentUser?.role === 1 || currentUser?.role === 3) && (
-                      <TableCell>
-                        <div className="flex justify-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(entry)}
-                            disabled={loading}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <DeleteDialogue
-                            id={entry.id as string}
-                            title={"this entry"}
-                            handelDelete={() => onDelete(entry.id as string)}
-                          />
-                        </div>
-                      </TableCell>
-                    )}
                   </TableRow>
-                ))}
+                ) : (
+                  entries.map((entry) => (
+                    <TableRow key={entry.id}>
+                      <TableCell className="font-medium">
+                        {formatDate(entry.transactionDate)}
+                      </TableCell>
+                      <TableCell>{entry.description}</TableCell>
+                      <TableCell>
+                        {entry.referenceId || (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {entry.transactionType === "STUDENT_PAID" &&
+                        entry.student ? (
+                          <div>
+                            <div className="font-medium">
+                              {entry.student.name}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {entry.student.currentBatch?.name || "No batch"}
+                            </div>
+                          </div>
+                        ) : entry.transactionType === "OWNER_TAKEN" &&
+                          entry.director ? (
+                          <div>
+                            <div className="font-medium">
+                              {entry.director.username}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {entry.director.email}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatAmount(entry.amount)}
+                      </TableCell>
+                      {(currentUser?.role === 1 || currentUser?.role === 3) && (
+                        <TableCell>
+                          <div className="flex justify-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(entry)}
+                              disabled={loading}
+                              className="border-white/10 text-black hover:bg-white/80"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <DeleteDialogue
+                              id={entry.id as string}
+                              title={"this entry"}
+                              handelDelete={() => onDelete(entry.id as string)}
+                            />
+                          </div>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

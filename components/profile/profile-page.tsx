@@ -32,6 +32,10 @@ import {
 // import { toast } from 'sonner@2.0.3';
 import toast from "react-hot-toast";
 import { User as UserProfile } from "@/lib/types";
+import { passwordSchema } from "@/lib/validation/userSchema";
+import { changePassword } from "@/redux/features/user/userSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { useRouter } from "next/navigation";
 
 // interface User {
 //   id: string;
@@ -58,7 +62,13 @@ export function ProfilePage({
   onChangePassword,
 }: ProfilePageProps) {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof typeof passwordData, string>>
+  >({});
 
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { submitting } = useAppSelector((state) => state.users);
   const [profileData, setProfileData] = useState({
     username: user?.username,
     email: user?.email,
@@ -75,8 +85,6 @@ export function ProfilePage({
     new: false,
     confirm: false,
   });
-
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const getRoleName = (role: number) => {
     switch (role) {
@@ -126,33 +134,33 @@ export function ProfilePage({
   };
 
   const handlePasswordChange = async () => {
-    // Validation
-    if (
-      !passwordData.currentPassword ||
-      !passwordData.newPassword ||
-      !passwordData.confirmPassword
-    ) {
-      toast.error("Please fill in all password fields");
+    const result = passwordSchema.safeParse(passwordData);
+
+    if (!result.success) {
+      // Collect and map field errors
+      const fieldErrors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const fieldName = issue.path[0] as string;
+        fieldErrors[fieldName] = issue.message;
+      });
+
+      setErrors(fieldErrors);
+      toast.error("Please correct the highlighted fields.");
       return;
     }
 
-    if (passwordData.newPassword.length < 8) {
-      toast.error("New password must be at least 8 characters long");
-      return;
-    }
+    // Clear previous errors
+    setErrors({});
 
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error("New passwords do not match");
-      return;
-    }
-
-    setIsChangingPassword(true);
     try {
-      await onChangePassword(
-        passwordData.currentPassword,
-        passwordData.newPassword
+      await dispatch(
+        changePassword({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        })
       );
-      toast.success("Password changed successfully");
+      // localStorage.removeItem("token");
+      // router.push("/signin");
       setPasswordData({
         currentPassword: "",
         newPassword: "",
@@ -163,8 +171,6 @@ export function ProfilePage({
         "Failed to change password. Please check your current password."
       );
       console.error(error);
-    } finally {
-      setIsChangingPassword(false);
     }
   };
 
@@ -344,14 +350,15 @@ export function ProfilePage({
                   </div>
                 )}
               </div>
-
-              <Alert className="bg-red-100/20 shadow-inner text-red-600 font-semibold border-l-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-white">
-                  Role and location can only be changed by an administrator.
-                  Please contact your system admin if you need these changed.
-                </AlertDescription>
-              </Alert>
+              {user?.role !== 1 && (
+                <Alert className="bg-red-100/20 shadow-inner text-red-600 font-semibold border-l-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="text-white">
+                    Role and location can only be changed by an administrator.
+                    Please contact your system admin if you need these changed.
+                  </AlertDescription>
+                </Alert>
+              )}
             </CardContent>
           </Card>
 
@@ -417,6 +424,11 @@ export function ProfilePage({
                     }
                     placeholder="Enter your current password"
                   />
+                  {errors.currentPassword && (
+                    <p className="text-red-500 text-sm">
+                      {errors.currentPassword}
+                    </p>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"
@@ -456,6 +468,9 @@ export function ProfilePage({
                     }
                     placeholder="Enter your new password"
                   />
+                  {errors.newPassword && (
+                    <p className="text-red-500 text-sm">{errors.newPassword}</p>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"
@@ -493,6 +508,11 @@ export function ProfilePage({
                     }
                     placeholder="Confirm your new password"
                   />
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-sm">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"
@@ -565,22 +585,12 @@ export function ProfilePage({
                     })
                   }
                   variant="secondary"
-                  disabled={isChangingPassword}
+                  disabled={submitting}
                 >
                   Clear
                 </Button>
-                <Button
-                  onClick={handlePasswordChange}
-                  disabled={
-                    isChangingPassword ||
-                    !passwordValidation.isValid ||
-                    passwordData.newPassword !== passwordData.confirmPassword ||
-                    !passwordData.currentPassword
-                  }
-                >
-                  {isChangingPassword
-                    ? "Changing Password..."
-                    : "Change Password"}
+                <Button onClick={handlePasswordChange}>
+                  {submitting ? "Changing Password..." : "Change Password"}
                 </Button>
               </div>
             </CardContent>
