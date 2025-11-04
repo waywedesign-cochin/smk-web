@@ -9,6 +9,7 @@ import {
   BookMarked,
   Logs,
   AudioLines,
+  DollarSign,
   // UserCheck,
   // DollarSign,
   // FileText,
@@ -51,6 +52,12 @@ export const menuItems = [
     label: "Communication",
     icon: AudioLines,
     description: "View communication history and logs",
+  },
+  {
+    id: "director-ledger",
+    label: "Director Ledger",
+    icon: DollarSign,
+    description: "Track director transactions and accounts",
   },
   // {
   //   id: "admissions",

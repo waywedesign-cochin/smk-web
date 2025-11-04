@@ -304,7 +304,10 @@ const studentSlice = createSlice({
         const { studentId, toBatchId } = action.payload;
         state.students = state.students.map((student) =>
           student.id === studentId
-            ? { ...student, currentBatch: { id: toBatchId } as any }
+            ? {
+                ...student,
+                currentBatch: { id: toBatchId } as Student["currentBatch"],
+              }
             : student
         );
       })

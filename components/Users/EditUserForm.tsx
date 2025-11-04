@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,6 +99,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
           value={locationId}
           onValueChange={setLocationId}
           disabled={usersLoading}
+          required
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select location" />
