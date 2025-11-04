@@ -49,7 +49,7 @@ import toast from "react-hot-toast";
 import { CommunicationLog } from "@/lib/types";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
-  fetchCommunicationLogsByLocation,
+  fetchCommunicationLogs,
   FetchCommunicationLogsParams,
 } from "@/redux/features/communication-log/communicationLogSlice";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
@@ -58,6 +58,7 @@ import { getLogDisplay } from "@/lib/utils/getLogTypeDisplay";
 import { exportToExcel } from "@/lib/utils/exportToExcel";
 import { BASE_URL } from "@/redux/baseUrl";
 import axios from "axios";
+import DarkVeil from "../DarkVeil";
 
 export default function CommunicationLogPage() {
   const dispatch = useAppDispatch();
@@ -85,7 +86,7 @@ export default function CommunicationLogPage() {
   //get logs from redux store
   const getLogs = async () => {
     dispatch(
-      fetchCommunicationLogsByLocation({
+      fetchCommunicationLogs({
         ...filters,
         page: pagination?.currentPage,
         limit: itemsPerPage,
@@ -175,7 +176,7 @@ export default function CommunicationLogPage() {
   //handle page change
   const handlePageChange = (newPage: number) => {
     dispatch(
-      fetchCommunicationLogsByLocation({
+      fetchCommunicationLogs({
         ...filters,
         page: newPage,
         limit: itemsPerPage,
@@ -216,24 +217,32 @@ export default function CommunicationLogPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-[#0A1533] text-white p-6 space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-black to-[#0A1533] text-white p- space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-        <div>
-          <h1 className="text-3xl font-semibold text-white">
-            Communication Logs
-          </h1>
-          <p className="text-sm text-gray-300">
-            Track all staff actions and activities
-          </p>
+      <div className="relative rounded-2xl overflow-hidden">
+        {/* Darkveil background */}
+        <div className="absolute inset-0 z-0 h-[300px] w-full">
+          <DarkVeil />
         </div>
-        <Button
-          onClick={handleExport}
-          className="bg-white/10 border border-white/20 hover:bg-white/20 text-white"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Export Log
-        </Button>
+        {/* Header content */}
+        <div className="relative z-10 flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white">
+          <div>
+            <h1 className="text-3xl font-semibold text-white">
+              Communication Logs
+            </h1>
+            <p className="text-sm text-gray-300">
+              Track all staff actions and activities
+            </p>
+          </div>
+
+          <Button
+            onClick={handleExport}
+            className="bg-black border border-white text-white hover:bg-white hover:text-black"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export Log
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}

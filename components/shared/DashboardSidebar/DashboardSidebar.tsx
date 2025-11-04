@@ -30,6 +30,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Link from "next/link";
+import DarkVeil from "@/components/DarkVeil";
 
 export default function DashboardSidebar({
   children,
@@ -155,7 +156,12 @@ export default function DashboardSidebar({
               </h2>
             </div>
             <div className="flex items-center gap-2">
-              <Button className="bg-gray-600/20" variant="outline" size="sm">
+              <Button
+                onClick={() => router.push("/profile")}
+                className="bg-gray-600/20"
+                variant="outline"
+                size="sm"
+              >
                 <User className="h-4 w-4" />
               </Button>
 

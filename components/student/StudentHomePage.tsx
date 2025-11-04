@@ -19,14 +19,6 @@ import {
   TableRow,
 } from "../ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
-import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -81,6 +73,8 @@ import { set } from "lodash";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Label } from "../ui/label";
 import { Checkbox } from "../ui/checkbox";
+import DarkVeil from "../DarkVeil";
+
 // import { mockStudents, mockPayments } from "../../lib/mock-data";
 // import { Student } from "../../types";
 // import { AddStudentForm } from "../add-student-form";
@@ -365,67 +359,65 @@ export function Students() {
 
   return (
     <div className="space-y-6">
-      {/* Header Actions */}
-      <div
-        className="flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white rounded-2xl bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/cource/course.png')",
-          backgroundSize: "cover",
-
-          backgroundPosition: "center",
-        }}
-      >
-        {" "}
-        <div>
-          <h2 className="text-3xl max-md:text-2xl max-sm:text-xl font-semibold">
-            Students Management
-          </h2>
-          <p className="text-white/80 max-md:text-sm max-sm:text-xs">
-            Manage student records and track their progress
-          </p>
+      <div className="relative rounded-2xl overflow-hidden">
+        {/* Darkveil background */}
+        <div className="absolute inset-0 z-0 h-[300px]">
+          <DarkVeil />
         </div>
-        {(currentUser?.role === 1 || currentUser?.role === 3) && (
-          <div className="flex gap-2">
-            <Sheet
-              open={isAddFormOpen}
-              onOpenChange={(open) => {
-                if (!open) setSelectedStudent(null); // Reset when closing
-                setIsAddFormOpen(open);
-              }}
-            >
-              <SheetTrigger asChild>
-                <Button className="bg-blue-700  text-white cursor-pointer hover:bg-blue-800">
-                  <Plus className="h-4 w-4" />
-                  Add Student
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="w-full !max-w-lg p-2 overflow-y-auto">
-                {" "}
-                <SheetHeader>
-                  <SheetTitle>
-                    {selectedStudent ? "Edit Student" : "Add New Student"}
-                  </SheetTitle>
-                  <SheetDescription>
-                    {selectedStudent
-                      ? `Update information for ${selectedStudent.name}`
-                      : "Create a new student record and enroll them in a batch"}
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="mt-6 px-4">
-                  <AddStudentForm
-                    student={selectedStudent || undefined}
-                    onSubmit={
-                      selectedStudent ? handleUpdateStudent : handleAddStudent
-                    }
-                    onCancel={() => setIsAddFormOpen(false)}
-                    batches={batches}
-                    loading={submitting}
-                  />
-                </div>
-              </SheetContent>
-            </Sheet>
+
+        {/* Content on top */}
+        <div className="relative z-10 flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white">
+          <div>
+            <h2 className="text-3xl max-md:text-2xl max-sm:text-xl font-semibold">
+              Students Management
+            </h2>
+            <p className="text-white/80 max-md:text-sm max-sm:text-xs">
+              Manage student records and track their progress
+            </p>
           </div>
-        )}
+
+          {(currentUser?.role === 1 || currentUser?.role === 3) && (
+            <div className="flex gap-2">
+              <Sheet
+                open={isAddFormOpen}
+                onOpenChange={(open) => {
+                  if (!open) setSelectedStudent(null);
+                  setIsAddFormOpen(open);
+                }}
+              >
+                <SheetTrigger asChild>
+                  <Button className="bg-black border border-white text-white hover:bg-white hover:text-black">
+                    <Plus className="h-4 w-4" />
+                    Add Student
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="w-full !max-w-lg p-2 overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle>
+                      {selectedStudent ? "Edit Student" : "Add New Student"}
+                    </SheetTitle>
+                    <SheetDescription>
+                      {selectedStudent
+                        ? `Update information for ${selectedStudent.name}`
+                        : "Create a new student record and enroll them in a batch"}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="mt-6 px-4">
+                    <AddStudentForm
+                      student={selectedStudent || undefined}
+                      onSubmit={
+                        selectedStudent ? handleUpdateStudent : handleAddStudent
+                      }
+                      onCancel={() => setIsAddFormOpen(false)}
+                      batches={batches}
+                      loading={submitting}
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Search and Filters */}

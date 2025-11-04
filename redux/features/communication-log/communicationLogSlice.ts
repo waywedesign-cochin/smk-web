@@ -26,6 +26,7 @@ export interface FetchCommunicationLogsParams {
   month?: string;
   locationId?: string;
   loggedById?: string;
+  studentId?: string;
   search?: string;
 }
 
@@ -42,7 +43,7 @@ const initialState: CommunicationLogState = {
 };
 
 // Fetch communication logs with optional filters
-export const fetchCommunicationLogsByLocation = createAsyncThunk<
+export const fetchCommunicationLogs = createAsyncThunk<
   CommunicationLogsResponse,
   FetchCommunicationLogsParams | undefined
 >("communicationLogs/fetchByLocation", async (params, { rejectWithValue }) => {
@@ -68,17 +69,17 @@ const communicationLogSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCommunicationLogsByLocation.pending, (state) => {
+      .addCase(fetchCommunicationLogs.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchCommunicationLogsByLocation.fulfilled, (state, action) => {
+      .addCase(fetchCommunicationLogs.fulfilled, (state, action) => {
         state.loading = false;
         state.communicationLogs = action.payload.communicationLogs;
         state.pagination = action.payload.pagination;
         state.error = null;
       })
-      .addCase(fetchCommunicationLogsByLocation.rejected, (state, action) => {
+      .addCase(fetchCommunicationLogs.rejected, (state, action) => {
         state.loading = false;
         state.error =
           action.error.message || "Failed to fetch communication logs";
