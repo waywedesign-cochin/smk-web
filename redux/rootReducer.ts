@@ -21,6 +21,8 @@ const rootReducer = combineReducers({
   payments: paymentReducer,
   cashbook: cashbookReducer,
   communicationLogs: communicationLogReducer,
+  reports: reportsReducer,
+  directorLedger: directorLedgerReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
