@@ -13,6 +13,7 @@ export default function PaymentMethodPie({ data }: { data: [] }) {
           cx="50%"
           cy="50%"
           labelLine={false}
+          fontWeight={600}
           label={({ name, percent }) =>
             `${name} ${((percent as number) * 100).toFixed(0)}%`
           }
@@ -22,7 +23,6 @@ export default function PaymentMethodPie({ data }: { data: [] }) {
           dataKey="value"
           paddingAngle={3}
           strokeWidth={0}
-          
         >
           {data.map((entry, index) => (
             <Cell

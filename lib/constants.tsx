@@ -10,6 +10,7 @@ import {
   Logs,
   AudioLines,
   DollarSign,
+  Laptop,
   // UserCheck,
   // DollarSign,
   // FileText,
@@ -32,7 +33,7 @@ export const menuItems = [
   {
     id: "batches",
     label: "Batches",
-    icon: Users,
+    icon: Laptop,
     description: "Manage course batches and schedules",
   },
   {

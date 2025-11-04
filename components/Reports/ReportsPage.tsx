@@ -19,29 +19,16 @@ import {
 } from "../ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  ComposedChart,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-} from "recharts";
-import { TrendingUp, Calendar, MapPin, BarChart3 } from "lucide-react";
+  TrendingUp,
+  Calendar,
+  MapPin,
+  BarChart3,
+  AlertCircle,
+  TrendingDown,
+  Activity,
+  DollarSign,
+  Users,
+} from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
   getBatchPerformance,
@@ -71,13 +58,12 @@ const COLORS = {
   info: "#06b6d4",
 };
 
-const PIE_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"];
-
 export function ReportsPage() {
   const currentYear = new Date().getFullYear();
   const dispatch = useAppDispatch();
   const {
     revenue,
+    summary,
     batchPerformance,
     locationsComparison,
     paymentTypeReport,
@@ -92,7 +78,7 @@ export function ReportsPage() {
   const [selectedQuarter, setSelectedQuarter] = useState("ALL");
   const [activeTab, setActiveTab] = useState("revenue");
 
-  console.log(locationsComparison);
+  console.log(revenue);
 
   // Fetch revenue data
   const getRevenueData = () => {
@@ -235,10 +221,10 @@ export function ReportsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">All</SelectItem>
-                  <SelectItem value="Q1">Q1</SelectItem>
-                  <SelectItem value="Q2">Q2</SelectItem>
-                  <SelectItem value="Q3">Q3</SelectItem>
-                  <SelectItem value="Q4">Q4</SelectItem>
+                  <SelectItem value="Q1">Q1 (Jan-Mar)</SelectItem>
+                  <SelectItem value="Q2">Q2 (Apr-Jun)</SelectItem>
+                  <SelectItem value="Q3">Q3 (Jul-Sep)</SelectItem>
+                  <SelectItem value="Q4">Q4 (Oct-Dec)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -280,6 +266,141 @@ export function ReportsPage() {
         </CardContent>
       </Card>
 
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="relative overflow-hidden border-0 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full -mr-16 -mt-16" />
+          <CardHeader className="pb-2 relative">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Total Revenue
+              </CardTitle>
+              <div className="p-2 bg-blue-500/10 rounded-lg">
+                <DollarSign className="h-5 w-5 text-blue-600" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <div className="text-3xl font-bold text-gray-900 mb-2">
+              ₹{summary?.totalRevenue?.toLocaleString() ?? "0"}
+            </div>
+
+            {(() => {
+              const growthValue = summary?.revenueGrowth
+                ? Number(String(summary.revenueGrowth).replace("%", "").trim())
+                : 0;
+
+              return (
+                <div className="flex items-center gap-1.5">
+                  <div
+                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                      growthValue >= 0
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {growthValue >= 0 ? (
+                      <TrendingUp className="h-3.5 w-3.5" />
+                    ) : (
+                      <TrendingDown className="h-3.5 w-3.5" />
+                    )}
+                    <span>{Math.abs(growthValue).toFixed(1)}%</span>
+                  </div>
+                  <span className="text-xs text-gray-500">vs last month</span>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden border-0 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full -mr-16 -mt-16" />
+          <CardHeader className="pb-2 relative">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Collection Rate
+              </CardTitle>
+              <div className="p-2 bg-green-500/10 rounded-lg">
+                <Activity className="h-5 w-5 text-green-600" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <div className="text-3xl font-bold text-gray-900 mb-2">
+              {summary?.collectionRate}%
+            </div>
+            <div className="text-xs text-gray-500">
+              ₹{summary?.totalCollections.toLocaleString()} collected
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden border-0 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full -mr-16 -mt-16" />
+          <CardHeader className="pb-2 relative">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Total Students
+              </CardTitle>
+              <div className="p-2 bg-purple-500/10 rounded-lg">
+                <Users className="h-5 w-5 text-purple-600" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <div className="text-3xl font-bold text-gray-900 mb-2">
+              {summary?.totalStudents}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div
+                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                  summary?.newAdmissions ?? 0 >= 0
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {summary?.newAdmissions ?? 0 >= 0 ? (
+                  <TrendingUp className="h-3.5 w-3.5" />
+                ) : (
+                  <TrendingDown className="h-3.5 w-3.5" />
+                )}
+                <span>
+                  {summary?.newAdmissions ?? 0 > 0 ? "+" : ""}
+                  {summary?.newAdmissions ?? 0}
+                </span>
+              </div>
+              <span className="text-xs text-gray-500">new admissions</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden border-0 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16" />
+          <CardHeader className="pb-2 relative">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Outstanding Fees
+              </CardTitle>
+              <div className="p-2 bg-orange-500/10 rounded-lg">
+                <AlertCircle className="h-5 w-5 text-orange-600" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <div className="text-3xl font-bold text-gray-900 mb-2">
+              ₹{summary?.outstandingFees.toLocaleString()}
+            </div>
+            <div className="text-xs text-gray-500">
+              {(
+                ((summary?.outstandingFees ?? 0) /
+                  (summary?.totalRevenue ?? 1)) *
+                100
+              ).toFixed(1)}
+              % of total revenue
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex w-full overflow-x-auto gap-2 bg-white/10 border border-white/10 backdrop-blur-md ">
@@ -317,7 +438,7 @@ export function ReportsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <RevenueChart data={revenue} />
+              <RevenueChart data={revenue as []} />
             </CardContent>
           </Card>
         </TabsContent>
