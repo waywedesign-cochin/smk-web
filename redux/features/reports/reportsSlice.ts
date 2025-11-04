@@ -2,8 +2,31 @@ import { BASE_URL } from "@/redux/baseUrl";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
+interface RevenueReport {
+  month: string;
+  revenue: number;
+  collections: number;
+  outstanding: number;
+}
+
+interface SummaryReport {
+  totalRevenue: number;
+  revenueGrowth: string;
+  totalCollections: number;
+  totalStudents: number;
+  outstandingFees: number;
+  collectionRate: string;
+  newAdmissions: number;
+}
+
+interface RevenueResponse {
+  summary: SummaryReport;
+  monthlyData: RevenueReport[];
+}
+
 interface ReportsState {
-  revenue: Report[];
+  revenue: RevenueReport[];
+  summary: SummaryReport | null;
   batchPerformance: Report[];
   locationsComparison: Report[];
   paymentTypeReport: Report[];
@@ -11,17 +34,20 @@ interface ReportsState {
   loading: boolean;
   error: string | null;
 }
-interface fetchParams {
+
+interface FetchParams {
   year: string;
   quarter?: string;
   locationId?: string;
 }
-interface paymentTypeReportParams {
+
+interface PaymentTypeReportParams {
   locationId?: string;
 }
 
 const initialState: ReportsState = {
   revenue: [],
+  summary: null,
   batchPerformance: [],
   locationsComparison: [],
   paymentTypeReport: [],
@@ -30,8 +56,8 @@ const initialState: ReportsState = {
   error: null,
 };
 
-// Fetch revenue details
-export const getRevenueDetails = createAsyncThunk<Report[], fetchParams>(
+// ✅ Fetch revenue details (returns summary + monthlyData)
+export const getRevenueDetails = createAsyncThunk<RevenueResponse, FetchParams>(
   "reports/getRevenueDetails",
   async (params, { rejectWithValue }) => {
     const token = localStorage.getItem("token");
@@ -45,15 +71,18 @@ export const getRevenueDetails = createAsyncThunk<Report[], fetchParams>(
           },
         }
       );
-      return response.data.data;
+      console.log(response.data.data);
+      return response.data.data; // { summary, monthlyData }
     } catch (error: any) {
-      return rejectWithValue(error.response.data.message);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch revenue details"
+      );
     }
   }
 );
 
-// Fetch batch performance
-export const getBatchPerformance = createAsyncThunk<Report[], fetchParams>(
+// ✅ Fetch batch performance
+export const getBatchPerformance = createAsyncThunk<Report[], FetchParams>(
   "reports/getBatchPerformance",
   async (params, { rejectWithValue }) => {
     const token = localStorage.getItem("token");
@@ -69,13 +98,15 @@ export const getBatchPerformance = createAsyncThunk<Report[], fetchParams>(
       );
       return response.data.data.batchPerformance;
     } catch (error: any) {
-      return rejectWithValue(error.response.data.message);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch batch performance"
+      );
     }
   }
 );
 
-//fetch locations comparison
-export const getLocationsComparison = createAsyncThunk<Report[], fetchParams>(
+// ✅ Fetch locations comparison
+export const getLocationsComparison = createAsyncThunk<Report[], FetchParams>(
   "reports/getLocationsComparison",
   async (params, { rejectWithValue }) => {
     const token = localStorage.getItem("token");
@@ -91,15 +122,17 @@ export const getLocationsComparison = createAsyncThunk<Report[], fetchParams>(
       );
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(error.response.data.message);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch locations comparison"
+      );
     }
   }
 );
 
-//fetch payment type report
+// ✅ Fetch payment type report
 export const getPaymentTypeReport = createAsyncThunk<
   Report[],
-  paymentTypeReportParams
+  PaymentTypeReportParams
 >("reports/getPaymentTypeReport", async (params, { rejectWithValue }) => {
   const token = localStorage.getItem("token");
   try {
@@ -114,14 +147,16 @@ export const getPaymentTypeReport = createAsyncThunk<
     );
     return response.data.data.paymentTypeReport;
   } catch (error: any) {
-    return rejectWithValue(error.response.data.message);
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to fetch payment type report"
+    );
   }
 });
 
-//fetch course revenue
+// ✅ Fetch course revenue
 export const getCourseRevenue = createAsyncThunk<
   Report[],
-  paymentTypeReportParams
+  PaymentTypeReportParams
 >("reports/getCourseRevenue", async (params, { rejectWithValue }) => {
   const token = localStorage.getItem("token");
   try {
@@ -133,7 +168,9 @@ export const getCourseRevenue = createAsyncThunk<
     });
     return response.data.data.courseRevenueReport;
   } catch (error: any) {
-    return rejectWithValue(error.response.data.message);
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to fetch course revenue"
+    );
   }
 });
 
@@ -143,21 +180,25 @@ const reportsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // Fetch batch performance
+      // ✅ Fetch revenue details
       .addCase(getRevenueDetails.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getRevenueDetails.fulfilled, (state, action) => {
         state.loading = false;
-        state.revenue = action.payload;
+        state.revenue = action.payload.monthlyData;
+        state.summary = action.payload.summary;
       })
       .addCase(getRevenueDetails.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Failed to fetch revenue details";
+        state.error =
+          (action.payload as string) ||
+          action.error.message ||
+          "Failed to fetch revenue details";
       })
 
-      // Fetch batch performance
+      // ✅ Fetch batch performance
       .addCase(getBatchPerformance.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -169,10 +210,12 @@ const reportsSlice = createSlice({
       .addCase(getBatchPerformance.rejected, (state, action) => {
         state.loading = false;
         state.error =
-          action.error.message || "Failed to fetch batch performance";
+          (action.payload as string) ||
+          action.error.message ||
+          "Failed to fetch batch performance";
       })
 
-      // Fetch locations comparison
+      // ✅ Fetch locations comparison
       .addCase(getLocationsComparison.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -184,10 +227,12 @@ const reportsSlice = createSlice({
       .addCase(getLocationsComparison.rejected, (state, action) => {
         state.loading = false;
         state.error =
-          action.error.message || "Failed to fetch locations comparison";
+          (action.payload as string) ||
+          action.error.message ||
+          "Failed to fetch locations comparison";
       })
 
-      // Fetch payment type report
+      // ✅ Fetch payment type report
       .addCase(getPaymentTypeReport.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -199,10 +244,12 @@ const reportsSlice = createSlice({
       .addCase(getPaymentTypeReport.rejected, (state, action) => {
         state.loading = false;
         state.error =
-          action.error.message || "Failed to fetch payment type report";
+          (action.payload as string) ||
+          action.error.message ||
+          "Failed to fetch payment type report";
       })
 
-      // Fetch course revenue
+      // ✅ Fetch course revenue
       .addCase(getCourseRevenue.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -213,7 +260,10 @@ const reportsSlice = createSlice({
       })
       .addCase(getCourseRevenue.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Failed to fetch course revenue";
+        state.error =
+          (action.payload as string) ||
+          action.error.message ||
+          "Failed to fetch course revenue";
       });
   },
 });
