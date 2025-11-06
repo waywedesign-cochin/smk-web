@@ -16,6 +16,7 @@ import {
 } from "@/redux/features/directorledger/directorSlice";
 import { useAppDispatch } from "@/lib/hooks";
 import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
+import { Edit } from "lucide-react";
 
 interface LedgerTableProps {
   entries: DirectorLedgerEntry[];
@@ -128,19 +129,23 @@ export function LedgerTable({
                 </TableCell>
                 {canEdit && (
                   <TableCell className="text-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onEdit?.(entry)}
-                      className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                    >
-                      Edit
-                    </Button>
-                    <DeleteDialogue
-                      id={entry.id}
-                      handelDelete={handleDelete}
-                      title={"this Entry"}
-                    />
+                    <div className="flex justify-end space-x-2">
+                      {entry.transactionType !== "OWNER_TAKEN" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onEdit?.(entry)}
+                          className="border-white/10 text-black hover:bg-white/80"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <DeleteDialogue
+                        id={entry.id}
+                        handelDelete={handleDelete}
+                        title={"this Entry"}
+                      />
+                    </div>
                   </TableCell>
                 )}
               </TableRow>

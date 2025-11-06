@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 /* ------------------- Types ------------------- */
 export interface DirectorLedgerEntry {
   id: string;
-  transactionDate: string;
+  transactionDate: Date;
   amount: number;
   transactionType:
     | "STUDENT_PAID"
@@ -104,10 +104,13 @@ export const fetchDirectorLedgerEntries = createAsyncThunk(
         totals: DirectorLedgerTotals | null;
         pagination: DirectorLedgerPagination;
       };
-    } catch (error: any) {
-      return rejectWithValue(
-        error?.response?.data?.message || "Failed to fetch ledger entries"
-      );
+    } catch (error: unknown) {
+      let errorMessage = "Failed to fetch entries";
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data?.message || error.message;
+      }
+      toast.error(errorMessage);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -118,6 +121,7 @@ export const addDirectorLedgerEntry = createAsyncThunk<
   Omit<DirectorLedgerEntry, "id" | "debitCredit" | "createdAt" | "updatedAt">,
   { rejectValue: string }
 >("directorLedger/addEntry", async (entry, { rejectWithValue }) => {
+  const token = localStorage.getItem("token");
   try {
     // Determine debit/credit based on type
     const debitCredit: DirectorLedgerEntry["debitCredit"] =
@@ -126,14 +130,20 @@ export const addDirectorLedgerEntry = createAsyncThunk<
     const payload = { ...entry, debitCredit };
 
     const response = await axios.post(
-      `${BASE_URL}/api/director-ledger`,
-      payload
+      `${BASE_URL}/api/director-ledger/add-entry`,
+      payload,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
     );
     return { data: response.data.data };
-  } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message || "Failed to add ledger entry"
-    );
+  } catch (error: unknown) {
+    let errorMessage = "Failed to add entries";
+    if (axios.isAxiosError(error)) {
+      errorMessage = error.response?.data?.message || error.message;
+    }
+    toast.error(errorMessage);
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -144,15 +154,17 @@ export const updateDirectorLedgerEntry = createAsyncThunk<
   { rejectValue: string }
 >("directorLedger/updateEntry", async ({ id, entry }, { rejectWithValue }) => {
   try {
+    const token = localStorage.getItem("token");
     const response = await axios.put(
-      `${BASE_URL}/api/director-ledger/${id}`,
-      entry
+      `${BASE_URL}/api/director-ledger/update-entry/${id}`,
+      entry,
+      { headers: { Authorization: `Bearer ${token}` } }
     );
     return { data: response.data.data };
-  } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message || "Failed to update ledger entry"
-    );
+  } catch (error: unknown) {
+    let errorMessage = "Failed to update ledger entry";
+    if (error instanceof Error) errorMessage = error.message;
+    return rejectWithValue(errorMessage);
   }
 });
 

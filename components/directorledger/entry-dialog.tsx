@@ -65,6 +65,7 @@ export function EntryDialog({
         <LedgerForm
           directorId={directorId}
           entry={entry}
+          isEdit={isEdit}
           onSuccess={handleSuccess}
         />
       </DialogContent>

@@ -25,7 +25,6 @@ export default function DirectorLedgerPage() {
     }
   }, [dispatch, users]);
   const directorsList = useMemo(() => {
-    console.log("users", users);
     if (!users) return [];
 
     return users.filter((user: User) => user.role === 2);
@@ -51,14 +50,6 @@ export default function DirectorLedgerPage() {
   const [entryDialogOpen, setEntryDialogOpen] = useState(false);
   const canEdit = currentUser?.role === 1 || currentUser?.role === 3;
   const isDirector = currentUser?.role === 2;
-
-  console.log(
-    "currentUser, isDirector , defaultDirectorId , directorlist",
-    currentUser,
-    isDirector,
-    directorsList,
-    defaultDirectorId
-  );
 
   useEffect(() => {
     dispatch(
