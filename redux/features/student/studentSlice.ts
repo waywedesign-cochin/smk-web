@@ -32,6 +32,7 @@ interface FetchStudentsParams {
   isFundedAccount?: true | false;
   location?: string;
   batch?: string;
+  currentBatchId?:string
   mode?: string;
   status?: string;
   switched?: boolean;
