@@ -458,7 +458,7 @@ export const CashBookPage = () => {
         </Card>
         <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Closing Balance</CardTitle>
+            <CardTitle className="text-sm"> Closing Balance</CardTitle>
           </CardHeader>
           <CardContent>
             <div

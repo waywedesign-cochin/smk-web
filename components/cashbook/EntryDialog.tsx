@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "../ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type React from "react";
 import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
 import {
@@ -34,6 +35,8 @@ import {
   updateCashbookEntry,
 } from "@/redux/features/cashbook/cashbookSlice";
 import { useCashbookForm } from "@/hooks/useCashbookForm";
+import { cashBookFormSchema } from "@/lib/validation/cashBookFormSchema";
+import { fetchBatches } from "@/redux/features/batch/batchSlice";
 
 interface CashBookFormData {
   transactionDate: Date;
@@ -77,6 +80,8 @@ export default function EntryDialog({
     setValue,
     reset,
     formState: { errors, isSubmitting },
+    setError,
+    clearErrors,
   } = useForm<CashBookFormData>({
     defaultValues: {
       transactionDate: new Date(),
@@ -161,6 +166,7 @@ export default function EntryDialog({
   }, [
     isEdit,
     existingData,
+    directors,
     reset,
     propLocationId,
     setValue,
@@ -188,23 +194,45 @@ export default function EntryDialog({
   const handleStudentChange = (studentId: string) => {
     setSelectedStudentId(studentId);
     setValue("studentId", studentId);
+    clearErrors("studentId"); // 🧩 <—— this fixes the “stuck” error
   };
 
   const handleDirectorChange = (directorId: string) => {
     setValue("directorId", directorId);
+    clearErrors("directorId");
   };
 
   const onSubmit = async (data: CashBookFormData) => {
     try {
+      console.log("form data  before validation", data);
+      const result = cashBookFormSchema.safeParse(data);
+
+      if (!result.success) {
+        // Loop through all validation errors and send them to react-hook-form
+        const fieldErrors = result.error.flatten().fieldErrors;
+        for (const [key, messages] of Object.entries(fieldErrors)) {
+          if (messages && messages.length > 0) {
+            setError(key as keyof CashBookFormData, {
+              type: "manual",
+              message: messages[0], // show first message
+            });
+          }
+        }
+
+        // Stop submission
+        return;
+      }
+      const validData = result.data;
+
       const payload = {
-        transactionDate: data.transactionDate.toISOString(),
-        transactionType: data.transactionType,
-        amount: Number(data.amount),
-        description: data.description.trim(),
-        locationId: data.locationId,
-        referenceId: data.referenceId?.trim() || undefined,
-        studentId: data.studentId || undefined,
-        directorId: data.directorId || undefined,
+        transactionDate: validData.transactionDate.toISOString(),
+        transactionType: validData.transactionType,
+        amount: Number(validData.amount),
+        description: validData.description.trim(),
+        locationId: validData.locationId,
+        referenceId: validData.referenceId?.trim() || undefined,
+        studentId: validData.studentId || undefined,
+        directorId: validData.directorId || undefined,
       };
 
       if (isEdit && existingData?.id) {
@@ -294,6 +322,11 @@ export default function EntryDialog({
                   />
                 </PopoverContent>
               </Popover>
+              {errors.transactionDate && (
+                <p className="text-red-400 text-sm">
+                  {errors.transactionDate.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -306,6 +339,7 @@ export default function EntryDialog({
                     v as CashBookFormData["transactionType"]
                   )
                 }
+                disabled={isEdit}
               >
                 <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                   <SelectValue />
@@ -316,6 +350,11 @@ export default function EntryDialog({
                   <SelectItem value="OWNER_TAKEN">Owner Taken</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.transactionType && (
+                <p className="text-red-400 text-sm">
+                  {errors.transactionType.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -325,7 +364,23 @@ export default function EntryDialog({
               <Label className="text-white">Location *</Label>
               <Select
                 value={watchLocation}
-                onValueChange={(v) => setValue("locationId", v)}
+                onValueChange={(value) => {
+                  // ✅ 1. Update location in RHF
+                  setValue("locationId", value);
+                  clearErrors("locationId");
+
+                  // ✅ 2. Reset dependent fields
+                  setValue("studentId", undefined);
+                  clearErrors("studentId");
+
+                  // ✅ 3. Clear dependent local data arrays
+                  setSelectedBatchId(undefined);
+                  setSelectedStudentId(undefined);
+
+                  // ✅ 4. Fetch new batches for this location (if available)
+                  if (value)
+                    dispatch(fetchBatches({ location: value, limit: 10000 }));
+                }}
               >
                 <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                   <SelectValue placeholder="Select location" />
@@ -338,6 +393,11 @@ export default function EntryDialog({
                   ))}
                 </SelectContent>
               </Select>
+              {errors.locationId && (
+                <p className="text-red-400 text-sm">
+                  {errors.locationId.message}
+                </p>
+              )}
             </div>
           )}
 
@@ -349,6 +409,7 @@ export default function EntryDialog({
                 value={selectedBatchId || ""}
                 onValueChange={handleBatchChange}
                 disabled={loadingBatches || batches.length === 0}
+                required
               >
                 <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                   <SelectValue
@@ -380,6 +441,7 @@ export default function EntryDialog({
                 value={selectedStudentId || ""}
                 onValueChange={handleStudentChange}
                 disabled={loadingStudents || filteredStudents.length === 0}
+                required
               >
                 <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                   <SelectValue
@@ -402,14 +464,18 @@ export default function EntryDialog({
               </Select>
             </div>
           )}
+          {errors.studentId && (
+            <p className="text-red-400 text-sm">{errors.studentId.message}</p>
+          )}
 
           {/* Director Selection - Only for OWNER_TAKEN */}
           {watchType === "OWNER_TAKEN" && (
             <div className="space-y-2">
               <Label className="text-white">Director *</Label>
               <Select
-                value={watchDirectorId || ""}
+                value={watchDirectorId ?? existingData?.directorId ?? ""}
                 onValueChange={handleDirectorChange}
+                required
               >
                 <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                   <SelectValue placeholder="Select director" />
@@ -423,6 +489,10 @@ export default function EntryDialog({
                 </SelectContent>
               </Select>
             </div>
+          )}
+
+          {errors.directorId && (
+            <p className="text-red-400 text-sm">{errors.directorId.message}</p>
           )}
 
           {/* Amount */}
@@ -450,6 +520,11 @@ export default function EntryDialog({
               placeholder="Enter description..."
               {...register("description")}
             />
+            {errors.description && (
+              <p className="text-red-400 text-sm">
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           {/* Reference ID */}
