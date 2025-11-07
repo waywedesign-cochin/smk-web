@@ -261,7 +261,8 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
             Fee Configuration
           </TabsTrigger>
 
-          {student?.fees?.[0]?.feePaymentMode && (
+          {(student?.fees?.[0]?.feePaymentMode ||
+            (student?.fees?.[0]?.payments?.length ?? 0) > 0) && (
             <TabsTrigger
               value="payments"
               className="data-[state=active]:bg-black data-[state=active]:text-white"

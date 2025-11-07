@@ -184,7 +184,10 @@ export default function FeeConfigurationForm({
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Balance Amount:</span>
           <span className="font-semibold">
-            ₹{feeData.balanceAmount?.toLocaleString() ?? 0}
+            ₹
+            {feeData.balanceAmount
+              ? feeData.balanceAmount.toLocaleString()
+              : feeData.finalFee.toLocaleString() ?? 0}
           </span>
         </div>
       </div>
