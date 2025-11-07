@@ -5,8 +5,10 @@ import React from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { fetchBatches } from "@/redux/features/batch/batchSlice";
 import { fetchStudents } from "@/redux/features/student/studentSlice";
+import { fetchUsers } from "@/redux/features/user/userSlice";
+
 import type { CashbookEntry } from "@/redux/features/cashbook/cashbookSlice";
-import type { Batch, Student } from "@/lib/types";
+import type { Batch, Student, User } from "@/lib/types";
 
 interface UseCashbookFormProps {
   isOpen: boolean;
@@ -19,8 +21,10 @@ interface UseCashbookFormProps {
 interface UseCashbookFormReturn {
   batches: Batch[];
   filteredStudents: Student[];
+  directors: User[];
   loadingBatches: boolean;
   loadingStudents: boolean;
+  loadingDirectors: boolean;
   selectedBatchId: string | undefined;
   selectedStudentId: string | undefined;
   setSelectedBatchId: (id: string | undefined) => void;
@@ -29,8 +33,8 @@ interface UseCashbookFormReturn {
 }
 
 /**
- * Custom hook to manage cascading selection logic for cashbook form
- * Handles: Location → Batch → Student flow
+ * Custom hook to manage cascading selection logic for Cashbook form
+ * Handles: Location → Batch → Student → Director flow
  * Prevents unnecessary API calls and manages loading states cleanly
  */
 export function useCashbookForm({
@@ -41,54 +45,62 @@ export function useCashbookForm({
   locationId,
 }: UseCashbookFormProps): UseCashbookFormReturn {
   const dispatch = useAppDispatch();
+
+  // 🔹 Redux data
   const batches = useAppSelector((state) => state.batches.batches ?? []);
   const students = useAppSelector((state) => state.students.students ?? []);
+  const users = useAppSelector((state) => state.users.users ?? []);
 
-  // Track what we've already fetched to avoid duplicate API calls
+  // 🔹 Derived
+  const directors = users.filter((user) => user.role === 2);
+
+  // 🔹 Refs to prevent redundant fetches
   const fetchedBatchesForLocation = useRef<string | null>(null);
   const fetchedStudentsForBatch = useRef<string | null>(null);
+  const fetchedDirectors = useRef<boolean>(false);
 
+  // 🔹 Local state
   const [selectedBatchId, setSelectedBatchId] = React.useState<
     string | undefined
   >(undefined);
   const [selectedStudentId, setSelectedStudentId] = React.useState<
     string | undefined
   >(undefined);
+
   const [loadingBatches, setLoadingBatches] = React.useState(false);
   const [loadingStudents, setLoadingStudents] = React.useState(false);
+  const [loadingDirectors, setLoadingDirectors] = React.useState(false);
 
+  // Reset when modal closes
   useEffect(() => {
     if (!isOpen) {
       fetchedBatchesForLocation.current = null;
       fetchedStudentsForBatch.current = null;
+      fetchedDirectors.current = false;
       setSelectedBatchId(undefined);
       setSelectedStudentId(undefined);
     }
   }, [isOpen]);
 
+  // When editing, restore student context if needed
   useEffect(() => {
     if (isEdit && existingData && transactionType === "STUDENT_PAID") {
       const batchId = existingData.student?.currentBatchId;
       const studentId = existingData.studentId;
-
-      if (batchId) {
-        setSelectedBatchId(batchId);
-      }
-      if (studentId) {
-        setSelectedStudentId(studentId);
-      }
+      if (batchId) setSelectedBatchId(batchId);
+      if (studentId) setSelectedStudentId(studentId);
     }
   }, [isEdit, existingData, transactionType]);
 
+  // 🔹 Fetch batches when location changes
   useEffect(() => {
     if (
       !isOpen ||
       transactionType !== "STUDENT_PAID" ||
       !locationId ||
       fetchedBatchesForLocation.current === locationId
-    ) {
+    )
       return;
-    }
 
     const loadBatches = async () => {
       setLoadingBatches(true);
@@ -96,7 +108,7 @@ export function useCashbookForm({
         await dispatch(fetchBatches({ location: locationId })).unwrap();
         fetchedBatchesForLocation.current = locationId;
       } catch (error) {
-        console.error("Failed to fetch batches:", error);
+        console.error("❌ Failed to fetch batches:", error);
       } finally {
         setLoadingBatches(false);
       }
@@ -105,6 +117,7 @@ export function useCashbookForm({
     loadBatches();
   }, [isOpen, transactionType, locationId, dispatch]);
 
+  // 🔹 Fetch students when batch changes
   useEffect(() => {
     if (
       !isOpen ||
@@ -112,9 +125,8 @@ export function useCashbookForm({
       !selectedBatchId ||
       !locationId ||
       fetchedStudentsForBatch.current === selectedBatchId
-    ) {
+    )
       return;
-    }
 
     const loadStudents = async () => {
       setLoadingStudents(true);
@@ -129,7 +141,7 @@ export function useCashbookForm({
         ).unwrap();
         fetchedStudentsForBatch.current = selectedBatchId;
       } catch (error) {
-        console.error("Failed to fetch students:", error);
+        console.error("❌ Failed to fetch students:", error);
       } finally {
         setLoadingStudents(false);
       }
@@ -138,23 +150,52 @@ export function useCashbookForm({
     loadStudents();
   }, [isOpen, transactionType, selectedBatchId, locationId, dispatch]);
 
+  // 🔹 Fetch directors when type = OWNER_TAKEN
+  useEffect(() => {
+    if (
+      !isOpen ||
+      transactionType !== "OWNER_TAKEN" ||
+      fetchedDirectors.current
+    )
+      return;
+
+    const loadDirectors = async () => {
+      setLoadingDirectors(true);
+      try {
+        await dispatch(fetchUsers()).unwrap();
+        fetchedDirectors.current = true;
+      } catch (error) {
+        console.error("❌ Failed to fetch directors:", error);
+      } finally {
+        setLoadingDirectors(false);
+      }
+    };
+
+    loadDirectors();
+  }, [isOpen, transactionType, dispatch]);
+
+  // 🔹 Filter students for selected batch
   const filteredStudents = useCallback(() => {
-    if (transactionType !== "STUDENT_PAID" || !selectedBatchId) {
-      return [];
-    }
+    if (transactionType !== "STUDENT_PAID" || !selectedBatchId) return [];
     return students.filter((s) => s.currentBatch?.id === selectedBatchId);
   }, [students, selectedBatchId, transactionType]);
+
+  // 🔹 Reset helper
   const resetFormState = useCallback(() => {
     setSelectedBatchId(undefined);
     setSelectedStudentId(undefined);
     fetchedBatchesForLocation.current = null;
     fetchedStudentsForBatch.current = null;
+    fetchedDirectors.current = false;
   }, []);
+
   return {
     batches: transactionType === "STUDENT_PAID" ? batches : [],
     filteredStudents: filteredStudents(),
+    directors: transactionType === "OWNER_TAKEN" ? directors : [],
     loadingBatches,
     loadingStudents,
+    loadingDirectors,
     selectedBatchId,
     selectedStudentId,
     setSelectedBatchId,
