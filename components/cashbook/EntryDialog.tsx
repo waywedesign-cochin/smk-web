@@ -175,6 +175,7 @@ export default function EntryDialog({
     propLocationId,
     setSelectedBatchId,
     setSelectedStudentId,
+    !selectedBatchId,
   ]);
 
   // ------------------ Effects: clear dependent fields on type change ------------------
@@ -497,6 +498,7 @@ export default function EntryDialog({
                   {filteredStudents.map((student) => (
                     <SelectItem key={student.id} value={student.id as string}>
                       {student.name}
+                      {loadingStudents && <Loader2 className="animate-spin" />}
                     </SelectItem>
                   ))}
                 </SelectContent>
