@@ -1,8 +1,9 @@
 "use client";
-import { Button } from "../ui/button";
-import { zodResolver } from "@hookform/resolvers/zod";
 import type React from "react";
 import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
+import { format } from "date-fns";
+
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
@@ -22,11 +23,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useForm } from "react-hook-form";
 import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
+
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { format } from "date-fns";
 import type { User } from "@/lib/types";
 import {
   addCashbookEntry,
@@ -34,15 +34,15 @@ import {
   fetchCashbookEntries,
   updateCashbookEntry,
 } from "@/redux/features/cashbook/cashbookSlice";
+import { fetchBatches } from "@/redux/features/batch/batchSlice";
 import { useCashbookForm } from "@/hooks/useCashbookForm";
 import { cashBookFormSchema } from "@/lib/validation/cashBookFormSchema";
-import { fetchBatches } from "@/redux/features/batch/batchSlice";
 
 interface CashBookFormData {
   transactionDate: Date;
   transactionType: "STUDENT_PAID" | "OFFICE_EXPENSE" | "OWNER_TAKEN";
   description: string;
-  amount: number;
+  amount: number | string; // keep as string while typing; cast to number on submit
   locationId: string;
   referenceId?: string;
   studentId?: string;
@@ -73,34 +73,31 @@ export default function EntryDialog({
   const dispatch = useAppDispatch();
   const locations = useAppSelector((state) => state.locations.locations);
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    reset,
-    formState: { errors, isSubmitting },
-    setError,
-    clearErrors,
-  } = useForm<CashBookFormData>({
-    defaultValues: {
-      transactionDate: new Date(),
-      transactionType: "STUDENT_PAID",
-      amount: 0,
-      locationId: propLocationId,
-      description: "",
-      referenceId: "",
-    },
+  // ------------------ Local Form State (replaces React Hook Form) ------------------
+  const [form, setForm] = useState<CashBookFormData>({
+    transactionDate: new Date(),
+    transactionType: "STUDENT_PAID",
+    amount: 0,
+    locationId: propLocationId,
+    description: "",
+    referenceId: "",
+    studentId: undefined,
+    directorId: undefined,
   });
 
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // UI date for the calendar button text
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date()
   );
 
-  const watchType = watch("transactionType");
-  const watchLocation = watch("locationId");
-  const watchDirectorId = watch("directorId");
+  // mirrors previous "watch" behavior
+  const watchType = form.transactionType;
+  const watchLocation = form.locationId;
 
+  // ------------------ Custom hook logic preserved ------------------
   const {
     batches,
     filteredStudents,
@@ -119,13 +116,14 @@ export default function EntryDialog({
     locationId: watchLocation,
   });
 
+  // ------------------ Initialize / Edit Mode Prefill ------------------
   useEffect(() => {
     if (isEdit && existingData) {
       const txDate = existingData.transactionDate
         ? new Date(existingData.transactionDate)
         : new Date();
 
-      reset({
+      const prefilled: CashBookFormData = {
         transactionDate: txDate,
         transactionType: existingData.transactionType,
         description: existingData.description ?? "",
@@ -134,103 +132,139 @@ export default function EntryDialog({
         referenceId: existingData.referenceId ?? "",
         studentId: existingData.studentId ?? undefined,
         directorId: existingData.directorId ?? undefined,
-      });
+      };
 
+      setForm(prefilled);
       setSelectedDate(txDate);
 
-      // Pre-populate batch and student for edit mode
+      // Pre-populate batch & student in edit mode
       if (existingData.transactionType === "STUDENT_PAID") {
         const batchId = existingData.student?.currentBatchId;
         if (batchId) {
           setSelectedBatchId(batchId);
-          setValue("studentId", existingData.studentId);
-          setSelectedStudentId(existingData.studentId);
+          setSelectedStudentId(existingData.studentId ?? undefined);
         }
       }
 
-      // Pre-populate director for edit mode
-      if (existingData.transactionType === "OWNER_TAKEN") {
-        setValue("directorId", existingData.directorId);
-      }
+      // ✅ FIX: Ensure directorId/studentId appear on first open (hydrate after initial render)
+      setTimeout(() => {
+        setForm((prev) => ({
+          ...prev,
+          directorId: existingData.directorId ?? prev.directorId,
+          studentId: existingData.studentId ?? prev.studentId,
+        }));
+      }, 0);
     } else {
-      reset({
+      // Reset to defaults on "add"
+      setForm({
         transactionDate: new Date(),
         transactionType: "STUDENT_PAID",
         amount: 0,
         description: "",
         locationId: propLocationId,
         referenceId: "",
+        studentId: undefined,
+        directorId: undefined,
       });
       setSelectedDate(new Date());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isEdit,
     existingData,
-    directors,
-    reset,
     propLocationId,
-    setValue,
     setSelectedBatchId,
     setSelectedStudentId,
   ]);
 
+  // ------------------ Effects: clear dependent fields on type change ------------------
   useEffect(() => {
     if (watchType !== "STUDENT_PAID") {
       setSelectedBatchId(undefined);
       setSelectedStudentId(undefined);
-      setValue("studentId", undefined);
+      setField("studentId", undefined, true);
     }
     if (watchType !== "OWNER_TAKEN") {
-      setValue("directorId", undefined);
+      setField("directorId", undefined, true);
     }
-  }, [watchType, setValue, setSelectedBatchId, setSelectedStudentId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchType]);
 
+  // ------------------ Helpers ------------------
+  const clearFieldError = (key: string) => {
+    setFormErrors((errs) => {
+      if (errs[key]) {
+        const { [key]: _, ...rest } = errs;
+        return rest;
+      }
+      return errs;
+    });
+  };
+
+  const setErrorsFromZod = (
+    zodFieldErrors: Record<string, string[] | undefined>
+  ) => {
+    const mapped: Record<string, string> = {};
+    for (const [key, messages] of Object.entries(zodFieldErrors)) {
+      if (messages && messages.length > 0) mapped[key] = messages[0];
+    }
+    setFormErrors(mapped);
+  };
+
+  const setField = <K extends keyof CashBookFormData>(
+    key: K,
+    value: CashBookFormData[K],
+    clearError = false
+  ) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    if (clearError) clearFieldError(String(key));
+  };
+
+  // ------------------ Handlers ------------------
   const handleBatchChange = (batchId: string) => {
     setSelectedBatchId(batchId);
     setSelectedStudentId(undefined);
-    setValue("studentId", undefined);
+    setField("studentId", undefined, true);
   };
 
   const handleStudentChange = (studentId: string) => {
     setSelectedStudentId(studentId);
-    setValue("studentId", studentId);
-    clearErrors("studentId"); // 🧩 <—— this fixes the “stuck” error
+    setField("studentId", studentId, true);
   };
 
   const handleDirectorChange = (directorId: string) => {
-    setValue("directorId", directorId);
-    clearErrors("directorId");
+    setField("directorId", directorId, true);
   };
 
-  const onSubmit = async (data: CashBookFormData) => {
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
     try {
-      console.log("form data  before validation", data);
-      const result = cashBookFormSchema.safeParse(data);
+      // Build a clean object for validation (amount must be number)
+      const toValidate: CashBookFormData = {
+        ...form,
+        amount:
+          typeof form.amount === "string" ? Number(form.amount) : form.amount,
+      };
+
+      const result = cashBookFormSchema.safeParse(toValidate);
 
       if (!result.success) {
-        // Loop through all validation errors and send them to react-hook-form
         const fieldErrors = result.error.flatten().fieldErrors;
-        for (const [key, messages] of Object.entries(fieldErrors)) {
-          if (messages && messages.length > 0) {
-            setError(key as keyof CashBookFormData, {
-              type: "manual",
-              message: messages[0], // show first message
-            });
-          }
-        }
-
-        // Stop submission
+        setErrorsFromZod(fieldErrors as Record<string, string[] | undefined>);
+        setIsSubmitting(false);
         return;
       }
+
       const validData = result.data;
 
       const payload = {
         transactionDate: validData.transactionDate.toISOString(),
         transactionType: validData.transactionType,
         amount: Number(validData.amount),
-        description: validData.description.trim(),
+        description: (validData.description ?? "").toString().trim(),
         locationId: validData.locationId,
-        referenceId: validData.referenceId?.trim() || undefined,
+        referenceId: validData.referenceId?.toString().trim() || undefined,
         studentId: validData.studentId || undefined,
         directorId: validData.directorId || undefined,
       };
@@ -262,19 +296,25 @@ export default function EntryDialog({
         handleTabChange("expenses");
       }
 
-      reset({
+      // Reset local states
+      resetFormState();
+      setForm({
         transactionDate: new Date(),
         transactionType: "STUDENT_PAID",
         amount: 0,
         description: "",
         locationId: propLocationId,
         referenceId: "",
+        studentId: undefined,
+        directorId: undefined,
       });
       setSelectedDate(new Date());
-      resetFormState();
+      setFormErrors({});
       setShowAddEntry(false);
     } catch (error) {
       console.error("Submit failed:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -282,6 +322,7 @@ export default function EntryDialog({
     setShowAddEntry(false);
   };
 
+  // ------------------ Render ------------------
   return (
     <Dialog open={showAddEntry} onOpenChange={handleClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gray-900 text-white border-gray-700">
@@ -294,7 +335,7 @@ export default function EntryDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={onSubmit} className="space-y-6">
           {/* Date & Type */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -302,6 +343,7 @@ export default function EntryDialog({
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
+                    type="button"
                     variant="outline"
                     className="w-full justify-start text-left bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
                   >
@@ -315,16 +357,16 @@ export default function EntryDialog({
                     selected={selectedDate}
                     onSelect={(d) => {
                       setSelectedDate(d);
-                      if (d) setValue("transactionDate", d);
+                      if (d) setField("transactionDate", d, true);
                     }}
                     initialFocus
                     className="bg-gray-800 text-white"
                   />
                 </PopoverContent>
               </Popover>
-              {errors.transactionDate && (
+              {formErrors.transactionDate && (
                 <p className="text-red-400 text-sm">
-                  {errors.transactionDate.message}
+                  {formErrors.transactionDate}
                 </p>
               )}
             </div>
@@ -332,11 +374,12 @@ export default function EntryDialog({
             <div className="space-y-2">
               <Label className="text-white">Transaction Type *</Label>
               <Select
-                value={watchType}
+                value={form.transactionType}
                 onValueChange={(v) =>
-                  setValue(
+                  setField(
                     "transactionType",
-                    v as CashBookFormData["transactionType"]
+                    v as CashBookFormData["transactionType"],
+                    true
                   )
                 }
                 disabled={isEdit}
@@ -350,9 +393,9 @@ export default function EntryDialog({
                   <SelectItem value="OWNER_TAKEN">Owner Taken</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.transactionType && (
+              {formErrors.transactionType && (
                 <p className="text-red-400 text-sm">
-                  {errors.transactionType.message}
+                  {formErrors.transactionType}
                 </p>
               )}
             </div>
@@ -363,21 +406,19 @@ export default function EntryDialog({
             <div className="space-y-2">
               <Label className="text-white">Location *</Label>
               <Select
-                value={watchLocation}
+                value={form.locationId}
                 onValueChange={(value) => {
-                  // ✅ 1. Update location in RHF
-                  setValue("locationId", value);
-                  clearErrors("locationId");
+                  // 1. Update location
+                  setField("locationId", value, true);
 
-                  // ✅ 2. Reset dependent fields
-                  setValue("studentId", undefined);
-                  clearErrors("studentId");
+                  // 2. Reset dependent fields
+                  setField("studentId", undefined, true);
 
-                  // ✅ 3. Clear dependent local data arrays
+                  // 3. Clear dependent local data arrays
                   setSelectedBatchId(undefined);
                   setSelectedStudentId(undefined);
 
-                  // ✅ 4. Fetch new batches for this location (if available)
+                  // 4. Fetch new batches for this location
                   if (value)
                     dispatch(fetchBatches({ location: value, limit: 10000 }));
                 }}
@@ -393,16 +434,14 @@ export default function EntryDialog({
                   ))}
                 </SelectContent>
               </Select>
-              {errors.locationId && (
-                <p className="text-red-400 text-sm">
-                  {errors.locationId.message}
-                </p>
+              {formErrors.locationId && (
+                <p className="text-red-400 text-sm">{formErrors.locationId}</p>
               )}
             </div>
           )}
 
           {/* Batch Selection - Only for STUDENT_PAID */}
-          {watchType === "STUDENT_PAID" && (
+          {form.transactionType === "STUDENT_PAID" && (
             <div className="space-y-2">
               <Label className="text-white">Batch *</Label>
               <Select
@@ -434,11 +473,11 @@ export default function EntryDialog({
           )}
 
           {/* Student Selection - Only for STUDENT_PAID with batch selected */}
-          {watchType === "STUDENT_PAID" && selectedBatchId && (
+          {form.transactionType === "STUDENT_PAID" && selectedBatchId && (
             <div className="space-y-2">
               <Label className="text-white">Student *</Label>
               <Select
-                value={selectedStudentId || ""}
+                value={form.studentId ?? ""}
                 onValueChange={handleStudentChange}
                 disabled={loadingStudents || filteredStudents.length === 0}
                 required
@@ -464,16 +503,16 @@ export default function EntryDialog({
               </Select>
             </div>
           )}
-          {errors.studentId && (
-            <p className="text-red-400 text-sm">{errors.studentId.message}</p>
+          {formErrors.studentId && (
+            <p className="text-red-400 text-sm">{formErrors.studentId}</p>
           )}
 
           {/* Director Selection - Only for OWNER_TAKEN */}
-          {watchType === "OWNER_TAKEN" && (
+          {form.transactionType === "OWNER_TAKEN" && (
             <div className="space-y-2">
               <Label className="text-white">Director *</Label>
               <Select
-                value={watchDirectorId ?? existingData?.directorId ?? ""}
+                value={form.directorId ?? ""}
                 onValueChange={handleDirectorChange}
                 required
               >
@@ -490,9 +529,8 @@ export default function EntryDialog({
               </Select>
             </div>
           )}
-
-          {errors.directorId && (
-            <p className="text-red-400 text-sm">{errors.directorId.message}</p>
+          {formErrors.directorId && (
+            <p className="text-red-400 text-sm">{formErrors.directorId}</p>
           )}
 
           {/* Amount */}
@@ -502,13 +540,14 @@ export default function EntryDialog({
               type="number"
               step="0.01"
               className="bg-gray-800 border-gray-600 text-white"
-              {...register("amount", {
-                required: "Amount is required",
-                min: { value: 0.01, message: "Amount must be greater than 0" },
-              })}
+              value={form.amount}
+              onChange={(e) => {
+                const v = e.target.value;
+                setField("amount", v, true);
+              }}
             />
-            {errors.amount && (
-              <p className="text-red-400 text-sm">{errors.amount.message}</p>
+            {formErrors.amount && (
+              <p className="text-red-400 text-sm">{formErrors.amount}</p>
             )}
           </div>
 
@@ -518,12 +557,11 @@ export default function EntryDialog({
             <Textarea
               className="bg-gray-800 border-gray-600 text-white min-h-[80px]"
               placeholder="Enter description..."
-              {...register("description")}
+              value={form.description}
+              onChange={(e) => setField("description", e.target.value, true)}
             />
-            {errors.description && (
-              <p className="text-red-400 text-sm">
-                {errors.description.message}
-              </p>
+            {formErrors.description && (
+              <p className="text-red-400 text-sm">{formErrors.description}</p>
             )}
           </div>
 
@@ -533,8 +571,12 @@ export default function EntryDialog({
             <Input
               className="bg-gray-800 border-gray-600 text-white"
               placeholder="Optional reference number"
-              {...register("referenceId")}
+              value={form.referenceId ?? ""}
+              onChange={(e) => setField("referenceId", e.target.value, true)}
             />
+            {formErrors.referenceId && (
+              <p className="text-red-400 text-sm">{formErrors.referenceId}</p>
+            )}
           </div>
 
           <DialogFooter className="gap-2">
