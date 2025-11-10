@@ -18,278 +18,430 @@ import {
   CheckCircle,
   AlertCircle,
   DollarSign,
+  Filter,
+  Settings,
 } from "lucide-react";
-// import {
-//   mockDashboardStats,
-//   mockBatches,
-//   mockStudents,
-//   mockPayments,
-// } from "../../lib/mock-data";
-// import { BatchStatus, PaymentMode } from "../../types";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { fetchBatches } from "@/redux/features/batch/batchSlice";
-import { useEffect } from "react";
+import { fetchLocations } from "@/redux/features/location/locationSlice";
+import { useEffect, useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import Link from "next/link";
 
 export function OverviewPage() {
   const dispatch = useAppDispatch();
-  const { batches, pagination, loading } = useAppSelector(
-    (state) => state.batches
-  );
+  const { batches, loading } = useAppSelector((state) => state.batches);
+  const { currentUser } = useAppSelector((state) => state.users);
+  const { locations } = useAppSelector((state) => state.locations);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [locationFilter, setLocationFilter] = useState("all");
+
+  // Get current year for filter options
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - i);
+
+  // Fetch locations on component mount for admin/director
   useEffect(() => {
-    dispatch(
-      fetchBatches({
-        status: "ACTIVE",
-        limit: 0,
-      })
+    if (currentUser?.role === 1 || currentUser?.role === 2) {
+      dispatch(fetchLocations());
+    }
+  }, [dispatch, currentUser]);
+
+  // Fetch batches with filters
+  useEffect(() => {
+    const filters = {
+      status: "ACTIVE",
+      limit: 0,
+      year: selectedYear,
+      locationId: locationFilter,
+    };
+
+    // For staff users, always filter by their location
+    if (currentUser?.role === 3 && currentUser?.locationId) {
+      filters.locationId = currentUser.locationId;
+    }
+    // For admin/director, use location filter if not "all"
+    else if (
+      (currentUser?.role === 1 || currentUser?.role === 2) &&
+      locationFilter !== "all"
+    ) {
+      filters.locationId = locationFilter;
+    }
+
+    dispatch(fetchBatches(filters));
+  }, [dispatch, currentUser, selectedYear, locationFilter]);
+
+  // Filter batches based on user role and selected filters
+  const filteredBatches = batches.filter((batch) => {
+    // For staff, always show only their location batches
+    if (currentUser?.role === 3 && currentUser?.locationId) {
+      return batch.locationId === currentUser.locationId;
+    }
+    // For admin/director, apply location filter
+    if (locationFilter !== "all") {
+      return batch.locationId === locationFilter;
+    }
+    return true;
+  });
+
+  // Calculate stats based on filtered data
+  const calculateStats = () => {
+    const totalStudents = filteredBatches.reduce(
+      (sum, batch) => sum + (batch.currentCount || 0),
+      0
     );
-  }, [dispatch]);
+    const activeBatches = filteredBatches.length;
+    const totalCapacity = filteredBatches.reduce(
+      (sum, batch) => sum + (batch.slotLimit || 0),
+      0
+    );
+    const occupancyRate =
+      totalCapacity > 0 ? (totalStudents / totalCapacity) * 100 : 0;
 
-  //   const stats = mockDashboardStats;
+    return {
+      totalStudents,
+      activeBatches,
+      totalCapacity,
+      occupancyRate,
+    };
+  };
 
-  //   const recentAdmissions = mockStudents.slice(0, 5);
-  //   const recentPayments = mockPayments.slice(0, 5);
+  const stats = calculateStats();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gray-950 min-h-screen p-6">
+      {/* Welcome Card */}
+      <Card className="bg-gradient-to-r from-blue-800 to-purple-600/10 border-0 text-white shadow-lg">
+        <CardHeader className="flex flex-row max-xl:flex-col max-xl:gap-2 max-xl:items-start items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-2xl max-sm:text-xl font-bold">
+            Welcome back, {currentUser?.username}!
+          </CardTitle>
+          <div className="flex max-sm:flex-col max-sm:items-start items-center gap-2">
+            {(currentUser?.role === 1 || currentUser?.role === 2) && (
+              <Select value={locationFilter} onValueChange={setLocationFilter}>
+                <SelectTrigger className="w-48 bg-white/20 border-white/30 text-white">
+                  <Filter className="h-4 w-4 mr-2 text-white" />
+                  <SelectValue placeholder="All Locations" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                  <SelectItem value="all" className="hover:bg-gray-700">
+                    All Locations
+                  </SelectItem>
+                  {locations?.map((location) => (
+                    <SelectItem
+                      key={location.id}
+                      value={location.id as string}
+                      className="hover:bg-gray-700"
+                    >
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <Select
+              value={selectedYear.toString()}
+              onValueChange={(value) => setSelectedYear(parseInt(value))}
+            >
+              <SelectTrigger className="w-28 bg-white/20 border-white/30 text-white">
+                <SelectValue placeholder={selectedYear.toString()} />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                {yearOptions.map((year) => (
+                  <SelectItem
+                    key={year}
+                    value={year.toString()}
+                    className="hover:bg-gray-700"
+                  >
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4 flex-wrap">
+            <p className="text-lg font-semibold opacity-90">
+              You are logged in as{" "}
+              <Badge
+                variant="secondary"
+                className="ml-2 bg-white/20 text-white border-white/30"
+              >
+                {currentUser?.role === 1
+                  ? "Super Admin"
+                  : currentUser?.role === 2
+                  ? "Director"
+                  : "Staff"}
+              </Badge>
+            </p>
+            {currentUser?.location && (
+              <Badge
+                variant="outline"
+                className="bg-white/20 text-white border-white/30"
+              >
+                📍 {currentUser.location.name}
+              </Badge>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <Card className="bg-gray-800 border-gray-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-gray-300">
               Total Students
             </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {/* {stats.totalStudents} */}
+            <div className="text-2xl font-bold text-white">
+              {stats.totalStudents}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {/* {stats.activeStudents}  */}
-              currently active
+            <div className="flex items-center gap-2 mt-2">
+              <Progress
+                value={stats.occupancyRate}
+                className="w-full bg-gray-700"
+              />
+              <span className="text-xs text-gray-400 whitespace-nowrap">
+                {stats.occupancyRate.toFixed(1)}%
+              </span>
+            </div>
+            <p className="text-xs text-gray-400 mt-2">
+              Capacity: {stats.totalStudents}/{stats.totalCapacity}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-gray-800 border-gray-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-gray-300">
               Active Batches
             </CardTitle>
-            <GraduationCap className="h-4 w-4 text-muted-foreground" />
+            <GraduationCap className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{batches.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {/* {stats.completedBatches}  */}
-              completed this year
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {/* ₹{(stats.totalRevenue / 100000).toFixed(1)}L */}
+            <div className="text-2xl font-bold text-white">
+              {stats.activeBatches}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {/* ₹{(stats.pendingPayments / 1000).toFixed(0)}k pending */}
+            <p className="text-xs text-gray-400 mt-2">
+              Running in {selectedYear}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-gray-800 border-gray-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              New Admissions
+            <CardTitle className="text-sm font-medium text-gray-300">
+              Occupancy Rate
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-orange-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {/* {stats.newAdmissions} */}
+            <div className="text-2xl font-bold text-white">
+              {stats.occupancyRate.toFixed(1)}%
             </div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+              <div
+                className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${Math.min(stats.occupancyRate, 100)}%` }}
+              ></div>
+            </div>
+            <p className="text-xs text-gray-400 mt-2">
+              Overall batch utilization
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gray-800 border-gray-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-300">
+              System Status
+            </CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-white">Active</div>
+            <p className="text-xs text-gray-400 mt-2">
+              All systems operational
+            </p>
           </CardContent>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Active Batches */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Active Batches</CardTitle>
-            <CardDescription>
-              Current running batches with enrollment status
+        <Card className="bg-[#0A1533] border border-white/10 backdrop-blur-md text-white shadow-lg">
+          <CardHeader className="bg-gray-700 py-3">
+            <CardTitle className="flex items-center gap-2">
+              <GraduationCap className="h-5 w-5 text-blue-400" />
+              Active Batches
+            </CardTitle>
+            <CardDescription className="text-gray-300">
+              Currently running batches with enrollment status
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {batches.map((batch) => (
-              <div
-                key={batch.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium">{batch.name}</p>
-                    <Badge
-                      variant={
-                        batch.course?.mode === "ONLINE"
-                          ? "secondary"
-                          : "default"
-                      }
-                    >
-                      {batch.course?.mode}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {batch?.course?.name}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Tutor: {batch.tutor}
-                  </p>
-                </div>
-                <div className="text-right space-y-1">
-                  <p className="text-sm font-medium">
-                    {batch.currentCount}/{batch.slotLimit}
-                  </p>
-                  <Progress
-                    value={(batch.currentCount / batch.slotLimit) * 100}
-                    className="w-20"
-                  />
-                </div>
+          <CardContent className="p-4 space-y-4">
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                <p className="text-gray-400 mt-2">Loading batches...</p>
               </div>
-            ))}
+            ) : filteredBatches.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                No active batches found for the selected filters
+              </div>
+            ) : (
+              filteredBatches.map((batch) => (
+                <div
+                  key={batch.id}
+                  className="flex items-center max-sm:flex-col max-sm:items-start max-sm:gap-2  justify-between p-4 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors"
+                >
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-white">{batch.name}</p>
+                      <Badge
+                        variant={
+                          batch.course?.mode === "ONLINE"
+                            ? "secondary"
+                            : batch.course?.mode === "OFFLINE"
+                            ? "default"
+                            : "outline"
+                        }
+                        className="text-xs bg-gray-700 text-white border-gray-600"
+                      >
+                        {batch.course?.mode}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-300">
+                      {batch?.course?.name}
+                    </p>
+                    <div className="flex items-center gap-4 text-xs text-gray-400 max-sm:w-full">
+                      <span>Tutor: {batch.tutor || "Not assigned"}</span>
+                      <span>
+                        Coordinator: {batch.coordinator || "Not assigned"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right max-sm:w-full space-y-2">
+                    <p className="text-sm font-medium text-white">
+                      {batch.currentCount}/{batch.slotLimit}
+                    </p>
+                    <Progress
+                      value={(batch.currentCount / batch.slotLimit) * 100}
+                      className="w-20  max-sm:w-full bg-gray-700"
+                    />
+                    <p className="text-xs text-gray-400">
+                      {Math.round((batch.currentCount / batch.slotLimit) * 100)}
+                      % full
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
 
-        {/* Recent Payments */}
-        {/* <Card>
-          <CardHeader>
-            <CardTitle>Recent Payments</CardTitle>
-            <CardDescription>Latest payment transactions</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {recentPayments.map((payment) => (
-              <div
-                key={payment.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
+        {/* Quick Actions & System Info */}
+        <div className="space-y-6">
+          {/* Quick Actions */}
+          <Card className="bg-gray-800 border-gray-700 text-white shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-green-400" />
+                Quick Actions
+              </CardTitle>
+              <CardDescription className="text-gray-300">
+                Frequently used actions for faster workflow
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-4">
+              <Link
+                href="/students"
+                className="h-16 flex flex-col items-center justify-center gap-2 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors text-gray-300 hover:text-white"
               >
-                <div className="space-y-1">
-                  <p className="font-medium">
-                    ₹{payment.amount.toLocaleString()}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {payment.transactionId}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        payment.mode === "CASH" ? "outline" : "secondary"
-                      }
-                    >
-                      {payment.mode}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {payment.date.toLocaleDateString()}
-                    </span>
-                  </div>
+                <Users className="h-5 w-5" />
+                <span className="text-xs">Add Student</span>
+              </Link>
+              <Link
+                href="/batches"
+                className="h-16 flex flex-col items-center justify-center gap-2 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors text-gray-300 hover:text-white"
+              >
+                <GraduationCap className="h-5 w-5" />
+                <span className="text-xs">Create Batch</span>
+              </Link>
+              <Link
+                href="/settings"
+                className="h-16 flex flex-col items-center justify-center gap-2 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors text-gray-300 hover:text-white"
+              >
+                <Settings className="h-5 w-5" />
+                <span className="text-xs">Settings</span>
+              </Link>
+              <Link
+                href="/reports"
+                className="h-16 flex flex-col items-center justify-center gap-2 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors text-gray-300 hover:text-white"
+              >
+                <TrendingUp className="h-5 w-5" />
+                <span className="text-xs">Reports</span>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* User Role Information */}
+          <Card className="bg-gray-800 border-gray-700 text-white shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-blue-400" />
+                Access Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-300">Role:</span>
+                  <Badge variant="secondary" className="bg-blue-600 text-white">
+                    {currentUser?.role === 1
+                      ? "Super Admin"
+                      : currentUser?.role === 2
+                      ? "Director"
+                      : "Staff"}
+                  </Badge>
                 </div>
-                <div className="text-right">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-300">
+                    Location Access:
+                  </span>
+                  <span className="text-sm font-medium text-white">
+                    {currentUser?.role === 3
+                      ? currentUser.location?.name || "Specific Location"
+                      : "All Locations"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-300">Data Scope:</span>
+                  <span className="text-sm font-medium text-white">
+                    {currentUser?.role === 3 ? "Location-based" : "Global"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-300">Year Filter:</span>
+                  <span className="text-sm font-medium text-white">
+                    {selectedYear}
+                  </span>
                 </div>
               </div>
-            ))}
-          </CardContent>
-        </Card> */}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      {/* Recent Activities */}
-      {/* <Card>
-        <CardHeader>
-          <CardTitle>Recent Activities</CardTitle>
-          <CardDescription>
-            Latest system activities and notifications
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-start gap-3 p-3 border rounded-lg">
-            <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-            <div className="space-y-1">
-              <p className="font-medium">New student admission completed</p>
-              <p className="text-sm text-muted-foreground">
-                Rahul Kumar enrolled in Full Stack Development batch
-              </p>
-              <p className="text-xs text-muted-foreground">2 hours ago</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-3 border rounded-lg">
-            <CreditCard className="h-5 w-5 text-blue-500 mt-0.5" />
-            <div className="space-y-1">
-              <p className="font-medium">Payment received</p>
-              <p className="text-sm text-muted-foreground">
-                ₹15,000 payment from Priya Sharma via Razorpay
-              </p>
-              <p className="text-xs text-muted-foreground">4 hours ago</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-3 border rounded-lg">
-            <AlertCircle className="h-5 w-5 text-orange-500 mt-0.5" />
-            <div className="space-y-1">
-              <p className="font-medium">Payment reminder sent</p>
-              <p className="text-sm text-muted-foreground">
-                Automated payment reminder sent to 3 students
-              </p>
-              <p className="text-xs text-muted-foreground">6 hours ago</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-3 border rounded-lg">
-            <Users className="h-5 w-5 text-purple-500 mt-0.5" />
-            <div className="space-y-1">
-              <p className="font-medium">New batch created</p>
-              <p className="text-sm text-muted-foreground">
-                UI/UX Design batch created for February 2024
-              </p>
-              <p className="text-xs text-muted-foreground">1 day ago</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card> */}
-
-      {/* Quick Actions */}
-      {/* <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            Frequently used actions for faster workflow
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Button variant="outline" className="h-16 flex flex-col gap-2">
-            <Users className="h-5 w-5" />
-            Add Student
-          </Button>
-          <Button variant="outline" className="h-16 flex flex-col gap-2">
-            <GraduationCap className="h-5 w-5" />
-            Create Batch
-          </Button>
-          <Button variant="outline" className="h-16 flex flex-col gap-2">
-            <CreditCard className="h-5 w-5" />
-            Record Payment
-          </Button>
-          <Button variant="outline" className="h-16 flex flex-col gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Generate Report
-          </Button>
-        </CardContent>
-      </Card> */}
     </div>
   );
 }
