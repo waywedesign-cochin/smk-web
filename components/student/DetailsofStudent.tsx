@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   BookOpen,
   CreditCard,
-  Edit,
   FileText,
   History,
   Loader2,
