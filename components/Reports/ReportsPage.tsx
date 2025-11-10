@@ -183,88 +183,6 @@ export function ReportsPage() {
           </Button> */}
         </div>
       </div>
-      {/* Filters */}
-      <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Calendar className="h-5 w-5" /> Filter Reports
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label>Year</Label>
-              <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 3 }, (_, i) => currentYear - i).map(
-                    (year) => (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    )
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Quarter</Label>
-              <Select
-                value={selectedQuarter}
-                onValueChange={setSelectedQuarter}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All</SelectItem>
-                  <SelectItem value="Q1">Q1 (Jan-Mar)</SelectItem>
-                  <SelectItem value="Q2">Q2 (Apr-Jun)</SelectItem>
-                  <SelectItem value="Q3">Q3 (Jul-Sep)</SelectItem>
-                  <SelectItem value="Q4">Q4 (Oct-Dec)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Location</Label>
-              <Select
-                value={selectedLocation}
-                onValueChange={setSelectedLocation}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Locations</SelectItem>
-                  {locations?.map((loc) => (
-                    <SelectItem key={loc.id} value={loc.id ?? ""}>
-                      {loc.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-end">
-              <Button
-                variant="outline"
-                className="w-full border bg-black border-white hover:bg-white hover:text-black"
-                onClick={() => {
-                  setSelectedYear(currentYear.toString());
-                  setSelectedLocation("ALL");
-                  setSelectedQuarter("ALL");
-                }}
-              >
-                Reset Filters
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card className="relative overflow-hidden border-0 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
@@ -400,6 +318,88 @@ export function ReportsPage() {
           </CardContent>
         </Card>
       </div>
+      {/* Filters */}
+      <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Calendar className="h-5 w-5" /> Filter Reports
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label>Year</Label>
+              <Select value={selectedYear} onValueChange={setSelectedYear}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 3 }, (_, i) => currentYear - i).map(
+                    (year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    )
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Quarter</Label>
+              <Select
+                value={selectedQuarter}
+                onValueChange={setSelectedQuarter}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All</SelectItem>
+                  <SelectItem value="Q1">Q1 (Jan-Mar)</SelectItem>
+                  <SelectItem value="Q2">Q2 (Apr-Jun)</SelectItem>
+                  <SelectItem value="Q3">Q3 (Jul-Sep)</SelectItem>
+                  <SelectItem value="Q4">Q4 (Oct-Dec)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Location</Label>
+              <Select
+                value={selectedLocation}
+                onValueChange={setSelectedLocation}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Locations</SelectItem>
+                  {locations?.map((loc) => (
+                    <SelectItem key={loc.id} value={loc.id ?? ""}>
+                      {loc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-end">
+              <Button
+                variant="outline"
+                className="w-full border bg-black border-white hover:bg-white hover:text-black"
+                onClick={() => {
+                  setSelectedYear(currentYear.toString());
+                  setSelectedLocation("ALL");
+                  setSelectedQuarter("ALL");
+                }}
+              >
+                Reset Filters
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>

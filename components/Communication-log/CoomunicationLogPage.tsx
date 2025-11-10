@@ -217,7 +217,7 @@ export default function CommunicationLogPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-[#0A1533] text-white p- space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-black to-[#0A1533] text-white  space-y-6">
       {/* Header */}
       <div className="relative rounded-2xl overflow-hidden">
         {/* Darkveil background */}
