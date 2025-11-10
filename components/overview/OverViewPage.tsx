@@ -115,7 +115,7 @@ export function OverviewPage() {
   const stats = calculateStats();
 
   return (
-    <div className="space-y-6 bg-gray-950 min-h-screen p-6">
+    <div className="space-y-6 bg-gray-950 min-h-screen p-2 rounded-lg ">
       {/* Welcome Card */}
       <Card className="bg-gradient-to-r from-blue-800 to-purple-600/10 border-0 text-white shadow-lg">
         <CardHeader className="flex flex-row max-xl:flex-col max-xl:gap-2 max-xl:items-start items-center justify-between space-y-0 pb-2">
