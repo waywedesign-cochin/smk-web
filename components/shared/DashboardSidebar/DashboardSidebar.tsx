@@ -29,8 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import Link from "next/link";
-import DarkVeil from "@/components/DarkVeil";
+
 
 export default function DashboardSidebar({
   children,
