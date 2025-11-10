@@ -127,20 +127,37 @@ export default function DashboardSidebar({
             </SidebarMenu>
           </SidebarContent>
 
-          <SidebarFooter className="border-t border-sidebar-border p-4 bg-[#122147] text-white">
-            <div className="text-sm text-white">
-              <p>Logged in as</p>
-              <p className="font-semibold text-white">
-                {user.username} (
-                {user.role === 1
-                  ? "Admin"
-                  : user.role === 2
-                  ? "Director"
-                  : user.role === 3
-                  ? "Staff"
-                  : "Unknown"}
-                )
-              </p>
+          <SidebarFooter className="relative border-t border-white/10 p-4 bg-gradient-to-br from-[#0f1b3d] via-[#122147] to-[#1a2d5f] backdrop-blur-xl">
+            <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent pointer-events-none" />
+            <div className="relative flex items-center gap-3 group">
+              <div className="relative">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-purple-500 shadow-lg shadow-blue-500/20 ring-2 ring-white/20 transition-transform group-hover:scale-105">
+                  <span className="text-sm font-bold text-white">
+                    {user.username.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-[#122147]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] uppercase tracking-wider text-blue-300/60 font-semibold mb-0.5">
+                  Logged in
+                </p>
+                <p className="font-semibold text-white truncate text-sm mb-1">
+                  {user.username}
+                </p>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 shadow-inner">
+                  <div className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-pulse" />
+                  <span className="text-xs font-medium text-white/90">
+                    {user.role === 1
+                      ? "Admin"
+                      : user.role === 2
+                      ? "Director"
+                      : user.role === 3
+                      ? "Staff"
+                      : "Unknown"}
+                  </span>
+                </div>
+              </div>
             </div>
           </SidebarFooter>
         </Sidebar>

@@ -56,6 +56,11 @@ export interface Batch {
   description?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  enrollment?: string; // e.g. "12/30"
+  enrollmentPercent?: string; // e.g. "40"
+  totalFee?: number;
+  collected?: number;
+  pending?: number;
 }
 
 export enum BatchMode {
@@ -71,6 +76,12 @@ export enum BatchStatus {
   PENDING = "PENDING",
 }
 export interface BatchResponse {
+  dashboardStats: {
+    activeBatches: number;
+    totalEnrollment: number;
+    availableSlots: number;
+    totalRevenue: number;
+  };
   batches: Batch[];
   pagination: {
     currentPage: number;

@@ -6,8 +6,16 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import toast from "react-hot-toast";
 
+interface DashboardStats {
+  activeBatches: number;
+  totalEnrollment: number;
+  availableSlots: number;
+  totalRevenue: number;
+}
+
 interface BatchState {
   batches: Batch[];
+  dashboardStats: DashboardStats;
   pagination: {
     currentPage: number;
     limit: number;
@@ -18,12 +26,6 @@ interface BatchState {
   error: string | null;
 }
 
-const initialState: BatchState = {
-  batches: [],
-  pagination: { currentPage: 1, limit: 10, totalPages: 0, totalCount: 0 },
-  loading: false,
-  error: null,
-};
 interface FetchBatchesParams {
   page?: number;
   limit?: number;
@@ -32,8 +34,22 @@ interface FetchBatchesParams {
   mode?: string;
   location?: string;
   course?: string;
+  year?: string;
 }
+const initialState: BatchState = {
+  batches: [],
+  dashboardStats: {
+    activeBatches: 0,
+    totalEnrollment: 0,
+    availableSlots: 0,
+    totalRevenue: 0,
+  },
+  pagination: { currentPage: 1, limit: 10, totalPages: 0, totalCount: 0 },
+  loading: false,
+  error: null,
+};
 
+//add batch
 export const addBatch = createAsyncThunk<Batch, Batch>(
   "batch/add",
   async (newBatch, { rejectWithValue }) => {
@@ -62,32 +78,17 @@ export const addBatch = createAsyncThunk<Batch, Batch>(
   }
 );
 
+//get batches
+// ✅ FETCH batches (updated to include dashboard stats)
 export const fetchBatches = createAsyncThunk<BatchResponse, FetchBatchesParams>(
   "batches/fetch",
   async (params = {}, { rejectWithValue }) => {
     try {
-      const {
-        page = 1,
-        limit = 10,
-        search,
-        status,
-        mode,
-        location,
-        course,
-      } = params;
-
-      const queryParams = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-        ...(search && { search }),
-        ...(status && status !== "all" && { status }),
-        ...(mode && { mode }),
-        ...(location && { location }),
-        ...(course && { course }),
-      });
-
       const response = await axios.get(
-        `${BASE_URL}/api/batch/get-batches?${queryParams}`
+        `${BASE_URL}/api/batch/get-batches`,
+        {
+          params: params || {},
+        }
       );
       return response.data.data as BatchResponse;
     } catch (error: unknown) {
@@ -163,6 +164,7 @@ const batchSlice = createSlice({
   reducers: {
     clearBatches: (state) => {
       state.batches = [];
+      state.dashboardStats = initialState.dashboardStats;
       state.pagination = initialState.pagination;
     },
   },
@@ -190,6 +192,7 @@ const batchSlice = createSlice({
       .addCase(fetchBatches.fulfilled, (state, action) => {
         state.loading = false;
         state.batches = action.payload.batches;
+        state.dashboardStats = action.payload.dashboardStats;
         state.pagination = action.payload.pagination;
       })
       .addCase(fetchBatches.rejected, (state, action) => {
