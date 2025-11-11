@@ -71,6 +71,9 @@ export function LedgerTable({
               Description
             </TableHead>
             <TableHead className="px-3 py-1 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+              Ref. id
+            </TableHead>
+            <TableHead className="px-3 py-1 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
               Type
             </TableHead>
             <TableHead className="px-3 py-1  text-xs font-medium text-gray-50 uppercase tracking-wider text-right">
@@ -110,6 +113,9 @@ export function LedgerTable({
                       {entry?.student?.currentBatch?.name})
                     </span>
                   )}
+                </TableCell>
+                <TableCell className="font-medium whitespace-nowrap text-gray-200">
+                  {entry.referenceId || "-"}
                 </TableCell>
                 <TableCell>
                   <span
