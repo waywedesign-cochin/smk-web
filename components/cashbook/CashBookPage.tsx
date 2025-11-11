@@ -276,9 +276,9 @@ export const CashBookPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-[#0A1533] text-white  space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-black to-[#0A1533] text-white p-2 rounded-md space-y-6">
       {/* Header */}
-      <div className="relative flex items-center justify-between border border-white/10 rounded-2xl p-6 shadow-xl overflow-hidden">
+      <div className="relative flex items-center justify-between border border-white/10 rounded-2xl p-4 shadow-xl overflow-hidden">
         {/* DarkVeil background */}
         <div className="absolute inset-0 z-0 h-[300px] w-full">
           <DarkVeil />
@@ -286,8 +286,12 @@ export const CashBookPage = () => {
         {/* Foreground content */}
         <div className="relative z-10 flex w-full items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">Cash Book</h1>
-            <p className="text-sm text-gray-300">Track all transactions</p>
+            <h1 className="text-3xl max-sm:text-xl font-bold text-white">
+              Cash Book
+            </h1>
+            <p className="text-sm text-gray-300 max-sm:text-xs">
+              Track all transactions
+            </p>
           </div>
 
           <div className="flex gap-2">
@@ -346,11 +350,11 @@ export const CashBookPage = () => {
 
       {/* Filters */}
       <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2">
           <CardTitle className="text-lg">Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {user?.role === 1 && (
               <div className="space-y-2">
                 <Label>Location</Label>
@@ -360,7 +364,7 @@ export const CashBookPage = () => {
                     setFilters((prev) => ({ ...prev, locationId: value }))
                   }
                 >
-                  <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
+                  <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                     <SelectValue placeholder="Select location" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#0A1533] text-white border-white/20">
@@ -382,7 +386,7 @@ export const CashBookPage = () => {
                   setFilters((prev) => ({ ...prev, year: value }))
                 }
               >
-                <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
+                <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-[#0A1533] text-white border-white/20">
@@ -407,7 +411,7 @@ export const CashBookPage = () => {
                   setFilters((prev) => ({ ...prev, month: value }))
                 }
               >
-                <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
+                <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-[#0A1533] text-white border-white/20">
@@ -425,63 +429,54 @@ export const CashBookPage = () => {
       </Card>
 
       {/* Totals */}
-      <div className="grid gap-4 md:grid-cols-5">
-        <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Students Paid</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold text-green-600">
-              ₹{totals.studentsPaid?.toLocaleString("en-IN") || "0.00"}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Office Expenses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold text-red-600">
-              ₹{totals.officeExpense?.toLocaleString("en-IN") || "0.00"}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Owner Taken</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold text-orange-600">
-              ₹{totals.ownerTaken?.toLocaleString("en-IN") || "0.00"}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm"> Closing Balance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-semibold ${
-                (totals.closingBalance || 0) >= 0
-                  ? "text-green-600"
-                  : "text-red-600"
-              }`}
-            >
-              ₹{totals.closingBalance?.toLocaleString("en-IN") || "0.00"}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Cash in Hand</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold text-blue-600">
-              ₹{totals.cashInHand?.toLocaleString("en-IN") || "0.00"}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {[
+          {
+            title: "Students Paid",
+            value: totals.studentsPaid,
+            color: "text-green-500",
+          },
+          {
+            title: "Office Expenses",
+            value: totals.officeExpense,
+            color: "text-red-500",
+          },
+          {
+            title: "Owner Taken",
+            value: totals.ownerTaken,
+            color: "text-orange-500",
+          },
+          {
+            title: "Closing Balance",
+            value: totals.closingBalance,
+            color:
+              (totals.closingBalance || 0) >= 0
+                ? "text-green-500"
+                : "text-red-500",
+          },
+          {
+            title: "Cash in Hand",
+            value: totals.cashInHand,
+            color: "text-blue-500",
+          },
+        ].map((item, index) => (
+          <Card
+            key={index}
+            className="bg-white/10 border border-white/10 backdrop-blur-md text-white transition-all hover:bg-white/20 hover:shadow-lg hover:shadow-black/20 gap-2"
+          >
+            <CardHeader className="pb-2 max-sm:pb-1">
+              <CardTitle className="text-sm font-medium tracking-wide text-white/80">
+                {item.title}
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <div className={`text-2xl font-semibold ${item.color}`}>
+                {item.value?.toLocaleString("en-IN") || "0.00"} ₹
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Tabs */}
