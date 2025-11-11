@@ -114,7 +114,7 @@ export function LedgerTable({
                   </span>
                 </TableCell>
                 <TableCell className="text-right font-semibold whitespace-nowrap text-gray-200">
-                  {entry.amount.toLocaleString()}
+                  {entry.amount.toLocaleString()} ₹
                 </TableCell>
                 <TableCell>
                   <span
@@ -140,11 +140,13 @@ export function LedgerTable({
                           <Edit className="h-4 w-4" />
                         </Button>
                       )}
-                      <DeleteDialogue
-                        id={entry.id}
-                        handelDelete={handleDelete}
-                        title={"this Entry"}
-                      />
+                      {entry.transactionType !== "OWNER_TAKEN" && (
+                        <DeleteDialogue
+                          id={entry.id}
+                          handelDelete={handleDelete}
+                          title={"this Entry"}
+                        />
+                      )}
                     </div>
                   </TableCell>
                 )}

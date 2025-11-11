@@ -51,13 +51,16 @@ export function EntryDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger && !isEdit && (
         <DialogTrigger asChild>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button className="bg-black border border-white text-white hover:bg-white hover:text-black">
             <Plus className="h-4 w-4 mr-2" />
             Add Entry
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="max-w-2xl">
+      <DialogContent
+        className="max-w-2xl   bg-gradient-to-b from-[#0B1A3C] via-[#0A1533] to-[#081026]  max-h-[80vh] overflow-y-auto
+               border border-white/10 text-white shadow-2xl rounded-2xl"
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
