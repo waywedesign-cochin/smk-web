@@ -2,7 +2,6 @@
 import {
   GraduationCap,
   Users,
-  // CreditCard,
   BarChart3,
   Settings,
   Home,
@@ -11,12 +10,8 @@ import {
   AudioLines,
   DollarSign,
   Laptop,
-  // UserCheck,
-  // DollarSign,
-  // FileText,
 } from "lucide-react";
-import { id } from "zod/v4/locales";
-// import { Batch, BatchMode, BatchStatus, Course, Location } from "./types";
+
 export const menuItems = [
   {
     id: "/",
@@ -48,48 +43,27 @@ export const menuItems = [
     icon: BookMarked,
     description: "Daily cash transactions and balance tracking",
   },
-  {
-    id: "communication",
-    label: "Communication",
-    icon: AudioLines,
-    description: "View communication history and logs",
-  },
+
   {
     id: "director-ledger",
     label: "Director Ledger",
     icon: DollarSign,
     description: "Track director transactions and accounts",
   },
-  // {
-  //   id: "admissions",
-  //   label: "Admissions",
-  //   icon: UserCheck,
-  //   description: "Handle student admissions process",
-  // },
-  // {
-  //   id: "payments",
-  //   label: "Payments",
-  //   icon: CreditCard,
-  //   description: "Track payments and financial records",
-  // },
-  // {
-  //   id: "financial",
-  //   label: "Financial",
-  //   icon: DollarSign,
-  //   description: "Bank statements, cash book, ledgers",
-  // },
+
   {
     id: "reports",
     label: "Reports",
     icon: BarChart3,
     description: "Generate reports and analytics",
   },
-  // {
-  //   id: "communication",
-  //   label: "Communication",
-  //   icon: FileText,
-  //   description: "Email templates and communication logs",
-  // },
+
+  {
+    id: "communication",
+    label: "Communication",
+    icon: AudioLines,
+    description: "View communication history and logs",
+  },
   {
     id: "settings",
     label: "Settings",
