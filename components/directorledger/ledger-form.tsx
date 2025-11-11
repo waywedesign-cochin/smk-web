@@ -46,7 +46,7 @@ type EntryFormData = {
     currentBatch: {
       name: string;
     };
-  };
+  } | null;
 };
 
 interface LedgerFormProps {
@@ -94,6 +94,9 @@ export function LedgerForm({
   const { students, loading: studentsLoading } = useAppSelector(
     (state) => state.students
   );
+
+  const { currentUser } = useAppSelector((state) => state.users);
+
   const [successMessage, setSuccessMessage] = useState("");
 
   const [validationErrors, setValidationErrors] = useState<
@@ -164,6 +167,15 @@ export function LedgerForm({
       }
     }
   }, [entry]); // Remove students from dependencies to avoid infinite loops
+  // Auto-select location for staff (role === 3)
+  useEffect(() => {
+    if (currentUser?.role === 3 && currentUser?.locationId) {
+      setFormData((prev) => ({
+        ...prev,
+        locationId: currentUser.locationId || "", // set default location (ensure string)
+      }));
+    }
+  }, [currentUser]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -474,8 +486,15 @@ export function LedgerForm({
                     onValueChange={(value) =>
                       handleSelectChange("locationId", value)
                     }
+                    disabled={currentUser?.role === 3} // disable for staff users
                   >
-                    <SelectTrigger className="bg-[#1E293B] border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1">
+                    <SelectTrigger
+                      className={`bg-[#1E293B] border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1  ${
+                        currentUser?.role === 3
+                          ? "opacity-60 cursor-not-allowed"
+                          : ""
+                      } `}
+                    >
                       <SelectValue placeholder="Select location" />
                     </SelectTrigger>
                     <SelectContent className="bg-[#151D2A] text-white border border-slate-700">

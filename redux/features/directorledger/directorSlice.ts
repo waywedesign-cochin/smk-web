@@ -1,3 +1,4 @@
+import { Student } from "@/lib/types";
 import { BASE_URL } from "@/redux/baseUrl";
 import {
   createSlice,
@@ -25,6 +26,14 @@ export interface DirectorLedgerEntry {
   directorId: string;
   createdAt?: string;
   updatedAt?: string;
+  student?: {
+    name: string;
+    id: string;
+    currentBatchId: string;
+    currentBatch: {
+      name: string;
+    };
+  } | null;
 }
 
 export interface DirectorLedgerTotals {

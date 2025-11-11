@@ -105,7 +105,7 @@ export default function DirectorLedgerPage() {
 
         {/* Table Section */}
         {loading ? (
-          <div className="flex items-center justify-center py-12 bg-white rounded-lg border">
+          <div className="flex items-center justify-center py-12 bg-white rounded-lg border bg-white/10">
             <div className="text-center space-y-2">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <p className="text-slate-600">Loading entries...</p>
