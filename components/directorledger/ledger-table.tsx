@@ -17,6 +17,7 @@ import {
 import { useAppDispatch } from "@/lib/hooks";
 import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
 import { Edit } from "lucide-react";
+import { fetchStudents } from "@/redux/features/student/studentSlice";
 
 interface LedgerTableProps {
   entries: DirectorLedgerEntry[];
@@ -70,6 +71,9 @@ export function LedgerTable({
               Description
             </TableHead>
             <TableHead className="px-3 py-1 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+              Ref. id
+            </TableHead>
+            <TableHead className="px-3 py-1 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
               Type
             </TableHead>
             <TableHead className="px-3 py-1  text-xs font-medium text-gray-50 uppercase tracking-wider text-right">
@@ -102,7 +106,16 @@ export function LedgerTable({
                   {new Date(entry.transactionDate).toLocaleDateString("en-GB")}
                 </TableCell>
                 <TableCell className="font-medium whitespace-nowrap text-gray-200">
-                  {entry.description}
+                  {entry.description}{" "}
+                  {entry.transactionType === "STUDENT_PAID" && (
+                    <span className="p-0.5 rounded text-[8px] font-semibold bg-blue-100/10 text-blue-100">
+                      {entry?.student?.name}(
+                      {entry?.student?.currentBatch?.name})
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell className="font-medium whitespace-nowrap text-gray-200">
+                  {entry.referenceId || "-"}
                 </TableCell>
                 <TableCell>
                   <span
