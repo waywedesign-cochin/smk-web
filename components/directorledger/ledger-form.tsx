@@ -13,12 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  DirectorLedgerEntryFormData,
-  directorLedgerEntrySchema,
-} from "@/lib/validation/directorLedgerSchema";
+import { directorLedgerEntrySchema } from "@/lib/validation/directorLedgerSchema";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
 import { fetchBatches } from "@/redux/features/batch/batchSlice";
@@ -68,16 +65,14 @@ const TRANSACTION_TYPES = [
 
 function LoadingSkeleton() {
   return (
-    <div className="space-y-2">
-      <div className="h-10 bg-slate-200 rounded-md animate-pulse"></div>
-    </div>
+    <div className="h-9 bg-slate-700/50 animate-pulse rounded-md w-full" />
   );
 }
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex items-center justify-center py-6 px-4 bg-slate-50 rounded-md border border-dashed border-slate-300">
-      <p className="text-slate-500 text-sm">{message}</p>
+    <div className="flex items-center justify-center py-4 px-3 bg-slate-800/40 rounded-lg border border-dashed border-slate-600">
+      <p className="text-slate-400 text-sm">{message}</p>
     </div>
   );
 }
@@ -128,7 +123,7 @@ export function LedgerForm({
   // Fetch batches when location changes
   useEffect(() => {
     if (formData.locationId) {
-      dispatch(fetchBatches({ location: formData.locationId }));
+      dispatch(fetchBatches({ location: formData.locationId, limit: 100 }));
     }
   }, [formData.locationId, dispatch]);
 
@@ -138,48 +133,12 @@ export function LedgerForm({
       dispatch(
         fetchStudents({
           currentBatchId: formData?.batchId,
+          limit: 300,
         })
       );
     }
   }, [formData.batchId]);
 
-  // Populate form when editing
-  // useEffect(() => {
-  //   if (entry) {
-  //     const dateStr =
-  //       entry.transactionDate instanceof Date
-  //         ? entry.transactionDate.toISOString().split("T")[0]
-  //         : new Date(entry.transactionDate).toISOString().split("T")[0];
-
-  //     setFormData({
-  //       transactionDate: dateStr,
-  //       amount: String(entry.amount),
-  //       transactionType: entry.transactionType,
-  //       description: entry.description,
-  //       referenceId: entry.referenceId || "",
-  //       studentId: entry.studentId || "",
-  //       locationId: entry.locationId || "",
-  //       batchId: "",
-  //     });
-  //     console.log(formData);
-
-  //     if (entry.transactionType === "STUDENT_PAID" && entry.studentId) {
-  //       const student = students.find((s) => s.id === entry.studentId);
-  //       if (student && student.currentBatch) {
-  //         const batchId = student.currentBatch.id ?? "";
-  //         const locationIdFromStudent =
-  //           student.currentBatch.locationId ?? entry.locationId ?? "";
-  //         setFormData((prev) => ({
-  //           ...prev,
-  //           batchId,
-  //           locationId: locationIdFromStudent,
-  //         }));
-  //       }
-  //     }
-  //   }
-  // }, [entry, students]);
-  // Populate form when editing
-  // Populate form when editing
   useEffect(() => {
     if (entry) {
       const dateStr =
@@ -219,38 +178,6 @@ export function LedgerForm({
     }
   };
 
-  // const handleSelectChange = (name: string, value: string) => {
-  //   if (name === "transactionType") {
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       [name]: value as typeof formData.transactionType,
-  //       studentId: "",
-  //       locationId: "",
-  //       batchId: "",
-  //     }));
-  //   } else if (name === "locationId") {
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       [name]: value,
-  //       batchId: "",
-  //       studentId: "",
-  //     }));
-  //   } else if (name === "batchId") {
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       [name]: value,
-  //       studentId: "",
-  //     }));
-  //   } else {
-  //     setFormData((prev) => ({ ...prev, [name]: value }));
-  //   }
-  //   if (validationErrors[name]) {
-  //     setValidationErrors((prev) => {
-  //       const { [name]: _, ...rest } = prev;
-  //       return rest;
-  //     });
-  //   }
-  // };
   const handleSelectChange = (name: string, value: string) => {
     if (name === "transactionType") {
       setFormData((prev) => ({
@@ -389,29 +316,41 @@ export function LedgerForm({
   const isStudentPaid = formData.transactionType === "STUDENT_PAID";
 
   return (
-    <Card className="bg-white shadow-lg border-0">
-      <CardContent className="px-6 py-6">
+    <Card
+      className="
+    bg-[#0A1121] 
+    border border-[#1E293B] 
+    text-white 
+    shadow-2xl 
+    rounded-xl 
+    p-0
+    w-full  // Added max-width and centering for better responsiveness
+  "
+    >
+      <CardContent className="p-3">
+        {/* Success and Error Alerts - Updated for Dark Theme */}
         {error && (
-          <Alert className="mb-5 bg-red-50 border-l-4 border-red-500">
-            <AlertDescription className="text-red-700 font-medium">
-              ⚠️ {error}
+          <Alert className="mb-4 bg-red-900/30 border-l-4 border-red-500 text-red-300">
+            <AlertDescription className="font-medium">
+              <span className="text-red-400">⚠️ Error:</span> {error}
             </AlertDescription>
           </Alert>
         )}
 
         {successMessage && (
-          <Alert className="mb-5 bg-green-50 border-l-4 border-green-500">
-            <AlertDescription className="text-green-700 font-medium">
-              ✓ {successMessage}
+          <Alert className="mb-4 bg-green-900/30 border-l-4 border-green-500 text-green-300">
+            <AlertDescription className="font-medium">
+              <span className="text-green-400">✓ Success:</span>{" "}
+              {successMessage}
             </AlertDescription>
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Transaction Type */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 block">
+              <label className="text-sm font-semibold text-slate-300 block">
                 Transaction Type <span className="text-red-500">*</span>
               </label>
               <Select
@@ -423,12 +362,16 @@ export function LedgerForm({
                 }
                 disabled={entry ? true : false}
               >
-                <SelectTrigger className="bg-white border-slate-200 hover:border-slate-300 transition">
+                <SelectTrigger className="bg-[#1E293B] border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#151D2A] text-white border border-slate-700">
                   {TRANSACTION_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
+                    <SelectItem
+                      key={t.value}
+                      value={t.value}
+                      className="hover:bg-blue-600/30 focus:bg-blue-600/30 text-white"
+                    >
                       {t.label}
                     </SelectItem>
                   ))}
@@ -438,8 +381,8 @@ export function LedgerForm({
 
             {/* Date */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 block">
-                Date <span className="text-red-500">*</span>
+              <label className="text-sm font-semibold text-slate-300 block">
+                Date <span className="text-red-400">*</span>
               </label>
               <Input
                 type="date"
@@ -447,11 +390,18 @@ export function LedgerForm({
                 value={formData.transactionDate}
                 onChange={handleChange}
                 required
-                className={`border-slate-200 hover:border-slate-300 transition ${
-                  validationErrors.transactionDate
-                    ? "border-red-500 focus:border-red-500"
-                    : ""
-                }`}
+                className={`bg-[#1E293B] 
+              border 
+              border-slate-700 
+              text-white 
+              hover:border-blue-500 
+              transition 
+              focus:ring-blue-500 
+              focus:ring-1 ${
+                validationErrors.transactionDate
+                  ? "border-red-500 focus:border-red-500"
+                  : ""
+              }`}
               />
               {validationErrors.transactionDate && (
                 <p className="text-red-500 text-xs font-medium">
@@ -462,8 +412,8 @@ export function LedgerForm({
 
             {/* Amount */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 block">
-                Amount <span className="text-red-500">*</span>
+              <label className="text-sm font-semibold text-slate-300 block">
+                Amount <span className="text-red-400">*</span>
               </label>
               <Input
                 type="number"
@@ -473,11 +423,18 @@ export function LedgerForm({
                 placeholder="0.00"
                 step="0.01"
                 required
-                className={`border-slate-200 hover:border-slate-300 transition ${
-                  validationErrors.amount
-                    ? "border-red-500 focus:border-red-500"
-                    : ""
-                }`}
+                className={`bg-[#1E293B] 
+              border 
+              border-slate-700 
+              text-white 
+              hover:border-blue-500 
+              transition 
+              focus:ring-blue-500 
+              focus:ring-1 ${
+                validationErrors.amount
+                  ? "border-red-500 focus:border-red-500"
+                  : ""
+              }`}
               />
               {validationErrors.amount && (
                 <p className="text-red-500 text-xs font-medium">
@@ -488,7 +445,7 @@ export function LedgerForm({
 
             {/* Reference ID */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 block">
+              <label className="text-sm font-semibold text-slate-300 block">
                 Reference ID (Optional)
               </label>
               <Input
@@ -497,14 +454,14 @@ export function LedgerForm({
                 value={formData.referenceId}
                 onChange={handleChange}
                 placeholder="e.g., CHQ-12345"
-                className="border-slate-200 hover:border-slate-300 transition"
+                className="bg-[#1E293B] border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1"
               />
             </div>
 
             {/* Location Selector - Only for Student Paid */}
             {isStudentPaid && (
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 block">
+                <label className="text-sm font-semibold text-slate-300 block">
                   Location <span className="text-red-500">*</span>
                 </label>
                 {locationsLoading ? (
@@ -518,10 +475,10 @@ export function LedgerForm({
                       handleSelectChange("locationId", value)
                     }
                   >
-                    <SelectTrigger className="bg-white border-slate-200 hover:border-slate-300 transition">
+                    <SelectTrigger className="bg-[#1E293B] border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1">
                       <SelectValue placeholder="Select location" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-[#151D2A] text-white border border-slate-700">
                       {locations.map((loc) => (
                         <SelectItem key={loc.id} value={loc.id as string}>
                           {loc.name}
@@ -539,83 +496,9 @@ export function LedgerForm({
             )}
 
             {/* Batch Selector - Only for Student Paid */}
-            {/* {isStudentPaid && formData.locationId && (
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 block">
-                  Batch <span className="text-red-500">*</span>
-                </label>
-                {batchesLoading ? (
-                  <LoadingSkeleton />
-                ) : batches.length === 0 ? (
-                  <EmptyState message="No batches available for this location" />
-                ) : (
-                  <Select
-                    value={
-                      entry ? entry.student?.currentBatchId : formData.batchId
-                    }
-                    onValueChange={(value) =>
-                      handleSelectChange("batchId", value)
-                    }
-                  >
-                    <SelectTrigger className="bg-white border-slate-200 hover:border-slate-300 transition">
-                      <SelectValue placeholder="Select batch" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {batches.map((batch) => (
-                        <SelectItem key={batch.id} value={batch?.id as string}>
-                          {batch.name || batch.id}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            )} */}
-
-            {/* Student Selector - Only for Student Paid */}
-            {/* {isStudentPaid && (formData.batchId || entry?.student) && (
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 block">
-                  Student <span className="text-red-500">*</span>
-                </label>
-                {studentsLoading ? (
-                  <LoadingSkeleton />
-                ) : students.length === 0 ? (
-                  <EmptyState message="No students available for this batch" />
-                ) : (
-                  <Select
-                    value={entry ? entry.studentId : formData.studentId}
-                    onValueChange={(value) =>
-                      handleSelectChange("studentId", value)
-                    }
-                  >
-                    <SelectTrigger className="bg-white border-slate-200 hover:border-slate-300 transition">
-                      <SelectValue placeholder="Select student" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {students.map((student) => (
-                        <SelectItem
-                          key={student.id}
-                          value={student.id as string}
-                        >
-                          {student.name + " (" + student.admissionNo + ")"}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                {validationErrors.studentId && (
-                  <p className="text-red-500 text-xs font-medium">
-                    📌 {validationErrors.studentId}
-                  </p>
-                )}
-              </div>
-            )} */}
-
-            {/* Batch Selector - Only for Student Paid */}
             {isStudentPaid && formData.locationId && (
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 block">
+                <label className="text-sm font-semibold text-slate-300 block">
                   Batch <span className="text-red-500">*</span>
                 </label>
                 {batchesLoading ? (
@@ -629,13 +512,14 @@ export function LedgerForm({
                       handleSelectChange("batchId", value)
                     }
                   >
-                    <SelectTrigger className="bg-white border-slate-200 hover:border-slate-300 transition">
+                    <SelectTrigger className="bg-[#1E293B] border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1">
+                      {" "}
                       <SelectValue placeholder="Select batch">
                         {formData.batchId &&
                           batches.find((b) => b.id === formData.batchId)?.name}
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-[#151D2A] text-white border border-slate-700">
                       {batches.map((batch) => (
                         <SelectItem key={batch.id} value={batch?.id as string}>
                           {batch.name || batch.id}
@@ -650,7 +534,7 @@ export function LedgerForm({
             {/* Student Selector - Only for Student Paid */}
             {isStudentPaid && (formData.batchId || entry?.student) && (
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 block">
+                <label className="text-sm font-semibold text-slate-300 block">
                   Student <span className="text-red-500">*</span>
                 </label>
                 {studentsLoading ? (
@@ -664,14 +548,14 @@ export function LedgerForm({
                       handleSelectChange("studentId", value)
                     }
                   >
-                    <SelectTrigger className="bg-white border-slate-200 hover:border-slate-300 transition">
+                    <SelectTrigger className="bg-[#1E293B] border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1">
                       <SelectValue placeholder="Select student">
                         {formData.studentId &&
                           students.find((s) => s.id === formData.studentId)
                             ?.name}
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-[#151D2A] text-white border border-slate-700">
                       {students.map((student) => (
                         <SelectItem
                           key={student.id}
@@ -694,7 +578,7 @@ export function LedgerForm({
 
           {/* Description */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700 block">
+            <label className="text-sm font-semibold text-slate-300 block">
               Description <span className="text-red-500">*</span>
             </label>
             <Textarea
@@ -704,11 +588,19 @@ export function LedgerForm({
               placeholder="Enter transaction description (e.g., Fee payment from student Ahmed Ali)..."
               rows={3}
               required
-              className={`border-slate-200 hover:border-slate-300 transition resize-none ${
-                validationErrors.description
-                  ? "border-red-500 focus:border-red-500"
-                  : ""
-              }`}
+              className={`bg-[#1E293B] 
+            border 
+            border-slate-700 
+            text-white 
+            hover:border-blue-500 
+            transition 
+            resize-none 
+            focus:ring-blue-500 
+            focus:ring-1 ${
+              validationErrors.description
+                ? "border-red-500 focus:border-red-500"
+                : ""
+            }`}
             />
             {validationErrors.description && (
               <p className="text-red-500 text-xs font-medium">

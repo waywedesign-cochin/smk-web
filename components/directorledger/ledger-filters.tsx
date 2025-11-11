@@ -39,8 +39,8 @@ const TRANSACTION_TYPES = [
   { value: "all-types", label: "All Types" },
   { value: "STUDENT_PAID", label: "Student Paid" },
   { value: "OTHER_EXPENSE", label: "Other Expense" },
-  { value: "OWNER_TAKEN", label: "Cash Withdrawn" },
-  { value: "INSTITUTION_GAVE_BANK", label: "To Bank" },
+  { value: "OWNER_TAKEN", label: "Cash in Hand" },
+  { value: "INSTITUTION_GAVE_BANK", label: "To Bank from institution" },
 ];
 
 export function LedgerFilters({
