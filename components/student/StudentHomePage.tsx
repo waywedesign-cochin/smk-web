@@ -123,7 +123,7 @@ export function Students() {
 
   // Set first location as default if locations exist, otherwise empty string
   const [locationTypeFilter, setLocationTypeFilter] = useState<string>(
-    locations && locations.length > 0 ? locations[0]?.id || "" : ""
+    currentUser?.locationId || ""
   );
 
   const [batchTypeFilter, setBatchTypeFilter] = useState<string>("all");
@@ -151,7 +151,7 @@ export function Students() {
     if (!locationTypeFilter || locationTypeFilter === "all") return batches;
 
     const filtered = batches.filter(
-      (batch) => batch.locationId === locationTypeFilter
+      (batch) => batch.location?.id === locationTypeFilter
     );
     console.log("Filtered batches:", filtered);
     return filtered;
@@ -355,6 +355,17 @@ export function Students() {
     } catch (error) {
       toast.error((error as string) || "An unexpected error occurred");
     }
+  };
+
+  const handleResetFilters = () => {
+    setMonthFilter("all");
+    setAccountTypeFilter("all");
+    setBatchTypeFilter("all");
+    setModeFilter("all");
+    setStatusFilter("all");
+    setSwitchFilter(false);
+    setFeeStatusFilter("all");
+    setDueThisWeekFilter(false);
   };
 
   return (
@@ -644,6 +655,13 @@ export function Students() {
                 </Label>
               </div>
             </div>
+            <Button
+              variant="ghost"
+              className="w-[120px] bg-black border border-white"
+              onClick={handleResetFilters}
+            >
+              Clear
+            </Button>
           </div>
         </CardContent>
       </Card>

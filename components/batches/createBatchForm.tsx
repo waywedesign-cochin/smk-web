@@ -737,6 +737,7 @@ export default function AddBatchSheet({
             reset();
             setEditingBatch(null);
           }}
+          className="bg-black border border-white hover:bg-white hover:text-black"
         >
           <Plus className="h-4 w-4 mr-2" />
           {editingBatch ? "Edit Batch" : "Add New Batch"}

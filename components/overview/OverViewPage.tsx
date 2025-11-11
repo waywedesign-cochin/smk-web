@@ -36,10 +36,14 @@ import Link from "next/link";
 
 export function OverviewPage() {
   const dispatch = useAppDispatch();
-  const { batches, loading } = useAppSelector((state) => state.batches);
+  const { batches, dashboardStats, loading } = useAppSelector(
+    (state) => state.batches
+  );
   const { currentUser } = useAppSelector((state) => state.users);
   const { locations } = useAppSelector((state) => state.locations);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState(
+    new Date().getFullYear().toString()
+  );
   const [locationFilter, setLocationFilter] = useState("all");
 
   // Get current year for filter options
@@ -53,25 +57,33 @@ export function OverviewPage() {
     }
   }, [dispatch, currentUser]);
 
+  //fetch current user location
+  useEffect(() => {
+    if (currentUser?.locationId) {
+      setLocationFilter(currentUser.locationId);
+    }
+  }, [currentUser?.locationId]);
+
   // Fetch batches with filters
   useEffect(() => {
     const filters = {
-      status: "ACTIVE",
-      limit: 0,
+      //  status: "ACTIVE",
+      page: 1,
+      limit: 100,
       year: selectedYear,
-      locationId: locationFilter,
+      location: currentUser?.locationId || locationFilter,
     };
 
     // For staff users, always filter by their location
     if (currentUser?.role === 3 && currentUser?.locationId) {
-      filters.locationId = currentUser.locationId;
+      filters.location = currentUser.locationId;
     }
     // For admin/director, use location filter if not "all"
     else if (
       (currentUser?.role === 1 || currentUser?.role === 2) &&
       locationFilter !== "all"
     ) {
-      filters.locationId = locationFilter;
+      filters.location = locationFilter;
     }
 
     dispatch(fetchBatches(filters));
@@ -79,28 +91,32 @@ export function OverviewPage() {
 
   // Filter batches based on user role and selected filters
   const filteredBatches = batches.filter((batch) => {
-    // For staff, always show only their location batches
+    const batchLocationId = batch.locationId || batch.location?.id;
+
+    // Staff — only show their location batches
     if (currentUser?.role === 3 && currentUser?.locationId) {
-      return batch.locationId === currentUser.locationId;
+      return batchLocationId === currentUser.locationId;
     }
-    // For admin/director, apply location filter
+
+    // Admin/Director — apply location filter
     if (locationFilter !== "all") {
-      return batch.locationId === locationFilter;
+      return batchLocationId === locationFilter;
     }
+
+    // Otherwise — show all
     return true;
   });
 
   // Calculate stats based on filtered data
   const calculateStats = () => {
-    const totalStudents = filteredBatches.reduce(
-      (sum, batch) => sum + (batch.currentCount || 0),
-      0
-    );
-    const activeBatches = filteredBatches.length;
+    const totalStudents = dashboardStats.totalEnrollment;
+    const activeBatches = dashboardStats.activeBatches;
     const totalCapacity = filteredBatches.reduce(
       (sum, batch) => sum + (batch.slotLimit || 0),
       0
     );
+    console.log("totalCapacity", totalCapacity);
+
     const occupancyRate =
       totalCapacity > 0 ? (totalStudents / totalCapacity) * 100 : 0;
 
@@ -113,6 +129,7 @@ export function OverviewPage() {
   };
 
   const stats = calculateStats();
+  console.log("filteredBatches", filteredBatches);
 
   return (
     <div className="space-y-6 bg-gray-950 min-h-screen p-2 rounded-lg ">
@@ -147,7 +164,7 @@ export function OverviewPage() {
             )}
             <Select
               value={selectedYear.toString()}
-              onValueChange={(value) => setSelectedYear(parseInt(value))}
+              onValueChange={(value) => setSelectedYear(value)}
             >
               <SelectTrigger className="w-28 bg-white/20 border-white/30 text-white">
                 <SelectValue placeholder={selectedYear.toString()} />
@@ -209,7 +226,7 @@ export function OverviewPage() {
             <div className="flex items-center gap-2 mt-2">
               <Progress
                 value={stats.occupancyRate}
-                className="w-full bg-gray-700"
+                className="h-2 bg-gray-700 [&>div]:bg-gradient-to-r [&>div]:from-blue-500 [&>div]:to-blue-500 rounded-full"
               />
               <span className="text-xs text-gray-400 whitespace-nowrap">
                 {stats.occupancyRate.toFixed(1)}%
@@ -337,7 +354,7 @@ export function OverviewPage() {
                     </p>
                     <Progress
                       value={(batch.currentCount / batch.slotLimit) * 100}
-                      className="w-20  max-sm:w-full bg-gray-700"
+                      className="w-20  max-sm:w-full bg-gray-700 [&>div]:bg-gradient-to-r [&>div]:from-blue-500 [&>div]:to-blue-500 rounded-full"
                     />
                     <p className="text-xs text-gray-400">
                       {Math.round((batch.currentCount / batch.slotLimit) * 100)}

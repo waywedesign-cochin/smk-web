@@ -1,4 +1,4 @@
-import CommunicationLogPage from "@/components/Communication-log/CoomunicationLogPage";
+import CommunicationLogPage from "@/components/Communication-log/CommunicationLogPage";
 import React from "react";
 
 const page = () => {
