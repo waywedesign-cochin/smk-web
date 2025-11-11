@@ -174,7 +174,7 @@ export function LedgerFilters({
         <div
           className={
             showDirectorFilter
-              ? "md:col-span-2 relative   "
+              ? "md:col-span-2 relative"
               : " relative md:col-span-2 space-y-2 mt-auto "
           }
         >
