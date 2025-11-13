@@ -21,6 +21,7 @@ interface EntryDialogProps {
   onOpenChange?: (open: boolean) => void;
   onSuccess?: () => void;
   trigger?: boolean;
+  periodBalance: number;
 }
 
 export function EntryDialog({
@@ -30,6 +31,7 @@ export function EntryDialog({
   onOpenChange: externalOnOpenChange,
   onSuccess,
   trigger = true,
+  periodBalance,
 }: EntryDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = externalOpen !== undefined;
@@ -70,6 +72,7 @@ export function EntryDialog({
           entry={entry}
           isEdit={isEdit}
           onSuccess={handleSuccess}
+          periodBalance={periodBalance}
         />
       </DialogContent>
     </Dialog>

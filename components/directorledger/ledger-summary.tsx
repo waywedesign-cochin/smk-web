@@ -24,7 +24,7 @@ export function LedgerSummary({ totals }: LedgerSummaryProps) {
       color: "from-green-100 to-green-200",
       lightBg: "bg-green-50",
       textColor: "text-green-200",
-      description: "Cash taken form branch in hand",
+      description: "Amount taken from branch as cash",
     },
     {
       title: "Other Expenses",
@@ -32,7 +32,7 @@ export function LedgerSummary({ totals }: LedgerSummaryProps) {
       color: "from-red-200 to-red-300",
       lightBg: "bg-red-50",
       textColor: "text-red-300",
-      description: "Payments for director Expenses",
+      description: " Other expenses by director",
     },
     {
       title: "To Bank ",
@@ -40,7 +40,7 @@ export function LedgerSummary({ totals }: LedgerSummaryProps) {
       color: "from-purple-200 to-purple-100",
       lightBg: "bg-purple-50",
       textColor: "text-purple-100",
-      description: "Payments form Institution to director bank account",
+      description: "Payments from Institution to director bank account",
     },
     {
       title: "Period Balance",

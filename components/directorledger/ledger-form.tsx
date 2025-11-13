@@ -55,6 +55,7 @@ interface LedgerFormProps {
   entry?: EntryFormData | null;
   onSuccess?: () => void;
   isEdit?: boolean;
+  periodBalance: number;
 }
 
 const TRANSACTION_TYPES = [
@@ -82,6 +83,7 @@ export function LedgerForm({
   entry,
   onSuccess,
   isEdit = false,
+  periodBalance,
 }: LedgerFormProps) {
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.directorLedger);
@@ -270,6 +272,29 @@ export function LedgerForm({
       return;
     }
 
+    const amount = Number(formData.amount);
+
+    // ⛔ Prevent overspending for OTHER_EXPENSE
+    if (formData.transactionType === "OTHER_EXPENSE") {
+      // Case 1: Adding new entry
+      if (!isEdit && amount > periodBalance) {
+        setValidationErrors((prev) => ({
+          ...prev,
+          amount: `Entered amount exceeds the available balance (₹${periodBalance})`,
+        }));
+        return;
+      }
+
+      // Case 2: Editing existing entry
+      if (isEdit && amount - (entry?.amount ?? 0) > periodBalance) {
+        setValidationErrors((prev) => ({
+          ...prev,
+          amount: `Updated amount exceeds the available balance (₹${periodBalance})`,
+        }));
+        return;
+      }
+    }
+
     const payload = {
       transactionDate: new Date(formData.transactionDate),
       amount: Number.parseFloat(formData.amount),
@@ -326,6 +351,20 @@ export function LedgerForm({
   };
 
   const isStudentPaid = formData.transactionType === "STUDENT_PAID";
+
+  // Current month range
+  const now = new Date();
+  const isCurrentMonth = (date: Date) =>
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+  const selectedDate = formData.transactionDate
+    ? new Date(formData.transactionDate)
+    : null;
+
+  const isTxCurrentMonth = selectedDate ? isCurrentMonth(selectedDate) : false;
+  const isExpenceType = formData.transactionType === "OTHER_EXPENSE";
+  const disableAmount = isEdit && isExpenceType && !isTxCurrentMonth;
+  const disableDate = isEdit && isExpenceType && !isTxCurrentMonth;
 
   return (
     <Card
@@ -402,6 +441,7 @@ export function LedgerForm({
                 value={formData.transactionDate}
                 onChange={handleChange}
                 required
+                disabled={disableDate}
                 className={`bg-[#1E293B] 
               border 
               border-slate-700 
@@ -435,6 +475,7 @@ export function LedgerForm({
                 placeholder="0.00"
                 step="0.01"
                 required
+                disabled={disableAmount}
                 className={`bg-[#1E293B] 
               border 
               border-slate-700 
@@ -453,6 +494,21 @@ export function LedgerForm({
                   {validationErrors.amount}
                 </p>
               )}
+              {formData.transactionType === "OTHER_EXPENSE" &&
+                !isEdit &&
+                Number(formData.amount) > periodBalance && (
+                  <p className="text-yellow-400 text-sm">
+                    ⚠️ Entered amount exceedsclosing balance (₹{periodBalance})
+                  </p>
+                )}
+              {formData.transactionType === "OTHER_EXPENSE" &&
+                isEdit &&
+                Number(formData.amount) - (entry?.amount ?? 0) >
+                  periodBalance && (
+                  <p className="text-yellow-400 text-sm">
+                    ⚠️ Entered amount exceeds closing balance (₹{periodBalance})
+                  </p>
+                )}
             </div>
 
             {/* Reference ID */}
@@ -630,7 +686,15 @@ export function LedgerForm({
 
           <Button
             type="submit"
-            disabled={loading || !isFormValid()}
+            disabled={
+              loading ||
+              !isFormValid() ||
+              (formData.transactionType === "OTHER_EXPENSE" &&
+                ((!isEdit && Number(formData.amount) > periodBalance) ||
+                  (isEdit &&
+                    Number(formData.amount) - (entry?.amount ?? 0) >
+                      periodBalance)))
+            }
             className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2.5 rounded-lg transition disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
           >
             {loading ? (

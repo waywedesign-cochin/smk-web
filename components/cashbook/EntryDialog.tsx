@@ -58,6 +58,7 @@ interface EntryDialogProps {
   existingData?: CashbookEntry | null;
   user: User;
   handleTabChange: Dispatch<SetStateAction<string>>;
+  cashInHand: number;
 }
 
 export default function EntryDialog({
@@ -69,6 +70,7 @@ export default function EntryDialog({
   existingData,
   handleTabChange,
   user,
+  cashInHand,
 }: EntryDialogProps) {
   const dispatch = useAppDispatch();
   const locations = useAppSelector((state) => state.locations.locations);
@@ -258,6 +260,41 @@ export default function EntryDialog({
       }
 
       const validData = result.data;
+      if (isEdit && existingData) {
+        const oldAmount = existingData.amount;
+        const newAmount = Number(validData.amount);
+
+        // Calculate the delta
+        const difference = newAmount - oldAmount;
+
+        // If increasing the amount and difference > cashInHand, block it
+        if (
+          (validData.transactionType === "OFFICE_EXPENSE" ||
+            validData.transactionType === "OWNER_TAKEN") &&
+          difference > cashInHand
+        ) {
+          setFormErrors({
+            ...formErrors,
+            amount: `You can only increase up to ₹${cashInHand} more (current balance).`,
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      if (
+        !isEdit &&
+        (validData.transactionType === "OFFICE_EXPENSE" ||
+          validData.transactionType === "OWNER_TAKEN") &&
+        Number(validData.amount) > cashInHand
+      ) {
+        setFormErrors({
+          ...formErrors,
+          amount: `Amount exceeds available cash in hand (₹${cashInHand}).`,
+        });
+        setIsSubmitting(false);
+        return;
+      }
 
       const payload = {
         transactionDate: validData.transactionDate.toISOString(),
@@ -323,6 +360,19 @@ export default function EntryDialog({
     setShowAddEntry(false);
   };
 
+  const now = new Date();
+  const isCurrentMonth = (date: Date) =>
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  const isTxCurrentMonth = selectedDate ? isCurrentMonth(selectedDate) : false;
+  const isMoneyType =
+    form.transactionType === "OFFICE_EXPENSE" ||
+    form.transactionType === "OWNER_TAKEN";
+  const disableDate = isEdit && isMoneyType;
+
+  // ✅ disable amount in edit mode if money-type and old month
+  const disableAmount = isEdit && isMoneyType && !isTxCurrentMonth;
   // ------------------ Render ------------------
   return (
     <Dialog open={showAddEntry} onOpenChange={handleClose}>
@@ -341,7 +391,7 @@ export default function EntryDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-white">Date *</Label>
-              <Popover>
+              {/* <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     type="button"
@@ -364,7 +414,54 @@ export default function EntryDialog({
                     className="bg-gray-800 text-white"
                   />
                 </PopoverContent>
+              </Popover> */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={disableDate}
+                    className={`w-full justify-start text-left bg-gray-800 border-gray-600 text-white ${
+                      disableDate
+                        ? "opacity-60 cursor-not-allowed"
+                        : "hover:bg-gray-700"
+                    }`}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+
+                {/* Only show calendar if date is not disabled (Add mode) */}
+                {!disableDate && (
+                  <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-600">
+                    <CalendarComponent
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(d) => {
+                        if (!d) return;
+                        // Only allow current month selection
+                        const inCurrentMonth =
+                          d.getMonth() === now.getMonth() &&
+                          d.getFullYear() === now.getFullYear();
+                        if (inCurrentMonth) {
+                          setSelectedDate(d);
+                          setField("transactionDate", d, true);
+                        }
+                      }}
+                      disabled={(date) =>
+                        // restrict to current month when adding
+                        !isEdit &&
+                        (date.getMonth() !== now.getMonth() ||
+                          date.getFullYear() !== now.getFullYear())
+                      }
+                      initialFocus
+                      className="bg-gray-800 text-white"
+                    />
+                  </PopoverContent>
+                )}
               </Popover>
+
               {formErrors.transactionDate && (
                 <p className="text-red-400 text-sm">
                   {formErrors.transactionDate}
@@ -385,7 +482,7 @@ export default function EntryDialog({
                 }
                 disabled={isEdit}
               >
-                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                <SelectTrigger className="bg-gray-800 border-gray-600 text-white  w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-600 text-white">
@@ -423,6 +520,7 @@ export default function EntryDialog({
                   if (value)
                     dispatch(fetchBatches({ location: value, limit: 10000 }));
                 }}
+                disabled
               >
                 <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                   <SelectValue placeholder="Select location" />
@@ -541,16 +639,45 @@ export default function EntryDialog({
             <Input
               type="number"
               step="0.01"
-              className="bg-gray-800 border-gray-600 text-white"
+              disabled={disableAmount}
+              className={`bg-gray-800 border-gray-600 text-white ${
+                disableAmount ? "opacity-60 cursor-not-allowed" : ""
+              }`}
               value={form.amount}
               onChange={(e) => {
                 const v = e.target.value;
                 setField("amount", v, true);
               }}
             />
+            {disableAmount && (
+              <p className="text-yellow-400 text-sm">
+                ⚠️ Amount cannot be edited for past month transactions.
+              </p>
+            )}
+
             {formErrors.amount && (
               <p className="text-red-400 text-sm">{formErrors.amount}</p>
             )}
+
+            {(form.transactionType === "OFFICE_EXPENSE" ||
+              form.transactionType === "OWNER_TAKEN") &&
+              !isEdit &&
+              Number(form.amount) > cashInHand && (
+                <p className="text-yellow-400 text-sm">
+                  ⚠️ Entered amount exceeds cash in hand (₹{cashInHand})
+                </p>
+              )}
+
+            {(form.transactionType === "OFFICE_EXPENSE" ||
+              form.transactionType === "OWNER_TAKEN") &&
+              isEdit &&
+              Number(form.amount) - (existingData?.amount ?? 0) >
+                cashInHand && (
+                <p className="text-yellow-400 text-sm">
+                  ⚠️ You can only increase up to ₹{cashInHand} more (current
+                  balance)
+                </p>
+              )}
           </div>
 
           {/* Description */}

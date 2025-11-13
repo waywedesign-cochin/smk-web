@@ -52,6 +52,7 @@ export interface CashbookResponse {
 export interface CashbookState {
   entries: CashbookEntry[];
   totals: CashbookTotals;
+  globalTotals: CashbookTotals;
   pagination: Pagination | null;
   loading: boolean;
   submitting: boolean;
@@ -102,6 +103,31 @@ export const fetchCashbookEntries = createAsyncThunk<
     return rejectWithValue(errorMessage);
   }
 });
+
+export const fetchGlobalTotals = createAsyncThunk<
+  CashbookTotals,
+  { locationId: string; year?: string }
+>(
+  "cashbook/fetchGlobalTotals",
+  async ({ locationId, year }, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${BASE_URL}/api/cashbook/entries`, {
+        params: { locationId, year, month: "allmonths" },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      return response.data.data?.totals as CashbookTotals;
+    } catch (error: unknown) {
+      let errorMessage = "Failed to fetch global totals";
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data?.message || error.message;
+      }
+      toast.error(errorMessage);
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
 
 export const addCashbookEntry = createAsyncThunk<
   CashbookEntry,
@@ -195,6 +221,16 @@ const initialState: CashbookState = {
     totalCredit: 0,
     totalDebit: 0,
   },
+  globalTotals: {
+    studentsPaid: 0,
+    officeExpense: 0,
+    ownerTaken: 0,
+    openingBalance: 0,
+    closingBalance: 0,
+    cashInHand: 0,
+    totalCredit: 0,
+    totalDebit: 0,
+  },
   pagination: null,
   loading: false,
   submitting: false,
@@ -229,6 +265,20 @@ const cashbookSlice = createSlice({
       .addCase(fetchCashbookEntries.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to fetch entries";
+      });
+    // FETCH GLOBAL TOTALS
+    builder
+      .addCase(fetchGlobalTotals.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchGlobalTotals.fulfilled, (state, action) => {
+        state.loading = false;
+        state.globalTotals = action.payload || initialState.globalTotals;
+      })
+      .addCase(fetchGlobalTotals.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to fetch global totals";
       });
 
     // ADD ENTRY

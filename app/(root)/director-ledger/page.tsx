@@ -60,6 +60,9 @@ export default function DirectorLedgerPage() {
     );
   }, [dispatch, directorId, pagination.page]);
 
+  const [month, setMonth] = useState((new Date().getMonth() + 1).toString());
+  const [year, setYear] = useState(new Date().getFullYear().toString());
+
   const handleEdit = (entry: DirectorLedgerEntry) => {
     setEditingEntry(entry);
     setEntryDialogOpen(true);
@@ -91,9 +94,15 @@ export default function DirectorLedgerPage() {
               Manage transaction entries and view financial summaries
             </p>
           </div>
-          {canEdit && <EntryDialog directorId={directorId} />}
+          {canEdit &&
+            month === (new Date().getMonth() + 1).toString() &&
+            year === new Date().getFullYear().toString() && (
+              <EntryDialog
+                directorId={directorId}
+                periodBalance={totals?.periodBalance || 0}
+              />
+            )}
         </div>
-        <LedgerSummary totals={totals} />
 
         {/* Filters */}
         <LedgerFilters
@@ -101,11 +110,16 @@ export default function DirectorLedgerPage() {
           onDirectorChange={isDirector ? undefined : setDirectorId}
           userRole={currentUser?.role}
           currentUserDirectorId={currentUser?.id}
+          month={month}
+          setMonth={setMonth}
+          year={year}
+          setYear={setYear}
         />
+        <LedgerSummary totals={totals} />
 
         {/* Table Section */}
         {loading ? (
-          <div className="flex items-center justify-center py-12 bg-white rounded-lg border bg-white/10">
+          <div className="flex items-center justify-center py-12  rounded-lg border bg-white/10">
             <div className="text-center space-y-2">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <p className="text-slate-600">Loading entries...</p>
@@ -136,6 +150,7 @@ export default function DirectorLedgerPage() {
           dispatch(fetchDirectorLedgerEntries({ directorId }));
         }}
         trigger={false}
+        periodBalance={totals?.periodBalance || 0}
       />
     </div>
   );
