@@ -8,6 +8,9 @@ interface FeeUpdate {
   id: string;
   discountAmount?: number;
   feePaymentMode?: string;
+  totalCourseFee?: number;
+  finalFee?: number;
+  balanceAmount?: number;
 }
 
 interface FeeState {

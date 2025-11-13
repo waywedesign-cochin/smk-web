@@ -150,11 +150,9 @@ export default function PaymentForm({
             <SelectValue placeholder="Select payment mode" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="CASH">Cash</SelectItem>
             <SelectItem value="CARD">Card</SelectItem>
             <SelectItem value="UPI">UPI</SelectItem>
             <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
-            <SelectItem value="DIRECTOR">Through Director</SelectItem>
           </SelectContent>
         </Select>
         {errors.mode && <p className="text-red-500 text-sm">{errors.mode}</p>}
@@ -231,7 +229,7 @@ export default function PaymentForm({
 
       {/* Advance Checkbox */}
       {!student?.fees?.some(
-        (fee) => fee?.advanceAmount && fee.advanceAmount > 0
+        (fee) => fee?.advanceAmount && fee.advanceAmount > 0 
       ) && (
         <div className="flex items-center gap-2">
           <Checkbox

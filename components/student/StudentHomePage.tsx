@@ -657,8 +657,9 @@ export function Students() {
             </div>
             <Button
               variant="ghost"
-              className="w-[120px] bg-black border border-white"
+              className="w-[100px] bg-black border border-white"
               onClick={handleResetFilters}
+              size={"sm"}
             >
               Clear
             </Button>
@@ -854,34 +855,19 @@ export function Students() {
                 onSubmit={handleSwitchBatch}
               />
             )}
-            {/* Pagination */}
-            {pagination && pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between mt-6 px-2">
-                {/* Showing X to Y of Z */}
-                <div className="text-sm text-white">
-                  Showing {(pagination.currentPage - 1) * pagination.limit + 1}{" "}
-                  to{" "}
-                  {Math.min(
-                    pagination.currentPage * pagination.limit,
-                    pagination.totalCount
-                  )}{" "}
-                  of {pagination.totalCount} students
-                </div>
-
-                {/* Pagination buttons */}
-                <div className="flex gap-2">
-                  {/* Previous */}
+            {pagination && pagination?.totalPages > 1 && (
+              <div className="flex items-center justify-end mt-6 px-4">
+                <div className="flex items-center gap-2">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => handlePageChange(pagination.currentPage - 1)}
                     disabled={pagination.currentPage === 1}
-                    className="cursor-pointer"
+                    className="bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
 
-                  {/* Page numbers with ellipsis */}
                   {Array.from(
                     { length: pagination.totalPages },
                     (_, i) => i + 1
@@ -895,32 +881,36 @@ export function Students() {
                     .map((page, index, array) => {
                       const showEllipsis =
                         index < array.length - 1 && array[index + 1] - page > 1;
+                      const isActive = pagination.currentPage === page;
                       return (
                         <div key={page} className="flex items-center">
                           <Button
-                            variant={
-                              pagination.currentPage === page
-                                ? "default"
-                                : "outline"
-                            }
+                            variant={isActive ? "default" : "ghost"}
                             size="sm"
                             onClick={() => handlePageChange(page)}
-                            className="cursor-pointer"
+                            className={`${
+                              isActive
+                                ? "bg-gradient-to-r from-blue-500 to-purple-700 text-white shadow-md"
+                                : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/10"
+                            }`}
                           >
                             {page}
                           </Button>
-                          {showEllipsis && <span className="px-2">...</span>}
+                          {showEllipsis && (
+                            <span className="px-2 text-gray-500 select-none">
+                              ...
+                            </span>
+                          )}
                         </div>
                       );
                     })}
 
-                  {/* Next */}
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => handlePageChange(pagination.currentPage + 1)}
                     disabled={pagination.currentPage === pagination.totalPages}
-                    className="cursor-pointer"
+                    className="bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
