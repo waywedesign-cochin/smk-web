@@ -19,6 +19,7 @@ import {
   CashbookEntry,
   fetchCashbookEntries,
   deleteCashbookEntry,
+  fetchGlobalTotals,
 } from "@/redux/features/cashbook/cashbookSlice";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
 import { fetchCurrentUser, fetchUsers } from "@/redux/features/user/userSlice";
@@ -32,6 +33,7 @@ export const CashBookPage = () => {
   const dispatch = useAppDispatch();
   const { entries, totals, pagination, loading, submitting, error } =
     useAppSelector((s) => s.cashbook);
+
   const locations = useAppSelector((s) => s.locations.locations);
   const user = useAppSelector((s) => s.users.currentUser);
   const { users } = useAppSelector((s) => s.users);
@@ -294,7 +296,7 @@ export const CashBookPage = () => {
             </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 max-[500px]:flex-col">
             <Button
               className="border border-white hover:bg-white hover:text-black"
               onClick={handleExportCashbook}
@@ -304,16 +306,18 @@ export const CashBookPage = () => {
               Export
             </Button>
 
-            {(user?.role === 1 || user?.role === 3) && (
-              <Button
-                onClick={() => setShowAddEntry(true)}
-                disabled={!filters.locationId}
-                className="border border-white hover:bg-white hover:text-black"
-              >
-                <Plus className="h-4 w-4" />
-                Add Entry
-              </Button>
-            )}
+            {(user?.role === 1 || user?.role === 3) &&
+              filters.year === new Date().getFullYear().toString() &&
+              filters.month === (new Date().getMonth() + 1).toString() && (
+                <Button
+                  onClick={() => setShowAddEntry(true)}
+                  disabled={!filters.locationId}
+                  className="border border-white hover:bg-white hover:text-black"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Entry
+                </Button>
+              )}
           </div>
         </div>
       </div>
@@ -328,6 +332,7 @@ export const CashBookPage = () => {
           directors={directors}
           user={user}
           handleTabChange={setActiveTab}
+          cashInHand={totals.cashInHand}
         />
       )}
 
@@ -341,6 +346,7 @@ export const CashBookPage = () => {
           existingData={entryToEdit}
           user={user}
           handleTabChange={setActiveTab}
+          cashInHand={totals.cashInHand}
         />
       )}
 
@@ -437,6 +443,14 @@ export const CashBookPage = () => {
             color: "text-green-500",
           },
           {
+            title: "Opening Balance",
+            value: totals.openingBalance,
+            color:
+              (totals.openingBalance || 0) >= 0
+                ? "text-green-500"
+                : "text-red-500",
+          },
+          {
             title: "Office Expenses",
             value: totals.officeExpense,
             color: "text-red-500",
@@ -447,15 +461,7 @@ export const CashBookPage = () => {
             color: "text-orange-500",
           },
           {
-            title: "Closing Balance",
-            value: totals.closingBalance,
-            color:
-              (totals.closingBalance || 0) >= 0
-                ? "text-green-500"
-                : "text-red-500",
-          },
-          {
-            title: "Cash in Hand",
+            title: "Cash in Hand (closing)",
             value: totals.cashInHand,
             color: "text-blue-500",
           },

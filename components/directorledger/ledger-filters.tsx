@@ -25,6 +25,10 @@ interface LedgerFiltersProps {
   onDirectorChange?: (id: string) => void;
   userRole?: number;
   currentUserDirectorId?: string;
+  month: string;
+  setMonth: (month: string) => void;
+  year: string;
+  setYear: (year: string) => void;
 }
 
 const MONTHS = [
@@ -48,11 +52,15 @@ export function LedgerFilters({
   onDirectorChange,
   userRole,
   currentUserDirectorId,
+  month,
+  setMonth,
+  year,
+  setYear,
 }: LedgerFiltersProps) {
   const dispatch = useAppDispatch();
   const { users } = useAppSelector((state) => state.users);
-  const [month, setMonth] = useState("all-months");
-  const [year, setYear] = useState(new Date().getFullYear().toString());
+  // const [month, setMonth] = useState((new Date().getMonth() + 1).toString());
+  // const [year, setYear] = useState(new Date().getFullYear().toString());
   const [search, setSearch] = useState("");
   const [transactionType, setTransactionType] = useState("all-types");
   const [selectedDirector, setSelectedDirector] = useState(directorId);

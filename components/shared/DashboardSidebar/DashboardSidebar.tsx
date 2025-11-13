@@ -188,13 +188,13 @@ export default function DashboardSidebar({
               <User className="h-4 w-4" />
             </Button>
 
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               className="bg-black border border-white"
             >
               <BellIcon className="h-4 w-4  hover:text-black" />
-            </Button>
+            </Button> */}
 
             {/* Logout with confirmation dialog */}
             <Dialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
