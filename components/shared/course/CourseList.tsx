@@ -2,29 +2,49 @@ import DeleteDialogue from "@/components/shared/DashboardSidebar/DeleteDialogue"
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/hooks";
 import { Course } from "@/lib/types";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface CourseListProps {
   courses: Course[];
   handleEdit: (course: Course) => void;
   handleDelete: (id: string) => void;
+  loading: boolean;
 }
 
 export function CourseList({
   courses,
   handleEdit,
   handleDelete,
+  loading,
 }: CourseListProps) {
   const { currentUser } = useAppSelector((state) => state.users);
+  const handleCourseDeleteHaveBatches = () => {
+    toast(
+      "You cannot delete this course because it has batches, students, or fees associated with it. Please remove the related data before deleting the course.",
+      {
+        duration: 6500,
+      }
+    );
+  };
   return (
     <div className=" bg-gradient-to-br from-[#122147] via-black to-[#122147]  rounded-xl p-6   transition-shadow duration-300 space-y-6">
-      {courses.length === 0 ? (
-        <p className="text-gray-50  text-center text-lg font-medium">
-          No courses added yet. Start by adding one!
-        </p>
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Loading courses...</p>
+          </div>
+        </div>
+      ) : !courses ? (
+        <div className="text-center">
+          <p className="text-gray-400  text-center text-md font-medium">
+            No courses added yet. Start by adding one!
+          </p>{" "}
+        </div>
       ) : (
         <div className="grid gap-4">
-          {courses.map((course) => (
+          {courses?.map((course) => (
             <div
               key={course.id}
               className="flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-4 items-center  backdrop-blur-lg p-4 rounded-lg bg-gray-100/10  transition-colors duration-200 border-[1px] border-gray-100/10 "
@@ -70,20 +90,23 @@ export function CourseList({
                     <Pencil className="w-4 h-4 mr-1" />
                     Edit
                   </Button>
-                  {/* <Button
-                  size="sm"
-                  variant="destructive"
-                  className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white transition-colors duration-200"
-                  // onClick={() => handleDelete(course.id)}
-                >
-                  <Trash2 className="w-4 h-4 mr-1" />
-                  Delete
-                </Button> */}
-                  <DeleteDialogue
-                    id={course.id as string}
-                    title={course.name}
-                    handelDelete={handleDelete}
-                  />
+                  {course.batches?.length !== 0 && (
+                    <Button
+                      variant="destructive"
+                      className="bg-red-500 h-8 rounded-md gap-1.5 px-3 cursor-pointer hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white transition-colors duration-200 "
+                      onClick={handleCourseDeleteHaveBatches}
+                    >
+                      <Trash className="w-4 h-4" />
+                    </Button>
+                  )}
+
+                  {course.batches?.length === 0 && (
+                    <DeleteDialogue
+                      id={course.id as string}
+                      title={course.name}
+                      handelDelete={handleDelete}
+                    />
+                  )}
                 </div>
               )}
             </div>
