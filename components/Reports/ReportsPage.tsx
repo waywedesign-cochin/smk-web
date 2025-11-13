@@ -78,8 +78,6 @@ export function ReportsPage() {
   const [selectedQuarter, setSelectedQuarter] = useState("ALL");
   const [activeTab, setActiveTab] = useState("revenue");
 
-  console.log(revenue);
-
   // Fetch revenue data
   const getRevenueData = () => {
     dispatch(
@@ -244,9 +242,9 @@ export function ReportsPage() {
           </CardHeader>
           <CardContent className="relative">
             <div className="text-3xl font-bold text-gray-900 mb-2">
-              {summary?.collectionRate}%
+              {summary?.collectionRate}
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-green-600 bg-green-500/10  px-2 py-1 rounded-full w-fit">
               ₹{summary?.totalCollections.toLocaleString()} collected
             </div>
           </CardContent>

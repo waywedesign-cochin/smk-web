@@ -508,7 +508,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
               <CardDescription>Recent activities and updates</CardDescription>
             </CardHeader>
             {communicationLogs?.map((log) => (
-              <CardContent key={log.id} className="space-y-2">
+              <CardContent key={log.id} className="bg-gray-50">
                 <div className="border rounded-lg p-3">
                   <p className="text-sm">{log.subject}</p>
                   <p className="text-xs text-muted-foreground">

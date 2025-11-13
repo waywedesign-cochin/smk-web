@@ -12,24 +12,26 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store"; // adjust path if needed
+import { RootState } from "@/redux/store";
 import { Student } from "@/lib/types";
-import { FeeSchema, FeeInput } from "@/lib/validation/feeSchema"; // adjust path
-import { useAppSelector } from "@/lib/hooks";
+import { FeeSchema, FeeInput } from "@/lib/validation/feeSchema";
 
 interface FeeData {
   id: string;
-  totalCourseFee: number;
-  discountAmount: number;
-  advanceAmount: number;
-  finalFee: number;
-  balanceAmount: number;
+  totalCourseFee: string | number;
+  discountAmount: string | number;
+  advanceAmount: string | number;
+  finalFee: string | number;
+  balanceAmount: string | number;
   feePaymentMode: string;
 }
 
 export interface FeeSubmission {
   id: string;
   discountAmount?: number;
+  totalCourseFee?: number;
+  finalFee?: number;
+  balanceAmount?: number;
   feePaymentMode: string;
 }
 
@@ -47,13 +49,14 @@ export default function FeeConfigurationForm({
   onClose,
 }: FeeConfigurationFormProps) {
   const loading = useSelector((state: RootState) => state.fees.loading);
+
   const [feeData, setFeeData] = useState<FeeData>({
     id: "",
-    totalCourseFee: 0,
-    discountAmount: 0,
-    advanceAmount: 0,
-    finalFee: 0,
-    balanceAmount: 0,
+    totalCourseFee: "",
+    discountAmount: "",
+    advanceAmount: "",
+    finalFee: "",
+    balanceAmount: "",
     feePaymentMode: "",
   });
 
@@ -61,85 +64,115 @@ export default function FeeConfigurationForm({
     {}
   );
 
-  // Load initial data or latest fee object
+  // 🧠 Load initial data
   useEffect(() => {
     const existingConfig =
       initialConfig || (student.fees?.length ? student.fees[0] : null);
     if (existingConfig) {
       setFeeData({
         id: existingConfig.id ?? "",
-        totalCourseFee: existingConfig.totalCourseFee ?? 0,
-        discountAmount: existingConfig.discountAmount ?? 0,
-        advanceAmount: existingConfig.advanceAmount ?? 0,
-        finalFee: existingConfig.finalFee ?? 0,
-        balanceAmount: existingConfig.balanceAmount ?? 0,
+        totalCourseFee: existingConfig.totalCourseFee ?? "",
+        discountAmount: existingConfig.discountAmount ?? "",
+        advanceAmount: existingConfig.advanceAmount ?? "",
+        finalFee: existingConfig.finalFee ?? "",
+        balanceAmount: existingConfig.balanceAmount ?? existingConfig.finalFee,
         feePaymentMode: existingConfig.feePaymentMode ?? "",
       });
     }
   }, [initialConfig, student.fees]);
 
-  const handleInputChange = (field: keyof FeeData, value: string | number) => {
+  // 🧩 Smarter recalculation logic
+  const recalculateFee = (updated: FeeData, changedField?: string): FeeData => {
+    const totalCourseFee =
+      updated.totalCourseFee === "" ? 0 : Number(updated.totalCourseFee);
+    const discount =
+      updated.discountAmount === "" ? 0 : Number(updated.discountAmount);
+    const alreadyPaid =
+      student.fees
+        ?.find((f) => f.id === updated.id)
+        ?.payments?.reduce((sum, p) => sum + (p.paidAt ? p.amount : 0), 0) || 0;
+
+    let finalFee: number;
+    let balanceAmount: number;
+
+    // 🎯 Auto-recalculate when discount or total fee changes
+    if (
+      changedField === "discountAmount" ||
+      changedField === "totalCourseFee"
+    ) {
+      finalFee = totalCourseFee - discount;
+    } else {
+      // Keep manual entry
+      finalFee = updated.finalFee === "" ? 0 : Number(updated.finalFee);
+    }
+
+    // Recalculate balance unless user is editing it directly
+    if (changedField === "balanceAmount") {
+      balanceAmount =
+        updated.balanceAmount === "" ? 0 : Number(updated.balanceAmount);
+    } else {
+      balanceAmount = Math.max(finalFee - alreadyPaid, 0);
+    }
+
+    return { ...updated, finalFee, balanceAmount };
+  };
+
+  // Handle changes safely (allow empty input)
+  const handleInputChange = (field: keyof FeeData, value: string) => {
     setFeeData((prev) => {
       const updated = { ...prev, [field]: value };
 
-      // Base final fee from latest fee or initialConfig
-      const baseFinalFee =
-        initialConfig?.finalFee ?? student.fees?.[0]?.finalFee ?? prev.finalFee;
-
-      // Discount entered by user
-      const discount = Number(updated.discountAmount) || 0;
-
-      // Calculate new final fee after discount
-      const finalFee = baseFinalFee - discount;
-
-      // Already paid amount
-      const alreadyPaid =
-        student.fees
-          ?.find((f) => f.id === updated.id)
-          ?.payments?.reduce((sum, p) => sum + (p.paidAt ? p.amount : 0), 0) ||
-        0;
-
-      // Remaining balance
-      const balanceAmount = finalFee - alreadyPaid;
-
-      return { ...updated, finalFee, balanceAmount };
+      // Only recalc for fee-related fields
+      if (
+        [
+          "totalCourseFee",
+          "discountAmount",
+          "finalFee",
+          "balanceAmount",
+        ].includes(field)
+      ) {
+        return recalculateFee(updated, field);
+      }
+      return updated;
     });
   };
 
+  // Submit handler
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(feeData);
 
-    // Validate discountAmount & feePaymentMode using Zod
     const result = FeeSchema.safeParse({
-      discountAmount: feeData.discountAmount,
+      discountAmount:
+        feeData.discountAmount === "" ? 0 : Number(feeData.discountAmount),
       feePaymentMode: feeData.feePaymentMode,
     });
 
     if (!result.success) {
-      // collect errors
       const newErrors: Partial<Record<keyof FeeInput, string>> = {};
-      result.error.issues.forEach(
-        (err: {
-          path: (string | number | symbol)[];
-          message: string | undefined;
-        }) => {
-          const field = err.path[0] as keyof FeeInput;
-          newErrors[field] = err.message;
-        }
-      );
+      result.error.issues.forEach((err) => {
+        const field = err.path[0] as keyof FeeInput;
+        newErrors[field] = err.message;
+      });
       setErrors(newErrors);
       return;
     }
 
     setErrors({});
-
     const payload: FeeSubmission = {
       id: feeData.id,
-      discountAmount: feeData.discountAmount,
+      discountAmount:
+        feeData.discountAmount === "" ? 0 : Number(feeData.discountAmount),
+      totalCourseFee:
+        feeData.totalCourseFee === "" ? 0 : Number(feeData.totalCourseFee),
+      finalFee: feeData.finalFee === "" ? 0 : Number(feeData.finalFee),
+      balanceAmount:
+        feeData.balanceAmount === "" ? 0 : Number(feeData.balanceAmount),
       feePaymentMode: feeData.feePaymentMode,
     };
 
     onSave(payload);
+    console.log(payload);
   };
 
   return (
@@ -149,26 +182,49 @@ export default function FeeConfigurationForm({
         <div className="space-y-2">
           <Label>Total Course Fee</Label>
           <Input
-            type="number"
+            type="text"
             value={feeData.totalCourseFee}
             onChange={(e) =>
-              handleInputChange("totalCourseFee", Number(e.target.value))
+              handleInputChange("totalCourseFee", e.target.value)
             }
-            disabled
           />
         </div>
 
         <div className="space-y-2">
           <Label>Discount Amount</Label>
           <Input
-            type="number"
+            type="text"
             value={feeData.discountAmount}
             onChange={(e) =>
-              handleInputChange("discountAmount", Number(e.target.value))
+              handleInputChange("discountAmount", e.target.value)
             }
           />
           {errors.discountAmount && (
             <p className="text-red-500 text-sm">{errors.discountAmount}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label>Final Fee</Label>
+          <Input
+            type="text"
+            value={feeData.finalFee}
+            onChange={(e) => handleInputChange("finalFee", e.target.value)}
+          />
+          {errors.finalFee && (
+            <p className="text-red-500 text-sm">{errors.finalFee}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label>Balance Amount</Label>
+          <Input
+            type="text"
+            value={feeData.balanceAmount}
+            onChange={(e) => handleInputChange("balanceAmount", e.target.value)}
+          />
+          {errors.balanceAmount && (
+            <p className="text-red-500 text-sm">{errors.balanceAmount}</p>
           )}
         </div>
       </div>
@@ -178,16 +234,20 @@ export default function FeeConfigurationForm({
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Final Fee:</span>
           <span className="font-semibold">
-            ₹{feeData.finalFee?.toLocaleString() ?? 0}
+            ₹
+            {feeData.finalFee !== "" && !isNaN(Number(feeData.finalFee))
+              ? Number(feeData.finalFee).toLocaleString()
+              : 0}
           </span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Balance Amount:</span>
           <span className="font-semibold">
             ₹
-            {feeData.balanceAmount
-              ? feeData.balanceAmount.toLocaleString()
-              : feeData.finalFee.toLocaleString() ?? 0}
+            {feeData.balanceAmount !== "" &&
+            !isNaN(Number(feeData.balanceAmount))
+              ? Number(feeData.balanceAmount).toLocaleString()
+              : 0}
           </span>
         </div>
       </div>
