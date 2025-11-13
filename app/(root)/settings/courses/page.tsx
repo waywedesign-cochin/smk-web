@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 function CoursesPage() {
   const dispatch = useAppDispatch();
-  const courses = useAppSelector((state) => state.courses.courses);
+  const { courses, loading } = useAppSelector((state) => state.courses);
   const { currentUser } = useAppSelector((state) => state.users);
 
   useEffect(() => {
@@ -98,6 +98,7 @@ function CoursesPage() {
 
       <CourseList
         courses={courses}
+        loading={loading}
         handleEdit={handleEdit}
         handleDelete={handleDelete}
       />

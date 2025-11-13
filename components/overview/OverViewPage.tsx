@@ -192,7 +192,7 @@ export function OverviewPage() {
                 className="ml-2 bg-white/20 text-white border-white/30"
               >
                 {currentUser?.role === 1
-                  ? "Super Admin"
+                  ? "Admin"
                   : currentUser?.role === 2
                   ? "Director"
                   : "Staff"}
@@ -201,7 +201,7 @@ export function OverviewPage() {
             {currentUser?.location && (
               <Badge
                 variant="outline"
-                className="bg-white/20 text-white border-white/30"
+                className="bg-white/20 text-white border-white/30 mt-1"
               >
                 📍 {currentUser.location.name}
               </Badge>
@@ -426,7 +426,7 @@ export function OverviewPage() {
                   <span className="text-sm text-gray-300">Role:</span>
                   <Badge variant="secondary" className="bg-blue-600 text-white">
                     {currentUser?.role === 1
-                      ? "Super Admin"
+                      ? "Admin"
                       : currentUser?.role === 2
                       ? "Director"
                       : "Staff"}
