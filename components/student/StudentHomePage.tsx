@@ -402,9 +402,9 @@ export function Students() {
                     Add Student
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="w-full !max-w-lg p-2 overflow-y-auto">
+                <SheetContent className="w-full !max-w-lg bg-[#0E1628] text-gray-200 p-2 overflow-y-auto">
                   <SheetHeader>
-                    <SheetTitle>
+                    <SheetTitle className="text-white">
                       {selectedStudent ? "Edit Student" : "Add New Student"}
                     </SheetTitle>
                     <SheetDescription>
@@ -413,7 +413,7 @@ export function Students() {
                         : "Create a new student record and enroll them in a batch"}
                     </SheetDescription>
                   </SheetHeader>
-                  <div className="mt-6 px-4">
+                  <div className="mt-2 px-4">
                     <AddStudentForm
                       student={selectedStudent || undefined}
                       onSubmit={
