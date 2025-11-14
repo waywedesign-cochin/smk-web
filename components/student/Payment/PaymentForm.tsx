@@ -146,7 +146,12 @@ export default function PaymentForm({
           <Select
             value={formData.mode}
             onValueChange={(value) => handleChange("mode", value)}
-            disabled={loading}
+            disabled={
+              loading ||
+              (!!existingPayment &&
+                (existingPayment.mode === "CASH" ||
+                  existingPayment.mode === "DIRECTOR"))
+            }
           >
             <SelectTrigger className="bg-[#1B2437] border border-gray-600 text-white">
               <SelectValue placeholder="Select payment mode" />
@@ -155,8 +160,15 @@ export default function PaymentForm({
               <SelectItem value="CARD">Card</SelectItem>
               <SelectItem value="UPI">UPI</SelectItem>
               <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
+              {existingPayment?.mode === "CASH" && (
+                <SelectItem value="CASH">Cash</SelectItem>
+              )}
+              {existingPayment?.mode === "DIRECTOR" && (
+                <SelectItem value="DIRECTOR">Director</SelectItem>
+              )}
             </SelectContent>
           </Select>
+
           {errors.mode && (
             <p className="text-red-400 text-xs mt-1">{errors.mode}</p>
           )}

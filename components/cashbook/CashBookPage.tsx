@@ -458,10 +458,10 @@ export const CashBookPage = () => {
           {
             title: "Owner Taken",
             value: totals.ownerTaken,
-            color: "text-orange-500",
+            color: "text-orange-600",
           },
           {
-            title: "Cash in Hand (closing)",
+            title: "Cash in Hand (Closing)",
             value: totals.cashInHand,
             color: "text-blue-500",
           },

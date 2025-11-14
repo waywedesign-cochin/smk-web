@@ -9,6 +9,7 @@ import {
   CreditCard,
   FileText,
   History,
+  Link2,
   Loader2,
   Mail,
   MapPin,
@@ -358,6 +359,12 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                   <div className="flex items-start gap-3 text-sm">
                     <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <span>{student.address}</span>
+                  </div>
+                )}
+                {student.referralInfo && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Link2 className="h-4 w-4 text-muted-foreground" />
+                    <span>{student.referralInfo}</span>
                   </div>
                 )}
               </CardContent>

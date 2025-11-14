@@ -725,6 +725,12 @@ export function Students() {
                       <TableCell className="px-6 py-4 whitespace-nowrap">
                         <p className="font-medium text-lg capitalize text-white">
                           {student.name}
+                        </p>
+
+                        <p className="text-[10px] text-white bg-gray-400/20 p-0.5 px-1 rounded-sm mt-2 w-fit">
+                          {student.admissionNo}
+                        </p>
+                        <p>
                           {student?.fees?.some(
                             (fee) =>
                               (fee?.batchHistoryFrom &&
@@ -734,16 +740,18 @@ export function Students() {
                           ) && (
                             <Badge
                               variant="outline"
-                              className="text-amber-600 ml-2 border-amber-300 text-[10px] bg-amber-50/10"
+                              className="text-amber-600 mt-2 border-amber-300 text-[10px] bg-amber-50/10"
                             >
                               <Repeat className="h-1 w-2 mr-1" />
-                              Switched
+                              {batchTypeFilter === "all"
+                                ? "Switched"
+                                : batchTypeFilter !== student.currentBatchId
+                                ? `Switched to ${student.currentBatch?.name}`
+                                : batchTypeFilter === student.currentBatchId
+                                ? `Switched from ${student?.fees?.[0]?.batchHistoryTo?.[0]?.fromBatch?.name}`
+                                : ""}
                             </Badge>
                           )}
-                        </p>
-
-                        <p className="text-[10px] text-white bg-gray-400/20 p-0.5 px-1 rounded-sm mt-2 w-fit">
-                          {student.admissionNo}
                         </p>
                       </TableCell>
 
