@@ -141,6 +141,7 @@ export function Batches() {
     dispatch(
       fetchBatches({
         page: newPage,
+        limit: pagination?.limit,
         search: debouncedSearch || undefined,
         status: filters.status !== "all" ? filters.status : undefined,
         mode: filters.mode !== "all" ? filters.mode : undefined,
@@ -353,7 +354,7 @@ export function Batches() {
       </Card>
 
       {/* Batch Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {[
           {
             icon: Users,
@@ -570,11 +571,15 @@ export function Batches() {
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <DeleteDialogue
-                              id={batch.id as string}
-                              title={batch.name}
-                              handelDelete={handleDelete}
-                            />
+
+                            {batch.currentCount === 0 &&
+                              batch.status === "PENDING" && (
+                                <DeleteDialogue
+                                  id={batch.id as string}
+                                  title={batch.name}
+                                  handelDelete={handleDelete}
+                                />
+                              )}
                           </div>
                         </TableCell>
                       )}

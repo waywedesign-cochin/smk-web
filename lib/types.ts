@@ -24,6 +24,9 @@ export interface Location {
   address?: string;
   batches?: Batch[];
   createdAt?: string;
+  cashbook?: CashBook[];
+  users?: User[];
+  DirectorLedger?: DirectorLedger[];
 }
 
 export interface Course {

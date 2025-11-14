@@ -64,13 +64,13 @@ export default function SettingsPage() {
           path="/settings/courses"
           icon={GraduationCap}
           title="Course Configuration"
-          description="Add new courses, modify fee structures, and configure course-specific settings and requirements."
+          description="Add new courses, modify structures, and configure course-specific settings and requirements."
         />
         <SettingsCard
           path="/settings/locations"
           icon={MapPin}
           title="Location Management"
-          description="Manage multiple branches, assign coordinators, and configure location-specific settings."
+          description="Manage multiple branches and configure location-specific settings."
         />
       </div>
     </div>

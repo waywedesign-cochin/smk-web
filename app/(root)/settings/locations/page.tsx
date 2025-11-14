@@ -13,6 +13,7 @@ import {
   updateLocation,
 } from "@/redux/features/location/locationSlice";
 import { Location } from "@/lib/types";
+import DarkVeil from "@/components/DarkVeil";
 
 export default function LocationsPage() {
   const dispatch = useAppDispatch();
@@ -44,34 +45,30 @@ export default function LocationsPage() {
 
   return (
     <div className="space-y-6">
-      <div
-        className="flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white rounded-2xl bg-cover bg-center"
-        // /cource/course.png
-
-        style={{
-          backgroundImage: "url('/locations/back.png')",
-          backgroundSize: "cover",
-
-          backgroundPosition: "center",
-        }}
-      >
-        <div>
-          <h2 className="text-3xl max-md:text-2xl max-sm:text-xl font-semibold">
-            Locations
-          </h2>
-          <p className="text-white/80 max-md:text-sm max-sm:text-xs">
-            Manage institute branches locations
-          </p>
+      <div className="relative rounded-2xl overflow-hidden">
+        {/* Darkveil background */}
+        <div className="absolute inset-0 z-0 h-[300px] w-full">
+          <DarkVeil />
         </div>
-        <AddLocation
-          isAddDialogOpen={isAddDialogOpen}
-          setIsAddDialogOpen={setIsAddDialogOpen}
-          editingLocation={editingLocation}
-          setEditingLocation={setEditingLocation}
-          onSubmit={handleSubmit}
-        />
+        {/* Header content */}
+        <div className="relative z-10 flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white">
+          <div>
+            <h1 className="text-3xl font-semibold text-white">Locations</h1>
+            <p className="text-sm text-gray-300">
+              Manage institute branches locations
+            </p>
+          </div>
+
+          <AddLocation
+            isAddDialogOpen={isAddDialogOpen}
+            setIsAddDialogOpen={setIsAddDialogOpen}
+            editingLocation={editingLocation}
+            setEditingLocation={setEditingLocation}
+            onSubmit={handleSubmit}
+          />
+        </div>
       </div>
-      <div className="bg-gradient-to-b from-gray-900 to-gray-800 p-4 flex flex-col gap-4 min-h-screen rounded-2xl">
+      <div className="bg-gradient-to-b from-black to-[#0A1533] p-2  flex flex-col gap-4 min-h-screen rounded-2xl">
         {/* Statistics Card */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -144,7 +141,7 @@ export default function LocationsPage() {
         </div>
 
         {/* Locations Table */}
-        <Card className="bg-white/10 border-0 text-white">
+        <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white rounded-2xl overflow-hidden">
           <CardHeader>
             <CardTitle>All Locations</CardTitle>
           </CardHeader>
