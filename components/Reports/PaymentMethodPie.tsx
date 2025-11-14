@@ -14,6 +14,7 @@ export default function PaymentMethodPie({ data }: { data: [] }) {
           cy="50%"
           labelLine={false}
           fontWeight={600}
+          fontSize={12}
           label={({ name, percent }) =>
             `${name} ${((percent as number) * 100).toFixed(0)}%`
           }
