@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { CourseList } from "@/components/shared/course/CourseList";
 import AddCourseSheet from "@/components/shared/course/AddCourseSheet";
 import { Course } from "@/lib/types";
+import DarkVeil from "@/components/DarkVeil";
 export const dynamic = "force-dynamic";
 
 function CoursesPage() {
@@ -64,34 +65,29 @@ function CoursesPage() {
   return (
     <div className="space-y-6 ">
       {/* Header */}
-      <div
-        className="flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white rounded-2xl bg-cover bg-center"
-        // /cource/course.png
-
-        style={{
-          backgroundImage: "url('/cource/course.png')",
-          backgroundSize: "cover",
-
-          backgroundPosition: "center",
-        }}
-      >
-        <div>
-          <h2 className="text-3xl max-md:text-2xl max-sm:text-xl font-semibold">
-            Course Configuration
-          </h2>
-          <p className="text-white/80 max-md:text-sm max-sm:text-xs">
-            Manage courses, fee structures, and enrollment settings
-          </p>
+      <div className="relative rounded-2xl overflow-hidden">
+        {/* Darkveil background */}
+        <div className="absolute inset-0 z-0 h-[300px] w-full">
+          <DarkVeil />
         </div>
-        {(currentUser?.role === 1 || currentUser?.role === 3) && (
-          <AddCourseSheet
-            editingCourse={editingCourse}
-            setEditingCourse={setEditingCourse}
-            isAddSheetOpen={isAddDialogOpen}
-            setIsAddSheetOpen={setIsAddDialogOpen}
-            onSubmit={handleSubmit}
-          />
-        )}
+        {/* Header content */}
+        <div className="relative z-10 flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white">
+          <div>
+            <h1 className="text-3xl font-semibold text-white">
+              Course Configuration
+            </h1>
+            <p className="text-sm text-gray-300">Manage courses</p>
+          </div>
+          {(currentUser?.role === 1 || currentUser?.role === 3) && (
+            <AddCourseSheet
+              editingCourse={editingCourse}
+              setEditingCourse={setEditingCourse}
+              isAddSheetOpen={isAddDialogOpen}
+              setIsAddSheetOpen={setIsAddDialogOpen}
+              onSubmit={handleSubmit}
+            />
+          )}
+        </div>
       </div>
 
       {/* Course List */}

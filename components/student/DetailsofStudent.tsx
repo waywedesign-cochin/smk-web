@@ -133,7 +133,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
           </Button>
           <div>
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-semibold">
+              <h2 className="text-2xl font-semibold capitalize">
                 {student.name}{" "}
                 {student?.fees?.some(
                   (fee) =>

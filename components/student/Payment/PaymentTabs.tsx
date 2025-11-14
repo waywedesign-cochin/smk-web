@@ -305,14 +305,14 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
                             <TooltipTrigger asChild>
                               <Button
                                 variant="default"
-                                size="icon"
+                                size="sm"
                                 onClick={() => {
                                   setSelectedPayment(p);
                                   setShowAddPaymentDialog(true);
                                 }}
-                                className=" bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-400 cursor-pointer"
+                                className=" bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-400 cursor-pointer px-2 text-xs"
                               >
-                                <DollarSign className="h-4 w-4 text-white" />
+                                Edit Pay
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>Record/Edit Payment</TooltipContent>
