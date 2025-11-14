@@ -34,11 +34,11 @@ export default function FeeConfigurationTab({
   setShowFeeConfigDialog,
   handleConfigureFee,
 }: FeeConfigurationTabProps) {
-  console.log("Latest Fee Data:", latestFee);
+  // console.log("Latest Fee Data:", latestFee);
   const { currentUser } = useAppSelector((state) => state.users);
 
   return (
-    <Card>
+    <Card className="bg-gray-300/10 text-white backdrop-blur-3xl border-0">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Fee Structure Configuration</CardTitle>
@@ -52,20 +52,21 @@ export default function FeeConfigurationTab({
             onOpenChange={setShowFeeConfigDialog}
           >
             <DialogTrigger asChild>
-              <Button>
+              <Button className="bg-blue/80 text-white border border-gray-600 hover:bg-white hover:text-black hover:border-black">
                 <Edit className="h-4 w-4 mr-2" />
                 Configure Fees
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl bg-[#0E1628] text-gray-200 border border-white/10 shadow-xl rounded-xl">
               <DialogHeader>
                 <DialogTitle>Configure Fee Structure</DialogTitle>
-                <DialogDescription>
+                <DialogDescription className="text-gray-400">
                   Set up the fee structure and payment terms for {student.name}
                 </DialogDescription>
               </DialogHeader>
               <FeeConfigurationForm
                 student={student}
+                initialConfig={latestFee as Fee}
                 onSave={handleConfigureFee}
                 onClose={() => setShowFeeConfigDialog(false)}
               />

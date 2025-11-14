@@ -4,7 +4,13 @@ export const PaymentSchema = z.object({
   amount: z.number().min(1, "Amount must be greater than 0"),
   mode: z.string().optional(),
   isAdvance: z.boolean(),
-  paidAt: z.date(),
+  paidAt: z.preprocess(
+    (val) => (val ? new Date(val as string) : null),
+    z.date().refine((date) => date !== null, {
+      message: "Paid date is required",
+    })
+  ),
+
   dueDate: z.date().nullable().optional(),
   transactionId: z.string().optional(),
   note: z.string().optional(),

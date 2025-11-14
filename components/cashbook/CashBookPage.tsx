@@ -488,18 +488,66 @@ export const CashBookPage = () => {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList
-          className="grid w-full grid-cols-3  bg-white/10 border border-white/10 backdrop-blur-md text-white
+          className="
+  inline-flex
+  w-full
+  overflow-x-auto
+  whitespace-nowrap
+  no-scrollbar
+      bg-gradient-to-b from-gray-800/40 to-gray-900/40
+      backdrop-blur-xl
+  border border-white/10
+  rounded-xl
+  shadow-lg shadow-black/20    p-1
 "
         >
-          <TabsTrigger className="text-white" value="students">
-            Students Paid
-          </TabsTrigger>
-          <TabsTrigger className="text-white" value="expenses">
-            Office Expenses
-          </TabsTrigger>
-          <TabsTrigger className="text-white" value="owner">
-            Owner Taken
-          </TabsTrigger>
+          <div className="inline-flex gap-1 min-w-full h-full">
+            <TabsTrigger
+              className="
+              text-gray-400
+              data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-600 data-[state=active]:to-blue-700
+              data-[state=active]:text-white
+              data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30
+              hover:bg-white/5
+              hover:text-gray-200
+              transition-all duration-300
+              px-5 py-2.5 rounded-lg text-sm font-medium flex-shrink-0
+            "
+              value="students"
+            >
+              Students Paid
+            </TabsTrigger>
+            <TabsTrigger
+              className="
+              text-gray-400
+              data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-600 data-[state=active]:to-blue-700
+              data-[state=active]:text-white
+              data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30
+              hover:bg-white/5
+              hover:text-gray-200
+              transition-all duration-300
+              px-5 py-2.5 rounded-lg text-sm font-medium flex-shrink-0
+            "
+              value="expenses"
+            >
+              Office Expenses
+            </TabsTrigger>
+            <TabsTrigger
+              className="
+              text-gray-400
+              data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-600 data-[state=active]:to-blue-700
+              data-[state=active]:text-white
+              data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30
+              hover:bg-white/5
+              hover:text-gray-200
+              transition-all duration-300
+              px-5 py-2.5 rounded-lg text-sm font-medium flex-shrink-0
+            "
+              value="owner"
+            >
+              Owner Taken
+            </TabsTrigger>
+          </div>
         </TabsList>
 
         <TabsContent value="students">

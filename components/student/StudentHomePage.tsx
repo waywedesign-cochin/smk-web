@@ -675,7 +675,7 @@ export function Students() {
               All registered students in the system
             </CardDescription>
             <p className="text-sm font-medium text-white">
-              Total Students: {pagination?.totalCount || 0}
+              Total Students: {students?.length}
             </p>
           </CardHeader>
           <CardContent className="p-0 ">
@@ -823,6 +823,13 @@ export function Students() {
                                 setStudentForBatchSwitch(student);
                                 setShowSwitchBatchDialog(true);
                               }}
+                              disabled={student?.fees?.some(
+                                (fee) =>
+                                  (fee?.batchHistoryFrom &&
+                                    fee?.batchHistoryFrom.length > 0) ||
+                                  (fee?.batchHistoryTo &&
+                                    fee.batchHistoryTo.length > 0)
+                              )}
                               className="cursor-pointer"
                             >
                               <Repeat className="h-4 w-4" />

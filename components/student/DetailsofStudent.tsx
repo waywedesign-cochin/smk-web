@@ -245,39 +245,89 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
       <Tabs
         className=" bg-gradient-to-br from-[#122147] via-black to-[#122147]  rounded-xl p-6   transition-shadow duration-300 space-y-6 w-full"
         defaultValue="overview"
-        // className="w-full"
       >
-        <TabsList>
-          <TabsTrigger
-            value="overview"
-            className="data-[state=active]:bg-black data-[state=active]:text-white"
-          >
-            Overview
-          </TabsTrigger>
-
-          <TabsTrigger
-            value="fees"
-            className="data-[state=active]:bg-black data-[state=active]:text-white"
-          >
-            Fee Configuration
-          </TabsTrigger>
-
-          {(student?.fees?.[0]?.feePaymentMode ||
-            (student?.fees?.[0]?.payments?.length ?? 0) > 0) && (
+        <TabsList
+          className="
+    inline-flex
+    w-full
+    overflow-x-auto
+    whitespace-nowrap
+    no-scrollbar
+        bg-gradient-to-b from-gray-800/40 to-gray-900/40
+        backdrop-blur-xl
+    border border-white/10
+    rounded-xl
+    shadow-lg shadow-black/20    p-1
+  "
+        >
+          <div className="inline-flex gap-1 min-w-full h-full">
             <TabsTrigger
-              value="payments"
-              className="data-[state=active]:bg-black data-[state=active]:text-white"
+              value="overview"
+              className="
+              text-gray-400
+              data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-600 data-[state=active]:to-blue-700
+              data-[state=active]:text-white
+              data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30
+              hover:bg-white/5
+              hover:text-gray-200
+              transition-all duration-300
+              px-5 py-2.5 rounded-lg text-sm font-medium flex-shrink-0
+            "
             >
-              Payments
+              Overview
             </TabsTrigger>
-          )}
 
-          <TabsTrigger
-            value="history"
-            className="data-[state=active]:bg-black data-[state=active]:text-white"
-          >
-            History
-          </TabsTrigger>
+            <TabsTrigger
+              value="fees"
+              className="
+              text-gray-400
+              data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-600 data-[state=active]:to-blue-700
+              data-[state=active]:text-white
+              data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30
+              hover:bg-white/5
+              hover:text-gray-200
+              transition-all duration-300
+              px-5 py-2.5 rounded-lg text-sm font-medium flex-shrink-0
+            "
+            >
+              Fee Configuration
+            </TabsTrigger>
+
+            {(student?.fees?.[0]?.feePaymentMode ||
+              (student?.fees?.[0]?.payments?.length ?? 0) > 0) && (
+              <TabsTrigger
+                value="payments"
+                className="
+        text-gray-400
+        data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-600 data-[state=active]:to-blue-700
+        data-[state=active]:text-white
+        data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30
+        hover:bg-white/5
+        hover:text-gray-200
+        transition-all duration-300
+        px-5 py-2.5 rounded-lg text-sm font-medium flex-shrink-0
+      "
+              >
+                Payments
+              </TabsTrigger>
+            )}
+
+            <TabsTrigger
+              value="history"
+              className="
+              text-gray-400
+              data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-600 data-[state=active]:to-blue-700
+              data-[state=active]:text-white
+              data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30
+              hover:bg-white/5
+              hover:text-gray-200
+              transition-all duration-300
+              px-5 py-2.5 rounded-lg text-sm font-medium flex-shrink-0
+            "
+            >
+              History
+            </TabsTrigger>
+          </div>
         </TabsList>
 
         {/* Overview Tab */}
@@ -378,38 +428,40 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
 
         {/* History Tab */}
         <TabsContent value="history" className="space-y-6">
+          {/* Batch Switch History */}
           {student?.fees?.some(
             (fee) =>
               (fee?.batchHistoryFrom && fee?.batchHistoryFrom.length > 0) ||
               (fee?.batchHistoryTo && fee.batchHistoryTo.length > 0)
           ) && (
-            <Card>
+            <Card className="bg-[#0E1628] border border-white/10 text-gray-200 shadow-lg">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gray-100">
                   <Repeat className="h-4 w-4" />
                   Batch Switch History
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-400">
                   Complete history of batch changes
                 </CardDescription>
               </CardHeader>
+
               <CardContent className="space-y-3">
                 {student?.fees?.[0]?.batchHistoryTo?.map((fee) => {
                   return (
                     <div
                       key={fee.id}
-                      className="border rounded-lg p-4 space-y-3 bg-amber-50/50 dark:bg-amber-950/20 border-amber-200"
+                      className="border border-amber-500/20 bg-amber-900/10 rounded-lg p-4 space-y-3 shadow-sm"
                     >
                       <div className="flex items-start justify-between">
                         <div className="space-y-1 flex-1">
                           <div className="flex items-center gap-2">
                             <Badge
                               variant="outline"
-                              className="text-amber-600 border-amber-300"
+                              className="text-amber-400 border-amber-400/50"
                             >
                               Batch Switched
                             </Badge>
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-gray-400">
                               {fee.changeDate
                                 ? new Date(fee.changeDate).toLocaleDateString(
                                     "en-GB"
@@ -417,24 +469,24 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                                 : null}
                             </span>
                           </div>
-                          <div className="text-sm space-y-1 mt-2">
+
+                          <div className="text-sm space-y-1 mt-2 text-gray-200">
                             <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground">
-                                From:
-                              </span>
+                              <span className="text-gray-400">From:</span>
                               <span className="font-medium">
                                 {fee.fromBatch.name}
                               </span>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-xs text-gray-400">
                                 ({fee.fromBatch?.course?.name})
                               </span>
                             </div>
+
                             <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground">To:</span>
+                              <span className="text-gray-400">To:</span>
                               <span className="font-medium">
                                 {fee.toBatch.name}
                               </span>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-xs text-gray-400">
                                 ({fee.toBatch?.course?.name})
                               </span>
                             </div>
@@ -442,36 +494,29 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                         </div>
                       </div>
 
-                      <div className="border-t pt-2 space-y-2">
-                        {/* Previous Fee */}
+                      <div className="border-t border-white/10 pt-2 space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            Previous Fee:
-                          </span>
-                          <span>
+                          <span className="text-gray-400">Previous Fee:</span>
+                          <span className="text-gray-200">
                             ₹
                             {student?.fees?.[1]?.finalFee?.toLocaleString() ??
                               0}
                           </span>
                         </div>
 
-                        {/* New Fee */}
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            New Course Fee:
-                          </span>
-                          <span>
+                          <span className="text-gray-400">New Course Fee:</span>
+                          <span className="text-gray-200">
                             ₹
                             {student?.fees?.[0]?.finalFee?.toLocaleString() ??
                               0}
                           </span>
                         </div>
 
-                        {/* Previously paid info (muted, below) */}
                         {student?.fees?.[1] &&
                           student.fees[1].finalFee !==
                             student.fees[1].balanceAmount && (
-                            <div className="text-xs text-muted-foreground text-right">
+                            <div className="text-xs text-gray-400 text-right">
                               (Previously paid ₹
                               {(
                                 (student.fees[1].finalFee ?? 0) -
@@ -486,11 +531,11 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                       </div>
 
                       {fee.reason && (
-                        <div className="border-t pt-2">
-                          <p className="text-xs text-muted-foreground">
-                            Reason:
+                        <div className="border-t border-white/10 pt-2">
+                          <p className="text-xs text-gray-400">Reason:</p>
+                          <p className="text-sm mt-1 text-gray-200">
+                            {fee.reason}
                           </p>
-                          <p className="text-sm mt-1">{fee.reason}</p>
                         </div>
                       )}
                     </div>
@@ -499,25 +544,32 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
               </CardContent>
             </Card>
           )}
-          <Card>
+
+          {/* Activity Log */}
+          <Card className="bg-[#0E1628] border border-white/10 text-gray-200 shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-gray-100">
                 <History className="h-4 w-4" />
                 Activity Log
               </CardTitle>
-              <CardDescription>Recent activities and updates</CardDescription>
+              <CardDescription className="text-gray-400">
+                Recent activities and updates
+              </CardDescription>
             </CardHeader>
+
             {communicationLogs?.map((log) => (
-              <CardContent key={log.id} className="bg-gray-50">
-                <div className="border rounded-lg p-3">
-                  <p className="text-sm">{log.subject}</p>
-                  <p className="text-xs text-muted-foreground">
+              <CardContent
+                key={log.id}
+                className="bg-black/20 border-b border-white/10 last:border-b-0"
+              >
+                <div className="border border-white/10 rounded-lg p-3 bg-black/30">
+                  <p className="text-sm text-gray-100">{log.subject}</p>
+                  <p className="text-xs text-gray-400">
                     {new Date(log.date).toLocaleString()}
                   </p>
-                  <div className="border rounded-lg p-3 mt-2">
-                    <p className="text-xs text-muted-foreground">
-                      {log.message}
-                    </p>
+
+                  <div className="border border-white/10 rounded-lg p-3 mt-2 bg-black/40">
+                    <p className="text-xs text-gray-300">{log.message}</p>
                   </div>
                 </div>
               </CardContent>

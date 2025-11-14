@@ -115,32 +115,34 @@ const CreateDueForm: React.FC<CreateDueFormProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-[#0E1628] text-gray-200 border border-white/10 shadow-xl rounded-xl">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-white">
             {initialData ? "Edit Payment Due" : "Create Payment Due"}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label htmlFor="amount">Amount</Label>
+        <form onSubmit={handleSubmit} className="space-y-6 pt-2">
+          {/* Amount */}
+          <div>
+            <label className="text-sm mb-1 block">Amount *</label>
             <Input
               id="amount"
               type="number"
               value={form.amount}
               onChange={(e) => handleChange("amount", e.target.value)}
               placeholder="Enter due amount"
-              required
+              className="bg-[#1B2437] border border-gray-600 text-white"
               disabled={loading}
             />
             {errors.amount && (
-              <p className="text-destructive text-sm">{errors.amount}</p>
+              <p className="text-red-400 text-xs mt-1">{errors.amount}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="dueDate">Due Date</Label>
+          {/* Due Date */}
+          <div>
+            <label className="text-sm mb-1 block">Due Date *</label>
             <Input
               id="dueDate"
               type="date"
@@ -153,35 +155,43 @@ const CreateDueForm: React.FC<CreateDueFormProps> = ({
                   e.target.value ? new Date(e.target.value) : null
                 )
               }
-              required
+              className="bg-[#1B2437] border border-gray-600 text-white input-date-dark"
               disabled={loading}
             />
             {errors.dueDate && (
-              <p className="text-destructive text-sm">Due Date is required</p>
+              <p className="text-red-400 text-xs mt-1">Due Date is required</p>
             )}
           </div>
 
-          <div className="space-y-1">
-            <Label>Note (optional)</Label>
+          {/* Note */}
+          <div>
+            <label className="text-sm mb-1 block">Note (optional)</label>
             <Input
               value={form.note}
               onChange={(e) => handleChange("note", e.target.value)}
               placeholder="Add a note"
+              className="bg-[#1B2437] border border-gray-600 text-white"
               disabled={loading}
             />
           </div>
 
-          <DialogFooter className="pt-2 cursor-pointer">
+          {/* Buttons */}
+          <DialogFooter className="pt-4 border-t border-white/10 flex justify-end gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
               disabled={loading}
+              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
             >
               Cancel
             </Button>
 
-            <Button type="submit" className="cursor-pointer" disabled={loading}>
+            <Button
+              type="submit"
+              className="bg-blue/90 border border-gray-500 text-white hover:bg-white hover:text-black hover:border-black"
+              disabled={loading}
+            >
               {loading
                 ? "Saving..."
                 : initialData

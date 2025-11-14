@@ -14,6 +14,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
@@ -76,11 +77,18 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
     fetchPayments();
   }, [student.id]);
 
+  //fetch student data
+  const getStudentDetails = async () => {
+    if (student.id) {
+      await dispatch(fetchFeeByStudentId(student.id));
+    }
+  };
+
   // Add payment
   const handleAddPayment = async (payment: PaymentInput) => {
     try {
       await dispatch(createPayment(payment)).unwrap();
-      if (student.id) await dispatch(fetchFeeByStudentId(student.id));
+      getStudentDetails();
       setShowAddPaymentDialog(false);
     } catch (err) {
       console.error("Failed to add payment:", err);
@@ -91,8 +99,7 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
   const handleEditPayment = async (payment: PaymentInput) => {
     try {
       await dispatch(updatePayment(payment)).unwrap();
-      if (student.id) await dispatch(fetchFeeByStudentId(student.id));
-
+      getStudentDetails();
       setShowAddPaymentDialog(false);
     } catch (err) {
       console.error("Failed to update payment:", err);
@@ -103,7 +110,6 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
   const handelDeletePayment = async (paymentId: string) => {
     try {
       await dispatch(deletePayment(paymentId)).unwrap();
-      if (student.id) await dispatch(fetchFeeByStudentId(student.id));
 
       setShowAddPaymentDialog(false);
     } catch (err) {
@@ -132,7 +138,7 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
   };
 
   return (
-    <Card>
+    <Card className="bg-gray-300/10 text-white backdrop-blur-3xl border-0">
       <CardHeader className="flex justify-between items-center">
         <CardTitle>Payments</CardTitle>
         {(currentUser?.role === 1 || currentUser?.role === 3) && (
@@ -141,6 +147,7 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
               {payments.length > 0 && (
                 <Button
                   size="sm"
+                  className="bg-blue/80 text-white border border-gray-600 hover:bg-white hover:text-black hover:border-black"
                   onClick={() => {
                     setOpenDueDialog(true), setSelectedPayment(null);
                   }}
@@ -174,7 +181,11 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
                 }}
               />
             </>
-            <Button size="sm" onClick={() => setShowAddPaymentDialog(true)}>
+            <Button
+              size="sm"
+              onClick={() => setShowAddPaymentDialog(true)}
+              className="bg-blue/80 text-white border border-gray-600 hover:bg-white hover:text-black hover:border-black"
+            >
               <Plus className="h-4 w-4" />
               Add Payment
             </Button>
@@ -190,7 +201,7 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
           setShowAddPaymentDialog(open);
         }}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl bg-[#0E1628] text-gray-200 border border-white/10 shadow-xl rounded-xl">
           <DialogHeader>
             <DialogTitle>
               {selectedPayment
@@ -214,138 +225,191 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
 
       {/* Payments Table */}
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableCell>Paid Date</TableCell>
-              <TableCell>Due Date</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Mode</TableCell>
-              <TableCell>Transaction ID</TableCell>
-              <TableCell>Notes</TableCell>
-              <TableCell>Status</TableCell>
-              {(currentUser?.role === 1 || currentUser?.role === 3) && (
-                <TableCell>Actions</TableCell>
-              )}
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={8} className="p-10">
-                  <div className="flex items-center justify-center w-full gap-2">
-                    <Loader2 className="animate-spin h-6 w-6 text-gray-500" />
-                    <span className="text-gray-500">Loading payments...</span>
-                  </div>
-                </TableCell>
+        <div className="rounded-xl overflow-hidden border border-white/10 bg-black/30 shadow-lg">
+          <Table className="min-w-full divide-y divide-gray-200/10">
+            <TableHeader className="bg-gray-50/10 hover:bg-[#141617]">
+              <TableRow className="bg-black border-none">
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                  Paid Date
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                  Due Date
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                  Amount
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                  Mode
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                  Transaction ID
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                  Notes
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                  Status
+                </TableHead>
+                {(currentUser?.role === 1 || currentUser?.role === 3) && (
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                    Actions
+                  </TableHead>
+                )}
               </TableRow>
-            ) : payments?.length ? (
-              payments.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell>
-                    {p.paidAt
-                      ? new Date(p.paidAt).toLocaleDateString("en-GB")
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {p.dueDate
-                      ? new Date(p.dueDate).toLocaleDateString("en-GB")
-                      : "-"}
-                  </TableCell>
-                  <TableCell className="font-medium text-gray-900 dark:text-gray-100">
-                    ₹{p.amount.toLocaleString()}
-                  </TableCell>
-                  <TableCell>{p.mode || "-"}</TableCell>
-                  <TableCell>{p.transactionId || "-"}</TableCell>
-                  <TableCell>{p.note || "-"}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        p.status === "PAID"
-                          ? "bg-green-500 hover:bg-green-600"
-                          : p.status === "PENDING"
-                          ? "bg-yellow-500 hover:bg-yellow-600"
-                          : "bg-red-500 hover:bg-red-600"
-                      }
-                    >
-                      {p.status}
-                    </Badge>
-                  </TableCell>
+            </TableHeader>
 
-                  {/* Action Button */}
-                  <TableCell>
+            <TableBody className="divide-y divide-gray-200/10 bg-black/10 border-0">
+              {loading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={8}
+                    className="text-center py-6 text-gray-500"
+                  >
+                    <div className="flex items-center justify-center gap-2 text-gray-500">
+                      <Loader2 className="animate-spin h-5 w-5" />
+                      Loading payments...
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : payments?.length ? (
+                payments.map((p, idx) => (
+                  <TableRow
+                    key={p.id}
+                    className={`${
+                      idx % 2 === 0
+                        ? "bg-black/10 hover:bg-black/20"
+                        : "bg-indigo-50/10 hover:bg-indigo-50/20"
+                    } transition-colors rounded-lg border-0`}
+                  >
+                    {/* PAID DATE */}
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
+                      {p.paidAt
+                        ? new Date(p.paidAt).toLocaleDateString("en-GB")
+                        : "-"}
+                    </TableCell>
+
+                    {/* DUE DATE */}
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
+                      {p.dueDate
+                        ? new Date(p.dueDate).toLocaleDateString("en-GB")
+                        : "-"}
+                    </TableCell>
+
+                    {/* AMOUNT */}
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-gray-100 font-semibold">
+                      ₹{p.amount.toLocaleString()}
+                    </TableCell>
+
+                    {/* MODE */}
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-gray-200">
+                      {p.mode || "-"}
+                    </TableCell>
+
+                    {/* TRANSACTION ID */}
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-gray-300">
+                      {p.transactionId || "-"}
+                    </TableCell>
+
+                    {/* NOTE */}
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-gray-300">
+                      {p.note || "-"}
+                    </TableCell>
+
+                    {/* STATUS */}
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
+                      <Badge
+                        className={
+                          p.status === "PAID"
+                            ? "bg-green-600 text-white"
+                            : p.status === "PENDING"
+                            ? "bg-yellow-500 text-black"
+                            : "bg-red-600 text-white"
+                        }
+                      >
+                        {p.status}
+                      </Badge>
+                    </TableCell>
+
+                    {/* ACTIONS */}
                     {(currentUser?.role === 1 || currentUser?.role === 3) && (
-                      <div className="flex justify-start gap-2">
-                        {/* Edit Due */}
-                        {p.status === "PENDING" && (
+                      <TableCell className="px-6 py-4">
+                        <div className="flex gap-2">
+                          {/* Edit Due */}
+                          {p.status === "PENDING" && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => {
+                                      setSelectedPayment(p);
+                                      setOpenDueDialog(true);
+                                    }}
+                                    className="bg-white/10 border-white/20 text-gray-200 hover:bg-white/20"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Edit Due</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+
+                          {/* Edit Payment */}
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
-                                  variant="outline"
-                                  size="icon"
+                                  variant="default"
+                                  size="sm"
                                   onClick={() => {
                                     setSelectedPayment(p);
-                                    setOpenDueDialog(true);
+                                    setShowAddPaymentDialog(true);
                                   }}
-                                  className=""
+                                  className="bg-blue-600 text-white hover:bg-blue-700 px-2 text-xs"
                                 >
-                                  <Edit className="h-4 w-4" />
+                                  Edit Pay
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Edit Due</TooltipContent>
+                              <TooltipContent>
+                                Record/Edit Payment
+                              </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
-                        )}
 
-                        {/* Record Payment */}
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedPayment(p);
-                                  setShowAddPaymentDialog(true);
-                                }}
-                                className=" bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-400 cursor-pointer px-2 text-xs"
-                              >
-                                Edit Pay
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Record/Edit Payment</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        {p.status === "PENDING" && (
-                          <Button
-                            onClick={() => {
-                              setPaymentToDelete(p);
-                              setOpenDeleteDialog(true);
-                            }}
-                            className="bg-red-600 text-white hover:bg-red-700 cursor-pointer"
-                          >
-                            <Trash />
-                          </Button>
-                        )}
-                      </div>
+                          {/* Delete */}
+                          {p.status === "PENDING" && (
+                            <Button
+                              onClick={() => {
+                                setPaymentToDelete(p);
+                                setOpenDeleteDialog(true);
+                              }}
+                              className="bg-red-600 text-white hover:bg-red-700 px-2"
+                            >
+                              <Trash />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
                     )}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={8}
+                    className="text-center py-6 text-gray-500"
+                  >
+                    No payments found
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="text-center text-muted-foreground"
-                >
-                  No payments found
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* DELETE CONFIRMATION — unchanged */}
         <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>

@@ -1,31 +1,34 @@
 import { z } from "zod";
 
-// Convert string → number safely
-const toNumber = (val: unknown) => {
-  if (val === "" || val === null || val === undefined) return 0;
-  const num = Number(val);
-  return isNaN(num) ? 0 : num;
-};
-
 export const FeeSchema = z.object({
   discountAmount: z
-    .preprocess(toNumber, z.number().min(0, "Discount cannot be negative"))
-    .optional(),
+    .string()
+    .min(0, "Discount cannot be negative")
+    .transform((val) => Number(val)),
+
+  totalCourseFee: z
+    .string()
+    .nonempty("Total course fee is required")
+    .refine((val) => !isNaN(Number(val)), "Must be a number")
+    .transform((val) => Number(val))
+    .refine((num) => num > 0, "Total course fee must be greater than 0"),
+
+  finalFee: z
+    .string()
+    .nonempty("Final fee is required")
+    .refine((val) => !isNaN(Number(val)), "Must be a number")
+    .transform((val) => Number(val))
+    .refine((num) => num > 0, "Final fee must be greater than 0"),
+
+  balanceAmount: z
+    .string()
+    .nonempty("Balance is required")
+    .refine((val) => !isNaN(Number(val)), "Must be a number")
+    .transform((val) => Number(val)),
+
   feePaymentMode: z.enum(["fullPayment", "weekly", "70/30", "others"], {
     message: "Please select a valid fee payment mode",
   }),
-  totalCourseFee: z.preprocess(
-    toNumber,
-    z.number().min(0, "Total course fee cannot be negative")
-  ),
-  finalFee: z.preprocess(
-    toNumber,
-    z.number().min(0, "Final fee cannot be negative")
-  ),
-  balanceAmount: z.preprocess(
-    toNumber,
-    z.number().min(0, "Balance amount cannot be negative")
-  ),
 });
 
 export type FeeInput = z.infer<typeof FeeSchema>;
