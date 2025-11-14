@@ -81,8 +81,8 @@ export function Batches() {
   const [editingBatch, setEditingBatch] = useState<Batch | null>(null);
 
   //fetch batches
-  const getBatches = () => {
-    dispatch(
+  const getBatches = async () => {
+    await dispatch(
       fetchBatches({
         page: pagination?.currentPage,
         limit: pagination?.limit,
@@ -152,7 +152,10 @@ export function Batches() {
     );
   };
 
-  const handleCreateBatch = (batchData: BatchFormValues, isEdit: boolean) => {
+  const handleCreateBatch = async (
+    batchData: BatchFormValues,
+    isEdit: boolean
+  ) => {
     const data = {
       ...batchData,
       currentCount: batchData.currentCount ?? 0,
@@ -160,14 +163,14 @@ export function Batches() {
     };
 
     if (isEdit) {
-      dispatch(updateBatch(data));
+      await dispatch(updateBatch(data)).unwrap();
     } else {
-      dispatch(addBatch(data));
+      await dispatch(addBatch(data)).unwrap();
     }
     setIsCreateFormOpen(false);
     setEditingBatch(null);
 
-    getBatches();
+    await getBatches();
   };
 
   const handleEdit = (batch: Batch) => {
@@ -175,10 +178,14 @@ export function Batches() {
     setIsCreateFormOpen(true);
   };
 
-  const handleDelete = (id?: string) => {
+  const handleDelete = async (id?: string) => {
     if (!id) return;
-    dispatch(deleteBatch(id));
+    await dispatch(deleteBatch(id));
+    await getBatches();
   };
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 12 }, (_, i) => currentYear - 1 + i);
 
   return (
     <div className="space-y-6">
@@ -207,11 +214,13 @@ export function Batches() {
               onSubmit={handleCreateBatch}
               courses={courses}
               locations={locations}
+              currentUser={currentUser}
             />
           )}
         </div>
       </div>
       {/* Filters */}
+
       <Card className="bg-blue-100/10 text-white border-0">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2 text-white">
@@ -219,10 +228,19 @@ export function Batches() {
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-6 gap-4 items-center">
-            {/*  Search (wider) */}
-            <div className="relative md:col-span-2 lg:col-span-3 w-full">
+        <CardContent>
+          <div
+            className="
+      grid 
+      grid-cols-1 
+      sm:grid-cols-2 
+      md:grid-cols-3 
+      lg:grid-cols-7 
+      gap-4
+    "
+          >
+            {/* Search - spans more columns on big screens */}
+            <div className="lg:col-span-2 relative w-full">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300" />
               <Input
                 placeholder="Search batches..."
@@ -230,22 +248,22 @@ export function Batches() {
                 onChange={(e) =>
                   setFilters((prev) => ({ ...prev, search: e.target.value }))
                 }
-                className="pl-9 bg-white/10 border-white/20 text-white placeholder:text-gray-400 h-10"
+                className="pl-9 bg-white/10 border-white/20 text-white placeholder:text-gray-400 h-10 w-full"
               />
             </div>
 
-            {/*  Status */}
+            {/* Status */}
             <Select
               value={filters.status}
               onValueChange={(value) =>
                 setFilters((prev) => ({ ...prev, status: value }))
               }
             >
-              <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
+              <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent className="bg-[#0A1533] text-white border-white/20">
-                <SelectItem value="all">All Status </SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="ACTIVE">Active</SelectItem>
                 <SelectItem value="COMPLETED">Completed</SelectItem>
                 <SelectItem value="CANCELLED">Cancelled</SelectItem>
@@ -253,14 +271,14 @@ export function Batches() {
               </SelectContent>
             </Select>
 
-            {/*  Mode */}
+            {/* Mode */}
             <Select
               value={filters.mode}
               onValueChange={(value) =>
                 setFilters((prev) => ({ ...prev, mode: value }))
               }
             >
-              <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
+              <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
                 <SelectValue placeholder="Mode" />
               </SelectTrigger>
               <SelectContent className="bg-[#0A1533] text-white border-white/20">
@@ -271,14 +289,14 @@ export function Batches() {
               </SelectContent>
             </Select>
 
-            {/*  Course */}
+            {/* Course */}
             <Select
               value={filters.course}
               onValueChange={(value) =>
                 setFilters((prev) => ({ ...prev, course: value }))
               }
             >
-              <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
+              <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
                 <SelectValue placeholder="Course" />
               </SelectTrigger>
               <SelectContent className="bg-[#0A1533] text-white border-white/20">
@@ -291,14 +309,14 @@ export function Batches() {
               </SelectContent>
             </Select>
 
-            {/*  Location */}
+            {/* Location */}
             <Select
               value={filters.location}
               onValueChange={(value) =>
                 setFilters((prev) => ({ ...prev, location: value }))
               }
             >
-              <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
+              <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
                 <SelectValue placeholder="Location" />
               </SelectTrigger>
               <SelectContent className="bg-[#0A1533] text-white border-white/20">
@@ -317,32 +335,29 @@ export function Batches() {
                 setFilters((prev) => ({ ...prev, year: value }))
               }
             >
-              <SelectTrigger className="w-35 border-white/30 bg-white/10 text-white h-10">
+              <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
               <SelectContent className="bg-[#0A1533] text-white border-white/20">
-                {Array.from({ length: 6 }, (_, i) => {
-                  const year = new Date().getFullYear() - i;
-                  return (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  );
-                })}
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
             {/* Clear button */}
             <Button
               variant="ghost"
-              className="w-[120px] bg-black border border-white"
+              className="bg-black border border-white text-white w-full h-10"
               onClick={() =>
                 setFilters({
                   search: "",
                   status: "all",
                   mode: "all",
-                  location: currentUser?.location?.name ?? "",
-                  course: "",
+                  location: currentUser?.location?.id ?? "",
+                  course: "all",
                   year: new Date().getFullYear().toString(),
                 })
               }
@@ -383,7 +398,7 @@ export function Batches() {
         ].map(({ icon: Icon, color, label, value }, i) => (
           <Card
             key={i}
-            className="overflow-hidden hover:shadow-lg transition-shadow"
+            className="bg-white/10 border border-white/10 backdrop-blur-md text-white transition-all hover:bg-white/20 hover:shadow-lg hover:shadow-black/20 gap-2"
           >
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
