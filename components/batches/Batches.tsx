@@ -310,23 +310,25 @@ export function Batches() {
             </Select>
 
             {/* Location */}
-            <Select
-              value={filters.location}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, location: value }))
-              }
-            >
-              <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
-                <SelectValue placeholder="Location" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#0A1533] text-white border-white/20">
-                {locations.map((location) => (
-                  <SelectItem key={location.id} value={location.id as string}>
-                    {location.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {currentUser?.role !== 3 && (
+              <Select
+                value={filters.location}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({ ...prev, location: value }))
+                }
+              >
+                <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
+                  <SelectValue placeholder="Location" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#0A1533] text-white border-white/20">
+                  {locations.map((location) => (
+                    <SelectItem key={location.id} value={location.id as string}>
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
             {/* Year */}
             <Select
