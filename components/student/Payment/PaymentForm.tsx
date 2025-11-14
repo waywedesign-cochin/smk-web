@@ -89,6 +89,9 @@ export default function PaymentForm({
     value: PaymentInput[keyof PaymentInput]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // clear only that field's error
+    setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -119,152 +122,166 @@ export default function PaymentForm({
   const isEditMode = !!existingPayment;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-4">
-      {/* Amount */}
-      <div className="space-y-1">
-        <Label>Amount</Label>
-        <Input
-          type="number"
-          value={formData.amount}
-          onChange={(e) => handleChange("amount", e.target.value)}
-          placeholder="Enter payment amount"
-          className={errors.amount ? "border-red-500" : ""}
-          required
-          disabled={loading}
-        />
-        {errors.amount && (
-          <p className="text-red-500 text-sm">{errors.amount}</p>
-        )}
-      </div>
+    <div className="w-full mx-auto rounded-xl p-6 bg-[#0E1628] text-gray-200 border border-white/10 shadow-xl">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Amount */}
+        <div>
+          <label className="text-sm mb-1 block">Amount *</label>
+          <Input
+            type="number"
+            className="bg-[#1B2437] border border-gray-600 text-white"
+            value={formData.amount}
+            onChange={(e) => handleChange("amount", e.target.value)}
+            placeholder="Enter payment amount"
+            disabled={loading}
+          />
+          {errors.amount && (
+            <p className="text-red-400 text-xs mt-1">{errors.amount}</p>
+          )}
+        </div>
 
-      {/* Payment Mode */}
-      <div className="space-y-1">
-        <Label>Payment Mode</Label>
-        <Select
-          required={existingPayment ? false : true}
-          value={formData.mode}
-          onValueChange={(value) => handleChange("mode", value)}
-          disabled={loading}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select payment mode" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="CARD">Card</SelectItem>
-            <SelectItem value="UPI">UPI</SelectItem>
-            <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
-          </SelectContent>
-        </Select>
-        {errors.mode && <p className="text-red-500 text-sm">{errors.mode}</p>}
-      </div>
+        {/* Payment Mode */}
+        <div>
+          <label className="text-sm mb-1 block">Payment Mode *</label>
+          <Select
+            value={formData.mode}
+            onValueChange={(value) => handleChange("mode", value)}
+            disabled={loading}
+          >
+            <SelectTrigger className="bg-[#1B2437] border border-gray-600 text-white">
+              <SelectValue placeholder="Select payment mode" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1B2437] text-white text-xs">
+              <SelectItem value="CARD">Card</SelectItem>
+              <SelectItem value="UPI">UPI</SelectItem>
+              <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.mode && (
+            <p className="text-red-400 text-xs mt-1">{errors.mode}</p>
+          )}
+        </div>
 
-      {/* Paid Date */}
-      <div className="space-y-1">
-        <Label>Paid Date</Label>
-        <Input
-          type="date"
-          value={
-            formData.paidAt
-              ? new Date(formData.paidAt).toISOString().split("T")[0]
-              : ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "paidAt",
-              e.target.value ? new Date(e.target.value) : null
-            )
-          }
-          required={existingPayment ? false : true}
-          disabled={loading}
-        />
-        {errors.paidAt && (
-          <p className="text-red-500 text-sm">{"Paid Date is required"}</p>
-        )}
-      </div>
-      {existingPayment?.dueDate && (
-        <div className="space-y-1">
-          <Label>Due Date</Label>
+        {/* Paid Date */}
+        <div>
+          <label className="text-sm mb-1 block">Paid Date *</label>
           <Input
             type="date"
+            className="bg-[#1B2437] border border-gray-600 text-white input-date-dark"
             value={
-              formData.dueDate
-                ? new Date(formData.dueDate).toISOString().split("T")[0]
+              formData.paidAt
+                ? new Date(formData.paidAt).toISOString().split("T")[0]
                 : ""
             }
             onChange={(e) =>
               handleChange(
-                "dueDate",
+                "paidAt",
                 e.target.value ? new Date(e.target.value) : null
               )
             }
-            required
             disabled={loading}
           />
-          {errors.dueDate && (
-            <p className="text-red-500 text-sm">{errors.paidAt}</p>
+          {errors.paidAt && (
+            <p className="text-red-400 text-xs mt-1">
+              {errors.paidAt || "Paid Date is required"}
+            </p>
           )}
         </div>
-      )}
-      {/* Transaction ID */}
-      <div className="space-y-1">
-        <Label>Transaction ID (optional)</Label>
-        <Input
-          value={formData.transactionId}
-          onChange={(e) => handleChange("transactionId", e.target.value)}
-          placeholder="Enter transaction ID"
-          disabled={loading}
-        />
-      </div>
 
-      {/* Note */}
-      <div className="space-y-1">
-        <Label>Note (optional)</Label>
-        <Input
-          value={formData.note}
-          onChange={(e) => handleChange("note", e.target.value)}
-          placeholder="Add a note"
-          disabled={loading}
-        />
-      </div>
+        {/* Due Date (Edit mode only) */}
+        {existingPayment?.dueDate && (
+          <div>
+            <label className="text-sm mb-1 block">Due Date</label>
+            <Input
+              type="date"
+              className="bg-[#1B2437] border border-gray-600 text-white input-date-dark"
+              value={
+                formData.dueDate
+                  ? new Date(formData.dueDate).toISOString().split("T")[0]
+                  : ""
+              }
+              onChange={(e) =>
+                handleChange(
+                  "dueDate",
+                  e.target.value ? new Date(e.target.value) : null
+                )
+              }
+              disabled={loading}
+            />
+            {errors.dueDate && (
+              <p className="text-red-400 text-xs mt-1">{errors.dueDate}</p>
+            )}
+          </div>
+        )}
 
-      {/* Advance Checkbox */}
-      {!student?.fees?.some(
-        (fee) => fee?.advanceAmount && fee.advanceAmount > 0 
-      ) && (
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="isAdvance"
-            checked={formData.isAdvance}
-            onCheckedChange={(checked) =>
-              handleChange("isAdvance", checked === true)
-            }
+        {/* Transaction ID */}
+        <div>
+          <label className="text-sm mb-1 block">Transaction ID</label>
+          <Input
+            className="bg-[#1B2437] border border-gray-600 text-white"
+            value={formData.transactionId}
+            onChange={(e) => handleChange("transactionId", e.target.value)}
+            placeholder="Enter transaction ID"
             disabled={loading}
           />
-          <Label htmlFor="isAdvance" className="text-sm">
-            Mark as Advance Payment
-          </Label>
         </div>
-      )}
 
-      {/* Buttons */}
-      <div className="flex justify-end gap-3 pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onClose}
-          disabled={loading}
-          className="cursor-pointer"
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={loading} className="cursor-pointer">
-          {loading
-            ? "Saving..."
-            : isEditMode
-            ? "Update Payment"
-            : "Add Payment"}
-        </Button>
-      </div>
-    </form>
+        {/* Note */}
+        <div>
+          <label className="text-sm mb-1 block">Note</label>
+          <Input
+            className="bg-[#1B2437] border border-gray-600 text-white"
+            value={formData.note}
+            onChange={(e) => handleChange("note", e.target.value)}
+            placeholder="Add a note"
+            disabled={loading}
+          />
+        </div>
+
+        {/* Advance Checkbox */}
+        {!student?.fees?.some(
+          (fee) => fee.advanceAmount && fee.advanceAmount > 0
+        ) && (
+          <div className="flex items-center gap-2 bg-[#1B2437] border border-gray-600 p-3 rounded-lg">
+            <Checkbox
+              id="isAdvance"
+              checked={formData.isAdvance}
+              onCheckedChange={(checked) =>
+                handleChange("isAdvance", checked === true)
+              }
+              disabled={loading}
+            />
+            <label htmlFor="isAdvance" className="text-sm text-gray-300">
+              Mark as Advance Payment
+            </label>
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={loading}
+            className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+          >
+            Cancel
+          </Button>
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="bg-blue/90 border border-gray-500 text-white hover:bg-white hover:text-black hover:border-black"
+          >
+            {loading
+              ? "Saving..."
+              : existingPayment
+              ? "Update Payment"
+              : "Add Payment"}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }

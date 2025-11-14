@@ -103,6 +103,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
               placeholder="Enter name"
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
+              disabled={loading}
             />
             {errors.name && (
               <p className="text-red-400 text-xs mt-1">{errors.name}</p>
@@ -117,6 +118,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
               placeholder="Enter email"
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
+              disabled={loading}
             />
             {errors.email && (
               <p className="text-red-400 text-xs mt-1">{errors.email}</p>
@@ -133,6 +135,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
               placeholder="Phone number"
               value={formData.phone}
               onChange={(e) => handleInputChange("phone", e.target.value)}
+              disabled={loading}
             />
             {errors.phone && (
               <p className="text-red-400 text-xs mt-1">{errors.phone}</p>
@@ -146,6 +149,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
               placeholder="Admission number"
               value={formData.admissionNo}
               onChange={(e) => handleInputChange("admissionNo", e.target.value)}
+              disabled={loading}
             />
             {errors.admissionNo && (
               <p className="text-red-400 text-xs mt-1">{errors.admissionNo}</p>
@@ -161,6 +165,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
             placeholder="Enter full address"
             value={formData.address}
             onChange={(e) => handleInputChange("address", e.target.value)}
+            disabled={loading}
           />
           {errors.address && (
             <p className="text-red-400 text-xs mt-1">{errors.address}</p>
@@ -176,6 +181,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
               placeholder="Salesperson"
               value={formData.salesperson}
               onChange={(e) => handleInputChange("salesperson", e.target.value)}
+              disabled={loading}
             />
             {errors.salesperson && (
               <p className="text-red-400 text-xs mt-1">{errors.salesperson}</p>
@@ -192,6 +198,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
                 onValueChange={(value) =>
                   handleInputChange("currentBatchId", value)
                 }
+                disabled={loading}
               >
                 <SelectTrigger className="bg-[#1B2437] border border-gray-600 text-white max-w-full">
                   <SelectValue
@@ -235,6 +242,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
             placeholder="Optional referral info"
             value={formData.referralInfo}
             onChange={(e) => handleInputChange("referralInfo", e.target.value)}
+            disabled={loading}
           />
         </div>
 
@@ -246,6 +254,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
             onCheckedChange={(checked) =>
               handleInputChange("isFundedAccount", Boolean(checked))
             }
+            disabled={loading}
           />
           <label htmlFor="funded-account" className="text-sm text-gray-300">
             Funded Account
@@ -262,7 +271,11 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
             Cancel
           </Button>
 
-          <Button onClick={handleSubmit} disabled={loading}>
+          <Button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="bg-blue/90 border border-gray-500 text-white hover:bg-white hover:text-black hover:border-black"
+          >
             {student
               ? loading
                 ? "Updating..."
