@@ -385,7 +385,7 @@ export function Batches() {
           },
           {
             icon: BookOpen,
-            color: "orange",
+            color: "red",
             label: "Available Slots",
             value: dashboardStats?.availableSlots,
           },
