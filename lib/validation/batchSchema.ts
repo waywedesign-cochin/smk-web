@@ -18,6 +18,15 @@ export const batchSchema = z.object({
     .min(1, "Start date is required")
     .refine((date) => !isNaN(Date.parse(date)), "Invalid date format"),
 
+  // courseId: z.preprocess(
+  //   (v) => (v === undefined || v === null ? "" : v),
+  //   z.string().min(1, "Course is required")
+  // ),
+
+  // locationId: z.preprocess(
+  //   (v) => (v === undefined || v === null ? "" : v),
+  //   z.string().min(1, "Location is required")
+  // ),
   courseId: z.string().min(1, "Course is required"),
   locationId: z.string().min(1, "Location is required"),
 
