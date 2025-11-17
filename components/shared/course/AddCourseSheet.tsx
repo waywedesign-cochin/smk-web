@@ -94,9 +94,9 @@ export default function AddCourseSheet({
             reset();
             setEditingCourse(null);
           }}
-          className="max-sm:text-sm"
+          className="max-sm:text-sm bg-black border border-white text-white hover:bg-white hover:text-black"
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-4 w-4" />
           {editingCourse ? "Edit Course" : "Add New Course"}
         </Button>
       </SheetTrigger>

@@ -54,7 +54,7 @@ export function EntryDialog({
       {trigger && !isEdit && (
         <DialogTrigger asChild>
           <Button className="bg-black border border-white text-white hover:bg-white hover:text-black">
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4" />
             Add Entry
           </Button>
         </DialogTrigger>

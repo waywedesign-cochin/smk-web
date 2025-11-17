@@ -20,6 +20,7 @@ import {
   DollarSign,
   Filter,
   Settings,
+  Loader2,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { fetchBatches } from "@/redux/features/batch/batchSlice";
@@ -220,21 +221,27 @@ export function OverviewPage() {
             <Users className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {stats.totalStudents}
-            </div>
-            <div className="flex items-center gap-2 mt-2">
-              <Progress
-                value={stats.occupancyRate}
-                className="h-2 bg-gray-700 [&>div]:bg-gradient-to-r [&>div]:from-blue-500 [&>div]:to-blue-500 rounded-full"
-              />
-              <span className="text-xs text-gray-400 whitespace-nowrap">
-                {stats.occupancyRate.toFixed(1)}%
-              </span>
-            </div>
-            <p className="text-xs text-gray-400 mt-2">
-              Capacity: {stats.totalStudents}/{stats.totalCapacity}
-            </p>
+            {loading ? (
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-white">
+                  {stats.totalStudents}
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Progress
+                    value={stats.occupancyRate}
+                    className="h-2 bg-gray-700 [&>div]:bg-gradient-to-r [&>div]:from-blue-500 [&>div]:to-blue-500 rounded-full"
+                  />
+                  <span className="text-xs text-gray-400 whitespace-nowrap">
+                    {stats.occupancyRate.toFixed(1)}%
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  Capacity: {stats.totalStudents}/{stats.totalCapacity}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -246,12 +253,19 @@ export function OverviewPage() {
             <GraduationCap className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {stats.activeBatches}
-            </div>
-            <p className="text-xs text-gray-400 mt-2">
-              Running in {selectedYear}
-            </p>
+            {loading ? (
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            ) : (
+              <>
+                {" "}
+                <div className="text-2xl font-bold text-white">
+                  {stats.activeBatches}
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  Running in {selectedYear}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -263,18 +277,25 @@ export function OverviewPage() {
             <TrendingUp className="h-4 w-4 text-orange-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {stats.occupancyRate.toFixed(1)}%
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
-              <div
-                className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${Math.min(stats.occupancyRate, 100)}%` }}
-              ></div>
-            </div>
-            <p className="text-xs text-gray-400 mt-2">
-              Overall batch utilization
-            </p>
+            {loading ? (
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            ) : (
+              <>
+                {" "}
+                <div className="text-2xl font-bold text-white">
+                  {stats.occupancyRate.toFixed(1)}%
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+                  <div
+                    className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${Math.min(stats.occupancyRate, 100)}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  Overall batch utilization
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -296,7 +317,7 @@ export function OverviewPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Active Batches */}
-        <Card className="bg-[#0A1533] border border-white/10 backdrop-blur-md text-white shadow-lg ">
+        <Card className="bg-[#0A1533] border border-white/10 backdrop-blur-md text-white shadow-lg">
           <CardHeader className="bg-gray-700 py-3">
             <CardTitle className="flex items-center gap-2">
               <GraduationCap className="h-5 w-5 text-blue-400" />
@@ -306,7 +327,7 @@ export function OverviewPage() {
               Currently running batches with enrollment status
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-4 space-y-4 max-h-[360px] overflow-y-auto scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600">
+          <CardContent className="p-4 space-y-4">
             {loading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>

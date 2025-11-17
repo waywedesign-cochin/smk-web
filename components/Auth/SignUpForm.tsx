@@ -12,6 +12,10 @@ import {
   GraduationCap,
   AlertCircle,
   CheckCircle,
+  User,
+  Mail,
+  Lock,
+  TrendingUp,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { signUpSchema } from "@/lib/validation/signupSchema";
@@ -46,15 +50,15 @@ export function SignUpForm() {
     switch (strength) {
       case 0:
       case 1:
-        return { text: "Weak", color: "text-destructive" };
+        return { text: "Weak", color: "text-red-400" };
       case 2:
-        return { text: "Fair", color: "text-yellow-600" };
+        return { text: "Fair", color: "text-yellow-400" };
       case 3:
-        return { text: "Good", color: "text-blue-600" };
+        return { text: "Good", color: "text-blue-400" };
       case 4:
-        return { text: "Strong", color: "text-green-600" };
+        return { text: "Strong", color: "text-green-400" };
       default:
-        return { text: "Weak", color: "text-destructive" };
+        return { text: "Weak", color: "text-red-400" };
     }
   };
 
@@ -108,69 +112,109 @@ export function SignUpForm() {
   const strengthInfo = getPasswordStrengthText(passwordStrength);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal-500/5 rounded-full blur-3xl"></div>
+      </div>
+
+      {/* Grid Pattern Overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#10b98120_1px,transparent_1px),linear-gradient(to_bottom,#10b98120_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+
+      <div className="w-full max-w-md space-y-6 relative z-10">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="mx-auto w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-            <GraduationCap className="h-6 w-6 text-primary-foreground" />
+        <div className="text-center space-y-4">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/50 relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl blur opacity-50 group-hover:opacity-75 transition-opacity"></div>
+            <GraduationCap className="h-8 w-8 text-white relative z-10" />
           </div>
-          <h1 className="text-2xl font-bold">Create Account</h1>
-          <p className="text-muted-foreground">
-            Join the institute management system
-          </p>
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 bg-clip-text text-transparent mb-2">
+              Create Account
+            </h1>
+            <p className="text-slate-400 text-sm">
+              Join the institute management system
+            </p>
+          </div>
         </div>
 
         {/* SignUp Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign Up</CardTitle>
+        <Card className="border-slate-800/50 bg-slate-900/40 backdrop-blur-xl shadow-2xl shadow-black/50">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-2xl text-slate-100">Sign Up</CardTitle>
+            <p className="text-sm text-slate-400 mt-1">
+              Fill in your details to get started
+            </p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1">
                 {/* Username */}
                 <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    value={formData.username}
-                    onChange={(e) =>
-                      setFormData({ ...formData, username: e.target.value })
-                    }
-                    placeholder="Username"
-                    disabled={isLoading}
-                  />
+                  <Label
+                    htmlFor="username"
+                    className="text-slate-200 text-sm font-medium"
+                  >
+                    Username
+                  </Label>
+                  <div className="relative group">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                    <Input
+                      id="username"
+                      value={formData.username}
+                      onChange={(e) =>
+                        setFormData({ ...formData, username: e.target.value })
+                      }
+                      placeholder="johndoe"
+                      disabled={isLoading}
+                      className="pl-11 bg-slate-950/50 border-slate-800 focus:border-emerald-500 focus:ring-emerald-500/20 text-slate-100 placeholder:text-slate-600 h-12 transition-all"
+                    />
+                  </div>
                   {errors.username && (
-                    <p className="text-sm text-destructive">
-                      {errors.username}
-                    </p>
+                    <p className="text-sm text-red-400">{errors.username}</p>
                   )}
                 </div>
               </div>
 
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  placeholder="Email"
-                  disabled={isLoading}
-                />
+                <Label
+                  htmlFor="email"
+                  className="text-slate-200 text-sm font-medium"
+                >
+                  Email
+                </Label>
+                <div className="relative group">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    placeholder="you@example.com"
+                    disabled={isLoading}
+                    className="pl-11 bg-slate-950/50 border-slate-800 focus:border-emerald-500 focus:ring-emerald-500/20 text-slate-100 placeholder:text-slate-600 h-12 transition-all"
+                  />
+                </div>
                 {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email}</p>
+                  <p className="text-sm text-red-400">{errors.email}</p>
                 )}
               </div>
 
               {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
+                <Label
+                  htmlFor="password"
+                  className="text-slate-200 text-sm font-medium"
+                >
+                  Password
+                </Label>
+                <div className="relative group">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -178,14 +222,15 @@ export function SignUpForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, password: e.target.value })
                     }
-                    placeholder="Password"
+                    placeholder="••••••••"
                     disabled={isLoading}
+                    className="pl-11 pr-12 bg-slate-950/50 border-slate-800 focus:border-emerald-500 focus:ring-emerald-500/20 text-slate-100 placeholder:text-slate-600 h-12 transition-all"
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-800/50 text-slate-500 hover:text-emerald-400 transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
                   >
@@ -197,12 +242,12 @@ export function SignUpForm() {
                   </Button>
                 </div>
                 {formData.password && (
-                  <div className="flex items-center space-x-2 mt-1">
-                    <div className="flex-1 bg-muted rounded-full h-2">
+                  <div className="flex items-center space-x-2 mt-2">
+                    <div className="flex-1 bg-slate-800/50 rounded-full h-2">
                       <div
                         className={`h-2 rounded-full transition-all ${
                           passwordStrength === 1
-                            ? "w-1/4 bg-destructive"
+                            ? "w-1/4 bg-red-500"
                             : passwordStrength === 2
                             ? "w-2/4 bg-yellow-500"
                             : passwordStrength === 3
@@ -213,20 +258,28 @@ export function SignUpForm() {
                         }`}
                       />
                     </div>
-                    <span className={`text-xs ${strengthInfo.color}`}>
+                    <span
+                      className={`text-xs font-medium ${strengthInfo.color}`}
+                    >
                       {strengthInfo.text}
                     </span>
                   </div>
                 )}
                 {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password}</p>
+                  <p className="text-sm text-red-400">{errors.password}</p>
                 )}
               </div>
 
               {/* Confirm Password */}
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <div className="relative">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="text-slate-200 text-sm font-medium"
+                >
+                  Confirm Password
+                </Label>
+                <div className="relative group">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
                   <Input
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
@@ -237,14 +290,15 @@ export function SignUpForm() {
                         confirmPassword: e.target.value,
                       })
                     }
-                    placeholder="Confirm Password"
+                    placeholder="••••••••"
                     disabled={isLoading}
+                    className="pl-11 pr-12 bg-slate-950/50 border-slate-800 focus:border-emerald-500 focus:ring-emerald-500/20 text-slate-100 placeholder:text-slate-600 h-12 transition-all"
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-800/50 text-slate-500 hover:text-emerald-400 transition-colors"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     disabled={isLoading}
                   >
@@ -257,42 +311,63 @@ export function SignUpForm() {
                 </div>
                 {formData.confirmPassword &&
                   formData.password === formData.confirmPassword && (
-                    <div className="flex items-center space-x-2 text-green-600">
+                    <div className="flex items-center space-x-2 text-green-400 mt-2">
                       <CheckCircle className="h-4 w-4" />
-                      <span className="text-sm">Passwords match</span>
+                      <span className="text-sm font-medium">
+                        Passwords match
+                      </span>
                     </div>
                   )}
                 {errors.confirmPassword && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-sm text-red-400">
                     {errors.confirmPassword}
                   </p>
                 )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating Account..." : "Create Account"}
+              <Button
+                type="submit"
+                className="w-full h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all relative overflow-hidden group"
+                disabled={isLoading}
+              >
+                <span className="relative z-10">
+                  {isLoading ? "Creating Account..." : "Create Account"}
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </Button>
             </form>
 
-            <div className="mt-4 text-center">
+            <div className="mt-6 text-center relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-800"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-2 bg-slate-900/40 text-slate-500">or</span>
+              </div>
+            </div>
+
+            <div className="mt-6 text-center">
               <Button
                 onClick={() => router.push("/signin")}
                 variant="link"
-                className="text-sm cursor-pointer"
+                className="text-sm cursor-pointer text-slate-400 hover:text-emerald-400 transition-colors"
                 disabled={isLoading}
               >
-                Already have an account? Sign in
+                Already have an account?{" "}
+                <span className="text-emerald-400 ml-1 font-semibold">
+                  Sign in
+                </span>
               </Button>
             </div>
           </CardContent>
         </Card>
 
         {/* Info */}
-        {/* <Card>
+        {/* <Card className="border-slate-800/50 bg-slate-900/40 backdrop-blur-xl">
           <CardContent className="pt-6">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
+            <Alert className="bg-blue-500/10 border-blue-500/20">
+              <AlertCircle className="h-4 w-4 text-blue-400" />
+              <AlertDescription className="text-slate-300">
                 New accounts require approval from an administrator before
                 access.
               </AlertDescription>
@@ -300,8 +375,9 @@ export function SignUpForm() {
           </CardContent>
         </Card> */}
 
-        <div className="text-center text-sm text-muted-foreground">
-          <p>© 2024 Stock-Forex Institution Management System</p>
+        <div className="text-center text-xs text-gray-400 flex items-center justify-center gap-2">
+          <TrendingUp className="h-3 w-3" />
+          <p>© {new Date().getFullYear()} SK & SL Associate Private Limited</p>
         </div>
       </div>
     </div>
