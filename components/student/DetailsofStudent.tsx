@@ -161,7 +161,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid max-sm:grid-cols-1 sm:grid-cols-2  lg:grid-cols-4 gap-4">
         <Card className="bg-blue-100/10 text-white backdrop-blur-3xl border-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Course Fee</CardTitle>
