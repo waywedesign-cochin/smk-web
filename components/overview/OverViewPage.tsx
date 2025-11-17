@@ -296,7 +296,7 @@ export function OverviewPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Active Batches */}
-        <Card className="bg-[#0A1533] border border-white/10 backdrop-blur-md text-white shadow-lg">
+        <Card className="bg-[#0A1533] border border-white/10 backdrop-blur-md text-white shadow-lg ">
           <CardHeader className="bg-gray-700 py-3">
             <CardTitle className="flex items-center gap-2">
               <GraduationCap className="h-5 w-5 text-blue-400" />
@@ -306,7 +306,7 @@ export function OverviewPage() {
               Currently running batches with enrollment status
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-4 space-y-4">
+          <CardContent className="p-4 space-y-4 max-h-[360px] overflow-y-auto scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600">
             {loading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
