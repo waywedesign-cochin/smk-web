@@ -32,6 +32,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 export default function DashboardSidebar({
   children,
@@ -98,14 +99,27 @@ export default function DashboardSidebar({
     <div className="flex h-screen w-full bg-black ">
       {/* Sidebar */}
       <Sidebar className="overflow-hidden  border-gray-100/10 ">
-        <SidebarHeader className="p-6 border-0 bg-black text-white">
+        <SidebarHeader className="p-4 border-0 bg-black text-white">
           <div className="flex items-center gap-3">
-            <div className="bg-primary text-primary-foreground rounded-lg p-2">
-              <GraduationCap className="h-6 w-6" />
+            {/* Logo Container */}
+            <div className="bg-white rounded-lg p-1.5 w-14 h-14 flex items-center justify-center shadow-sm">
+              <Image
+                src="/Stock-market-kerala-1-1.png"
+                alt="logo"
+                width={60}
+                height={60}
+                className="object-contain"
+              />
             </div>
-            <div>
-              <h1 className="text-lg font-semibold">SK & SL Associate</h1>
-              <p className="text-sm text-white">Private Limited</p>
+
+            {/* Company Text */}
+            <div className="leading-tight">
+              <h1 className="text-base font-semibold tracking-wide">
+                SK & SL Associate
+              </h1>
+              <p className="text-[11px] text-gray-300 tracking-wide">
+                Private Limited
+              </p>
             </div>
           </div>
         </SidebarHeader>

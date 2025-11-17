@@ -368,6 +368,9 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
                                     setShowAddPaymentDialog(true);
                                   }}
                                   className="bg-blue-600 text-white hover:bg-blue-700 px-2 text-xs"
+                                  disabled={
+                                    p.mode === "CASH" || p.mode === "DIRECTOR"
+                                  }
                                 >
                                   Edit Pay
                                 </Button>

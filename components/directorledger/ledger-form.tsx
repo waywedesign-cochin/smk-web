@@ -23,6 +23,7 @@ import { fetchStudents } from "@/redux/features/student/studentSlice";
 import {
   addDirectorLedgerEntry,
   DirectorLedgerEntry,
+  fetchDirectorLedgerEntries,
   updateDirectorLedgerEntry,
 } from "@/redux/features/directorledger/directorSlice";
 
@@ -328,7 +329,7 @@ export function LedgerForm({
           >
         )
       );
-
+      await fetchDirectorLedgerEntries({ directorId, page: 1 });
       setSuccessMessage("Entry added successfully!");
     }
 
@@ -421,7 +422,7 @@ export function LedgerForm({
                     <SelectItem
                       key={t.value}
                       value={t.value}
-                      className="hover:bg-blue-600/30 focus:bg-blue-600/30 text-white"
+                      className="hover:bg-blue-600/30 focus:bg-white focus:text-black"
                     >
                       {t.label}
                     </SelectItem>
