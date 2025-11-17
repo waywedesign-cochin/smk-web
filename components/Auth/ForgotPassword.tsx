@@ -82,7 +82,7 @@ export default function ForgotPassword() {
             <KeyRound className="h-8 w-8 text-white relative z-10" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 bg-clip-text text-transparent mb-2">
+            <h1 className="text-4xl pb-1 font-bold bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 bg-clip-text text-transparent mb-2">
               Forgot Password
             </h1>
             <p className="text-slate-400 text-sm">

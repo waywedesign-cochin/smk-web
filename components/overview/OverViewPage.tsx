@@ -327,7 +327,7 @@ export function OverviewPage() {
               Currently running batches with enrollment status
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-4 space-y-4">
+          <CardContent className="p-4 space-y-4 max-h-[360px] overflow-y-auto scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600">
             {loading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
