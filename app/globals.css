@@ -124,3 +124,31 @@
 .input-date-dark::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
+
+/* ============================
+   GLOBAL SCROLLBAR STYLING
+   ============================ */
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 8px; /* Scrollbar width */
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a; /* Dark background */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155; /* Slate thumb */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569; /* Hover color */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 #0f172a;
+}
