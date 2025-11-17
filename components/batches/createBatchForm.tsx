@@ -29,6 +29,7 @@ import {
   BatchStatus,
 } from "@/lib/validation/batchSchema";
 import { Batch, Course, Location, User } from "@/lib/types";
+import { Plus } from "lucide-react";
 
 interface AddBatchSheetProps {
   isOpen: boolean;
@@ -174,8 +175,10 @@ export default function AddBatchSheet({
             reset();
             setEditingBatch(null);
           }}
-          className="bg-blue-600 text-white"
+          className="bg-black border border-white text-white hover:bg-white hover:text-black"
         >
+          {" "}
+          <Plus className="h-4 w-4" />
           {editingBatch ? "Edit Batch" : "Add Batch"}
         </Button>
       </SheetTrigger>

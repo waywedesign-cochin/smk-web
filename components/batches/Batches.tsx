@@ -352,7 +352,8 @@ export function Batches() {
             {/* Clear button */}
             <Button
               variant="ghost"
-              className="bg-black border border-white text-white w-full h-10"
+              size={"sm"}
+              className="bg-black border border-white text-white w-full"
               onClick={() =>
                 setFilters({
                   search: "",

@@ -28,6 +28,7 @@ import {
   Activity,
   DollarSign,
   Users,
+  Loader2,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
@@ -68,6 +69,7 @@ export function ReportsPage() {
     locationsComparison,
     paymentTypeReport,
     courseRevenue,
+    loading,
   } = useAppSelector((state) => state.reports);
   const { locations } = useAppSelector((state) => state.locations);
   const { currentUser } = useAppSelector((state) => state.users);
@@ -196,35 +198,45 @@ export function ReportsPage() {
             </div>
           </CardHeader>
           <CardContent className="relative">
-            <div className="text-3xl font-bold text-gray-900 mb-2">
-              ₹{summary?.totalRevenue?.toLocaleString() ?? "0"}
-            </div>
-
-            {(() => {
-              const growthValue = summary?.revenueGrowth
-                ? Number(String(summary.revenueGrowth).replace("%", "").trim())
-                : 0;
-
-              return (
-                <div className="flex items-center gap-1.5">
-                  <div
-                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                      growthValue >= 0
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {growthValue >= 0 ? (
-                      <TrendingUp className="h-3.5 w-3.5" />
-                    ) : (
-                      <TrendingDown className="h-3.5 w-3.5" />
-                    )}
-                    <span>{Math.abs(growthValue).toFixed(1)}%</span>
-                  </div>
-                  <span className="text-xs text-gray-500">vs last month</span>
+            {loading ? (
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            ) : (
+              <>
+                <div className="text-3xl font-bold text-gray-900 mb-2">
+                  ₹{summary?.totalRevenue?.toLocaleString() ?? "0"}
                 </div>
-              );
-            })()}
+
+                {(() => {
+                  const growthValue = summary?.revenueGrowth
+                    ? Number(
+                        String(summary.revenueGrowth).replace("%", "").trim()
+                      )
+                    : 0;
+
+                  return (
+                    <div className="flex items-center gap-1.5">
+                      <div
+                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                          growthValue >= 0
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {growthValue >= 0 ? (
+                          <TrendingUp className="h-3.5 w-3.5" />
+                        ) : (
+                          <TrendingDown className="h-3.5 w-3.5" />
+                        )}
+                        <span>{Math.abs(growthValue).toFixed(1)}%</span>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        vs last month
+                      </span>
+                    </div>
+                  );
+                })()}
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -241,12 +253,18 @@ export function ReportsPage() {
             </div>
           </CardHeader>
           <CardContent className="relative">
-            <div className="text-3xl font-bold text-gray-900 mb-2">
-              {summary?.collectionRate}
-            </div>
-            <div className="text-xs text-green-600 bg-green-500/10  px-2 py-1 rounded-full w-fit">
-              ₹{summary?.totalCollections.toLocaleString()} collected
-            </div>
+            {loading ? (
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            ) : (
+              <>
+                <div className="text-3xl font-bold text-gray-900 mb-2">
+                  {summary?.collectionRate}
+                </div>
+                <div className="text-xs text-green-600 bg-green-500/10  px-2 py-1 rounded-full w-fit">
+                  ₹{summary?.totalCollections.toLocaleString()} collected
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -263,29 +281,35 @@ export function ReportsPage() {
             </div>
           </CardHeader>
           <CardContent className="relative">
-            <div className="text-3xl font-bold text-gray-900 mb-2">
-              {summary?.totalStudents}
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div
-                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                  summary?.newAdmissions ?? 0 >= 0
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
-                }`}
-              >
-                {summary?.newAdmissions ?? 0 >= 0 ? (
-                  <TrendingUp className="h-3.5 w-3.5" />
-                ) : (
-                  <TrendingDown className="h-3.5 w-3.5" />
-                )}
-                <span>
-                  {summary?.newAdmissions ?? 0 > 0 ? "+" : ""}
-                  {summary?.newAdmissions ?? 0}
-                </span>
-              </div>
-              <span className="text-xs text-gray-500">new admissions</span>
-            </div>
+            {loading ? (
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            ) : (
+              <>
+                <div className="text-3xl font-bold text-gray-900 mb-2">
+                  {summary?.totalStudents}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div
+                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                      summary?.newAdmissions ?? 0 >= 0
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {summary?.newAdmissions ?? 0 >= 0 ? (
+                      <TrendingUp className="h-3.5 w-3.5" />
+                    ) : (
+                      <TrendingDown className="h-3.5 w-3.5" />
+                    )}
+                    <span>
+                      {summary?.newAdmissions ?? 0 > 0 ? "+" : ""}
+                      {summary?.newAdmissions ?? 0}
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-500">new admissions</span>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -302,17 +326,23 @@ export function ReportsPage() {
             </div>
           </CardHeader>
           <CardContent className="relative">
-            <div className="text-3xl font-bold text-gray-900 mb-2">
-              ₹{summary?.outstandingFees.toLocaleString()}
-            </div>
-            <div className="text-xs text-gray-500">
-              {(
-                ((summary?.outstandingFees ?? 0) /
-                  (summary?.totalRevenue ?? 1)) *
-                100
-              ).toFixed(1)}
-              % of total revenue
-            </div>
+            {loading ? (
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            ) : (
+              <>
+                <div className="text-3xl font-bold text-gray-900 mb-2">
+                  ₹{summary?.outstandingFees.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {(
+                    ((summary?.outstandingFees ?? 0) /
+                      (summary?.totalRevenue ?? 1)) *
+                    100
+                  ).toFixed(1)}
+                  % of total revenue
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

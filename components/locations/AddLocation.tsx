@@ -70,13 +70,13 @@ export default function AddLocation({
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button
-              className="text-white"
+              className="bg-black border border-white text-white hover:bg-white hover:text-black"
               onClick={() => {
                 reset();
                 setEditingLocation(null);
               }}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 " />
               Add Location
             </Button>
           </DialogTrigger>
