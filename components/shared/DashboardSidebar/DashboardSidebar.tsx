@@ -31,6 +31,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { usePathname } from "next/navigation";
 
 export default function DashboardSidebar({
   children,
@@ -42,7 +43,8 @@ export default function DashboardSidebar({
   const { currentUser: user, loading } = useAppSelector((state) => state.users);
   const { isMobile, setOpenMobile } = useSidebar(); // ✅ use this hook
 
-  const [currentPage, setCurrentPage] = useState("overview");
+  const pathname = usePathname();
+  const currentPage = pathname === "/" ? "/" : pathname.split("/")[1];
   const [checkedUser, setCheckedUser] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
@@ -76,7 +78,6 @@ export default function DashboardSidebar({
 
   const onPageChange = (page: string) => {
     router.push(`/${page}`);
-    setCurrentPage(page);
 
     // ✅ close sidebar only if on mobile
     if (isMobile) {
