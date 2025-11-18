@@ -1,10 +1,10 @@
-import { ReportsPage } from "@/components/Reports/ReportsPage";
+import ActivityLogPage from "@/components/Activity-log/ActivityLogPage";
 import React from "react";
 
 const page = () => {
   return (
     <div>
-      <ReportsPage />
+      <ActivityLogPage />
     </div>
   );
 };

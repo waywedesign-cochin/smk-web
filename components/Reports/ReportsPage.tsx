@@ -29,6 +29,7 @@ import {
   DollarSign,
   Users,
   Loader2,
+  Download,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
@@ -159,12 +160,10 @@ export function ReportsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative rounded-2xl overflow-hidden">
-        {/* Darkveil background */}
+      {/* <div className="relative rounded-2xl overflow-hidden">
         <div className="absolute inset-0 z-0 h-[300px] w-full">
           <DarkVeil />
         </div>
-        {/* Header content */}
         <div className="relative z-10 flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white">
           <div>
             <h1 className="text-3xl font-semibold text-white">
@@ -175,14 +174,14 @@ export function ReportsPage() {
             </p>
           </div>
 
-          {/* <Button
+          <Button
             className="bg-black border border-white text-white hover:bg-white hover:text-black"
           >
             <Download className="h-4 w-4 mr-2" />
             Export Report
-          </Button> */}
+          </Button>
         </div>
-      </div>
+      </div> */}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card className="relative overflow-hidden border-0 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
@@ -198,7 +197,7 @@ export function ReportsPage() {
             </div>
           </CardHeader>
           <CardContent className="relative">
-            {loading ? (
+            {loading || !summary?.totalRevenue ? (
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             ) : (
               <>
@@ -253,7 +252,7 @@ export function ReportsPage() {
             </div>
           </CardHeader>
           <CardContent className="relative">
-            {loading ? (
+            {loading || summary?.collectionRate === undefined ? (
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             ) : (
               <>
@@ -281,7 +280,7 @@ export function ReportsPage() {
             </div>
           </CardHeader>
           <CardContent className="relative">
-            {loading ? (
+            {loading || summary?.totalStudents === undefined ? (
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             ) : (
               <>
@@ -326,7 +325,7 @@ export function ReportsPage() {
             </div>
           </CardHeader>
           <CardContent className="relative">
-            {loading ? (
+            {loading || summary?.outstandingFees === undefined ? (
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             ) : (
               <>

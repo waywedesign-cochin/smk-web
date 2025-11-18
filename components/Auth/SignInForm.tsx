@@ -53,7 +53,7 @@ export function SignInForm() {
       setFormData({ email: "", password: "" });
     } catch (err) {
       console.error(err);
-      toast.error("Invalid credentials or server error");
+      // toast.error("Invalid credentials or server error");
     } finally {
       setIsLoading(false);
     }

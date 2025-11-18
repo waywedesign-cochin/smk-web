@@ -2,7 +2,13 @@
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
-const PIE_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"];
+const PIE_COLORS = [
+  "#6366F1", // Indigo
+  "#06B6D4", // Cyan
+  "#10B981", // Emerald
+  "#F59E0B", // Amber
+  "#EF4444", // Red
+];
 
 export default function PaymentMethodPie({ data }: { data: [] }) {
   return (
