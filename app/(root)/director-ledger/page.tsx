@@ -100,6 +100,12 @@ export default function DirectorLedgerPage() {
               <EntryDialog
                 directorId={directorId}
                 periodBalance={totals?.periodBalance || 0}
+                 onSuccess={() => {
+          setEditingEntry(null);
+          dispatch(fetchDirectorLedgerEntries({ directorId }));
+        }}
+ 
+
               />
             )}
         </div>
