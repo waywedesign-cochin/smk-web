@@ -6,6 +6,8 @@ import {
   AlertCircle,
   ArrowLeft,
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
   CreditCard,
   FileText,
   History,
@@ -49,6 +51,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const fee = useAppSelector((state) => state.fees.fee);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false);
 
@@ -57,7 +60,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
     loading,
     error,
   } = useAppSelector((state) => state.students);
-  const { communicationLogs } = useAppSelector(
+  const { communicationLogs, pagination } = useAppSelector(
     (state) => state.communicationLogs
   );
   const getActivityLogs = async () => {
@@ -98,6 +101,17 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
     } catch (err) {
       console.error("Failed to configure fee:", err);
     }
+  };
+
+  //handle page change
+  const handlePageChange = (newPage: number) => {
+    dispatch(
+      fetchCommunicationLogs({
+        page: newPage,
+        limit: itemsPerPage,
+        studentId: StudentId,
+      })
+    );
   };
 
   const onBack = () => router.back();
@@ -581,6 +595,73 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
                 </div>
               </CardContent>
             ))}
+            {/* Pagination */}
+            {pagination && pagination.totalPages > 1 && (
+              <div className="flex items-center justify-end mt-6 px-4">
+                {/* Pagination buttons */}
+                <div className="flex items-center gap-2">
+                  {/* Previous */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.currentPage - 1)}
+                    disabled={pagination.currentPage === 1}
+                    className="bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+
+                  {/* Page numbers */}
+                  {Array.from(
+                    { length: pagination.totalPages },
+                    (_, i) => i + 1
+                  )
+                    .filter(
+                      (page) =>
+                        page === 1 ||
+                        page === pagination.totalPages ||
+                        Math.abs(page - pagination.currentPage) <= 1
+                    )
+                    .map((page, index, array) => {
+                      const showEllipsis =
+                        index < array.length - 1 && array[index + 1] - page > 1;
+                      const isActive = pagination.currentPage === page;
+                      return (
+                        <div key={page} className="flex items-center">
+                          <Button
+                            variant={isActive ? "default" : "ghost"}
+                            size="sm"
+                            onClick={() => handlePageChange(page)}
+                            className={`${
+                              isActive
+                                ? "bg-gradient-to-r from-blue-500 to-purple-700 text-white shadow-md"
+                                : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/10"
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                          {showEllipsis && (
+                            <span className="px-2 text-gray-500 select-none">
+                              ...
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                  {/* Next */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                    disabled={pagination.currentPage === pagination.totalPages}
+                    className="bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </Card>
         </TabsContent>
       </Tabs>

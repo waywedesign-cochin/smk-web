@@ -186,8 +186,8 @@ const reportsSlice = createSlice({
         state.error = null;
       })
       .addCase(getRevenueDetails.fulfilled, (state, action) => {
-        state.loading = false;
         state.revenue = action.payload.monthlyData;
+        state.loading = false;
         state.summary = action.payload.summary;
       })
       .addCase(getRevenueDetails.rejected, (state, action) => {
@@ -204,8 +204,8 @@ const reportsSlice = createSlice({
         state.error = null;
       })
       .addCase(getBatchPerformance.fulfilled, (state, action) => {
-        state.loading = false;
         state.batchPerformance = action.payload;
+        state.loading = false;
       })
       .addCase(getBatchPerformance.rejected, (state, action) => {
         state.loading = false;
@@ -221,8 +221,8 @@ const reportsSlice = createSlice({
         state.error = null;
       })
       .addCase(getLocationsComparison.fulfilled, (state, action) => {
-        state.loading = false;
         state.locationsComparison = action.payload;
+        state.loading = false;
       })
       .addCase(getLocationsComparison.rejected, (state, action) => {
         state.loading = false;
@@ -238,8 +238,8 @@ const reportsSlice = createSlice({
         state.error = null;
       })
       .addCase(getPaymentTypeReport.fulfilled, (state, action) => {
-        state.loading = false;
         state.paymentTypeReport = action.payload;
+        state.loading = false;
       })
       .addCase(getPaymentTypeReport.rejected, (state, action) => {
         state.loading = false;
@@ -255,8 +255,8 @@ const reportsSlice = createSlice({
         state.error = null;
       })
       .addCase(getCourseRevenue.fulfilled, (state, action) => {
-        state.loading = false;
         state.courseRevenue = action.payload;
+        state.loading = false;
       })
       .addCase(getCourseRevenue.rejected, (state, action) => {
         state.loading = false;
