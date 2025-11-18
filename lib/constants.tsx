@@ -2,14 +2,12 @@
 import {
   GraduationCap,
   Users,
-  BarChart3,
   Settings,
   Home,
   BookMarked,
-  Logs,
-  AudioLines,
   DollarSign,
   Laptop,
+  Activity,
 } from "lucide-react";
 
 export const menuItems = [
@@ -52,17 +50,10 @@ export const menuItems = [
   },
 
   {
-    id: "reports",
-    label: "Reports",
-    icon: BarChart3,
-    description: "Generate reports and analytics",
-  },
-
-  {
-    id: "communication",
-    label: "Communication",
-    icon: AudioLines,
-    description: "View communication history and logs",
+    id: "activity-logs",
+    label: "Activity Logs",
+    icon: Activity,
+    description: "View system activity logs",
   },
   {
     id: "settings",

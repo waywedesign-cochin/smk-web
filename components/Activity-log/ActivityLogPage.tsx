@@ -60,7 +60,7 @@ import { BASE_URL } from "@/redux/baseUrl";
 import axios from "axios";
 import DarkVeil from "../DarkVeil";
 
-export default function CommunicationLogPage() {
+export default function ActivityLogPage() {
   const dispatch = useAppDispatch();
   const { communicationLogs, loading, error, pagination } = useAppSelector(
     (state) => state.communicationLogs
@@ -227,9 +227,7 @@ export default function CommunicationLogPage() {
         {/* Header content */}
         <div className="relative z-10 flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white">
           <div>
-            <h1 className="text-3xl font-semibold text-white">
-              Communication Logs
-            </h1>
+            <h1 className="text-3xl font-semibold text-white">Activity Logs</h1>
             <p className="text-sm text-gray-300">
               Track all staff actions and activities
             </p>
