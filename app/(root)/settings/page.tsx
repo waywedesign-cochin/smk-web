@@ -1,4 +1,5 @@
 "use client";
+import DarkVeil from "@/components/DarkVeil";
 import {
   Card,
   CardContent,
@@ -23,7 +24,7 @@ function SettingsCard({
 }) {
   return (
     <Link href={path}>
-      <Card className="hover:shadow-lg transition-shadow duration-200 bg-gray-100/10 backdrop-blur-2xl border-0 text-white">
+      <Card className="hover:shadow-lg transition-shadow duration-200 bg-gray-100/10 backdrop-blur-2xl border-0 text-white h-full min-h-[150px]">
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="bg-[#0f1d40] p-2 rounded-md">
@@ -43,23 +44,24 @@ function SettingsCard({
 export default function SettingsPage() {
   return (
     <div className="">
-      <div
-        style={{
-          backgroundImage: "url('/cource/course.png')",
-          backgroundSize: "cover",
-
-          backgroundPosition: "center",
-        }}
-        className="flex p-5 rounded-2xl text-white flex-col sm:flex-row gap-4 justify-between items-start sm:items-center"
-      >
-        <div>
-          <h2 className="text-2xl font-semibold">System Settings</h2>
-          <p className="text-white/80">
-            Configure system settings and preferences
-          </p>
+      <div className="relative rounded-2xl overflow-hidden">
+        {/* Darkveil background */}
+        <div className="absolute inset-0 z-0 h-[300px] w-full">
+          <DarkVeil />
+        </div>
+        {/* Header content */}
+        <div className="relative z-10 flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white">
+          <div>
+            <h1 className="text-3xl font-semibold text-white">
+              System Settings
+            </h1>
+            <p className="text-sm text-gray-300">
+              Configure system settings and preferences
+            </p>
+          </div>
         </div>
       </div>
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <SettingsCard
           path="/settings/courses"
           icon={GraduationCap}

@@ -331,7 +331,7 @@ export default function ActivityLogPage() {
             {/* Staff Filter */}
             {currentUser?.role === 1 && (
               <div className="flex flex-col">
-                <span className="text-xs text-gray-200 mb-1">Staff</span>
+                <span className="text-xs text-gray-200 mb-1">User</span>
                 <Select
                   value={filters.loggedById}
                   onValueChange={(v) => handleFilterChange("loggedById", v)}
