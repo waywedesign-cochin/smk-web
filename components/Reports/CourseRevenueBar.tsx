@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const COLORS = { secondary: "#8b5cf6" };
+const COLORS = { secondary: "#06b6d4" }; 
 
 export default function CourseRevenueBar({ data }: { data: Report[] }) {
   return (

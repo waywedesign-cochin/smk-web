@@ -197,7 +197,7 @@ export function ReportsPage() {
             </div>
           </CardHeader>
           <CardContent className="relative">
-            {loading || !summary?.totalRevenue ? (
+            {loading || !summary?.totalRevenue === undefined ? (
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             ) : (
               <>
@@ -345,25 +345,33 @@ export function ReportsPage() {
           </CardContent>
         </Card>
       </div>
+
       {/* Filters */}
-      <Card className="bg-white/10 border border-white/10 backdrop-blur-md text-white">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Calendar className="h-5 w-5" /> Filter Reports
+      <Card className="bg-gradient-to-br from-white/5 to-white/10 border border-white/20 backdrop-blur-xl shadow-2xl text-white">
+        <CardHeader className="border-b border-white/10 pb-4">
+          <CardTitle className="text-xl font-semibold flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg">
+              <Calendar className="h-5 w-5" />
+            </div>
+            Filter Reports
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label>Year</Label>
+        <CardContent className="pt-2">
+          <div className="flex flex-col lg:flex-row gap-3 lg:items-end lg:justify-between">
+            <div className="w-full lg:w-48 space-y-2">
+              <Label className="text-sm font-medium text-white/90">Year</Label>
               <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/30 transition-all duration-200">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-900 border-white/20 text-white">
                   {Array.from({ length: 3 }, (_, i) => currentYear - i).map(
                     (year) => (
-                      <SelectItem key={year} value={year.toString()}>
+                      <SelectItem
+                        key={year}
+                        value={year.toString()}
+                        className="hover:bg-white/10"
+                      >
                         {year}
                       </SelectItem>
                     )
@@ -372,38 +380,58 @@ export function ReportsPage() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Quarter</Label>
+            <div className="w-full lg:w-48 space-y-2">
+              <Label className="text-sm font-medium text-white/90">
+                Quarter
+              </Label>
               <Select
                 value={selectedQuarter}
                 onValueChange={setSelectedQuarter}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/30 transition-all duration-200">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All</SelectItem>
-                  <SelectItem value="Q1">Q1 (Jan-Mar)</SelectItem>
-                  <SelectItem value="Q2">Q2 (Apr-Jun)</SelectItem>
-                  <SelectItem value="Q3">Q3 (Jul-Sep)</SelectItem>
-                  <SelectItem value="Q4">Q4 (Oct-Dec)</SelectItem>
+                <SelectContent className="bg-gray-900 border-white/20 text-white">
+                  <SelectItem value="ALL" className="hover:bg-white/10">
+                    All
+                  </SelectItem>
+                  <SelectItem value="Q1" className="hover:bg-white/10">
+                    Q1 (Jan-Mar)
+                  </SelectItem>
+                  <SelectItem value="Q2" className="hover:bg-white/10">
+                    Q2 (Apr-Jun)
+                  </SelectItem>
+                  <SelectItem value="Q3" className="hover:bg-white/10">
+                    Q3 (Jul-Sep)
+                  </SelectItem>
+                  <SelectItem value="Q4" className="hover:bg-white/10">
+                    Q4 (Oct-Dec)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Location</Label>
+            <div className="w-full lg:w-48 space-y-2">
+              <Label className="text-sm font-medium text-white/90">
+                Location
+              </Label>
               <Select
                 value={selectedLocation}
                 onValueChange={setSelectedLocation}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/30 transition-all duration-200">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Locations</SelectItem>
+                <SelectContent className="bg-gray-900 border-white/20 text-white">
+                  <SelectItem value="ALL" className="hover:bg-white/10">
+                    All Locations
+                  </SelectItem>
                   {locations?.map((loc) => (
-                    <SelectItem key={loc.id} value={loc.id ?? ""}>
+                    <SelectItem
+                      key={loc.id}
+                      value={loc.id ?? ""}
+                      className="hover:bg-white/10"
+                    >
                       {loc.name}
                     </SelectItem>
                   ))}
@@ -411,10 +439,10 @@ export function ReportsPage() {
               </Select>
             </div>
 
-            <div className="flex items-end">
+            <div className="flex-shrink-0 lg:w-auto w-full">
               <Button
                 variant="outline"
-                className="w-full border bg-black border-white hover:bg-white hover:text-black"
+                className="w-full lg:w-auto lg:px-8 border-2 border-white/30 bg-white/5 text-white hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
                 onClick={() => {
                   setSelectedYear(currentYear.toString());
                   setSelectedLocation("ALL");
