@@ -433,30 +433,22 @@ export function Students() {
 
       {/* Search and Filters */}
       <Card className="bg-blue-100/10 text-white backdrop-blur-3xl border-0">
-        <CardHeader>
+        {/* <CardHeader>
           <CardTitle>Search Students</CardTitle>
-        </CardHeader>
+        </CardHeader> */}
         <CardContent className="space-y-4">
-          <div className="flex max-sm:flex-col max-sm:w-full flex-wrap   gap-4 items-center">
+          {/* <div className="flex max-sm:flex-col w-full flex-wrap   gap-4 items-center"> */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Search Input */}
-            <div className="relative flex-none xl:min-w-[500px] max-sm:w-full max-sm:mt-2 mt-5">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search by name, admission no, email, or phone..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 border-white/50 w-full"
-              />
-            </div>
 
             {/* Year Filter */}
-            <div className=" max-sm:w-full flex flex-col">
+            <div className="w-full flex flex-col">
               <span className="text-xs text-gray-200 mb-1">Year</span>
               <Select
                 value={yearFilter?.toString() || ""}
                 onValueChange={(value) => setYearFilter(value)}
               >
-                <SelectTrigger className="w-40 max-sm:w-full  border-white/50">
+                <SelectTrigger className="w-full   border-white/50">
                   <SelectValue placeholder="Select Year" />
                 </SelectTrigger>
                 <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
@@ -471,13 +463,13 @@ export function Students() {
 
             {/* Month Filter (only if year is selected) */}
             {yearFilter !== "all" && (
-              <div className=" max-sm:w-full flex flex-col">
+              <div className=" w-full flex flex-col">
                 <span className="text-xs text-gray-200 mb-1">Month</span>
                 <Select
                   value={monthFilter?.toString() || ""}
                   onValueChange={(value) => setMonthFilter(value)}
                 >
-                  <SelectTrigger className="w-40 max-sm:w-full border-white/50">
+                  <SelectTrigger className=" w-full border-white/50">
                     <SelectValue placeholder="Select Month" />
                   </SelectTrigger>
                   <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
@@ -496,7 +488,7 @@ export function Students() {
             )}
 
             {/* Account Type Filter */}
-            <div className=" max-sm:w-full flex flex-col">
+            <div className=" w-full flex flex-col">
               <span className="text-xs text-gray-200 mb-1">Account Type</span>
               <Select
                 value={accountTypeFilter}
@@ -504,7 +496,7 @@ export function Students() {
                   setAccountTypeFilter(value as "all" | "funded" | "regular")
                 }
               >
-                <SelectTrigger className="w-40 max-sm:w-full border-white/50">
+                <SelectTrigger className=" w-full border-white/50">
                   <SelectValue placeholder="All Accounts" />
                 </SelectTrigger>
                 <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
@@ -516,13 +508,13 @@ export function Students() {
             </div>
 
             {/* Location Filter */}
-            <div className=" max-sm:w-full flex flex-col">
+            <div className=" w-full flex flex-col">
               <span className="text-xs text-gray-200 mb-1">Location</span>
               <Select
                 value={locationTypeFilter}
                 onValueChange={(value) => setLocationTypeFilter(value)}
               >
-                <SelectTrigger className="w-40 max-sm:w-full border-white/50">
+                <SelectTrigger className=" w-full border-white/50">
                   <SelectValue placeholder="Select Location" />
                 </SelectTrigger>
                 <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
@@ -538,13 +530,13 @@ export function Students() {
             </div>
 
             {/* Batch Filter */}
-            <div className=" max-sm:w-full flex flex-col">
+            <div className=" w-full flex flex-col">
               <span className="text-xs text-gray-200 mb-1">Batch</span>
               <Select
                 value={batchTypeFilter}
                 onValueChange={(value) => setBatchTypeFilter(value)}
               >
-                <SelectTrigger className="w-40 max-sm:w-full border-white/50">
+                <SelectTrigger className=" w-full border-white/50">
                   <SelectValue placeholder="Select Batch" />
                 </SelectTrigger>
                 <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
@@ -562,13 +554,13 @@ export function Students() {
             </div>
 
             {/* Mode Filter */}
-            <div className=" max-sm:w-full flex flex-col">
+            <div className=" w-full flex flex-col">
               <span className="text-xs text-gray-200 mb-1">Mode</span>
               <Select
                 value={modeFilter}
                 onValueChange={(value) => setModeFilter(value)}
               >
-                <SelectTrigger className="w-40 max-sm:w-full border-white/50">
+                <SelectTrigger className=" w-full border-white/50">
                   <SelectValue placeholder="Mode" />
                 </SelectTrigger>
                 <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
@@ -580,13 +572,13 @@ export function Students() {
             </div>
 
             {/* Status Filter */}
-            <div className=" max-sm:w-full flex flex-col">
+            <div className=" w-full flex flex-col">
               <span className="text-xs text-gray-200 mb-1">Status</span>
               <Select
                 value={statusFilter}
                 onValueChange={(value) => setStatusFilter(value)}
               >
-                <SelectTrigger className="w-40 max-sm:w-full border-white/50">
+                <SelectTrigger className="w-full border-white/50">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
@@ -600,7 +592,7 @@ export function Students() {
             </div>
 
             {/* Switched Filter */}
-            <div className=" max-sm:w-full flex flex-col">
+            <div className=" w-full flex flex-col">
               <span className="text-xs text-gray-200 mb-1">
                 Switched Students
               </span>
@@ -608,7 +600,7 @@ export function Students() {
                 value={switchFilter ? "true" : "false"}
                 onValueChange={(value) => setSwitchFilter(value === "true")}
               >
-                <SelectTrigger className="w-40 max-sm:w-full border-white/50">
+                <SelectTrigger className=" w-full border-white/50">
                   <SelectValue placeholder="All Students" />
                 </SelectTrigger>
                 <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
@@ -619,13 +611,13 @@ export function Students() {
             </div>
 
             {/* Fee Status Filter */}
-            <div className=" max-sm:w-full flex flex-col">
+            <div className=" w-full flex flex-col">
               <span className="text-xs text-gray-200 mb-1">Fee Status</span>
               <Select
                 value={feeStatusFilter}
                 onValueChange={(value) => setFeeStatusFilter(value)}
               >
-                <SelectTrigger className="w-36 border-white/50">
+                <SelectTrigger className="w-full border-white/50">
                   <SelectValue placeholder="Fee Status" />
                 </SelectTrigger>
                 <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
@@ -637,8 +629,8 @@ export function Students() {
             </div>
 
             {/* Due This Week Filter */}
-            <div className=" max-sm:w-full flex flex-col">
-              <div className="flex items-center space-x-2">
+            <div className=" w-full flex flex-col">
+              <div className="flex items-center mt-auto justify-start space-x-2">
                 <Checkbox
                   id="dueThisWeek"
                   checked={dueThisWeekFilter}
@@ -655,9 +647,19 @@ export function Students() {
                 </Label>
               </div>
             </div>
+            <div className="relative flex-none xl:col-span-2 w-full max-sm:mt-2 mt-5">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+              <Input
+                placeholder="Search by name, admission no, email, or phone..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 border-white/50 w-full"
+              />
+            </div>
             <Button
               variant="ghost"
-              className="w-[100px] bg-black border border-white"
+              className="w-[100px] mt-auto mb-1 bg-black border border-white"
               onClick={handleResetFilters}
               size={"sm"}
             >
