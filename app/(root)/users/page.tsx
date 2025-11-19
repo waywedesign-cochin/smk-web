@@ -5,7 +5,7 @@ import DarkVeil from "@/components/DarkVeil";
 
 const UsersPage = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen  bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-2">
       <div className="">
         <div className="relative rounded-2xl overflow-hidden">
           {/* Darkveil background */}

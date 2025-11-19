@@ -217,12 +217,12 @@ export default function ActivityLogPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-[#0A1533] text-white  space-y-6">
+    <div className="min-h-screen  bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-2 rounded-md text-white  space-y-6">
       {/* Header */}
       <div className="relative rounded-2xl overflow-hidden">
         {/* Darkveil background */}
-        <div className="absolute inset-0 z-0 h-[300px] w-full">
-          <DarkVeil />
+        <div className="absolute top-0 left-0 right-0 z-0 h-[140px] bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.1),transparent_50%)]"></div>
         </div>
         {/* Header content */}
         <div className="relative z-10 flex justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2 items-center p-5 text-white">

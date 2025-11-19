@@ -369,10 +369,10 @@ export function Students() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="relative rounded-2xl overflow-hidden">
+    <div className="space-y-6 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-2 ">
+      <div className="relative rounded-2xl overflow-hidden w-full">
         {/* Darkveil background */}
-        <div className="absolute inset-0 z-0 h-[300px]">
+        <div className="absolute inset-0 z-0 h-[300px] w-full">
           <DarkVeil />
         </div>
 
@@ -671,7 +671,7 @@ export function Students() {
 
       {/* Students Table */}
       <div className=" bg-blue-100/10 rounded-xl p-6   transition-shadow duration-300 space-y-6 w-full">
-        <Card className="overflow-x-auto shadow-md rounded-lg border border-gray-200/10 bg-[#141617]">
+        <Card className="overflow-x-auto shadow-md rounded-lg border border-gray-200/10 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 ">
           <CardHeader className="bg-gray-50/10 hover:bg-gray-50/10 py-2">
             <CardDescription className="text-white">
               All registered students in the system
@@ -682,7 +682,7 @@ export function Students() {
           </CardHeader>
           <CardContent className="p-0 ">
             <Table className="min-w-full divide-y divide-gray-200/10 bg-black">
-              <TableHeader className="bg-gray-50/10 hover:bg-[#141617]">
+              <TableHeader className="bg-gray-50/10 hover:bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 ">
                 <TableRow className="bg-black border-none">
                   <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Student Details
@@ -720,8 +720,8 @@ export function Students() {
                       key={idx}
                       className={`${
                         idx % 2 === 0
-                          ? "bg-black/10 hover:bg-black/20"
-                          : "bg-indigo-50/10 hover:bg-indigo-50/20"
+                          ? " bg-gradient-to-br from-gray-950/10 via-gray-900/10 to-gray-950/10"
+                          : " bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950"
                       }  transition-colors rounded-lg border-0 `}
                     >
                       <TableCell className="px-6 py-4 whitespace-nowrap">

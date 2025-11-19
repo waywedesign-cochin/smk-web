@@ -278,7 +278,7 @@ export const CashBookPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-[#0A1533] text-white p-2 rounded-md space-y-6">
+    <div className="min-h-screen  bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white p-2 rounded-md space-y-6">
       {/* Header */}
       <div className="relative flex items-center justify-between border border-white/10 rounded-2xl p-4 shadow-xl overflow-hidden">
         {/* DarkVeil background */}
