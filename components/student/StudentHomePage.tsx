@@ -178,7 +178,7 @@ export function Students() {
   useEffect(() => {
     if (locationTypeFilter) {
       console.log("Fetching batches for location:", locationTypeFilter);
-      dispatch(fetchBatches({ location: locationTypeFilter, limit: 0 }));
+      dispatch(fetchBatches({ location: locationTypeFilter, status : "ACTIVE", limit: 0 }));
     }
   }, [locationTypeFilter, dispatch]);
 
@@ -369,7 +369,7 @@ export function Students() {
   };
 
   return (
-    <div className="space-y-6 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-2 ">
+    <div className="space-y-6 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-2 rounded-md">
       <div className="relative rounded-2xl overflow-hidden w-full">
         {/* Darkveil background */}
         <div className="absolute inset-0 z-0 h-[300px] w-full">
