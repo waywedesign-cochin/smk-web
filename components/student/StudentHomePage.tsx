@@ -178,7 +178,13 @@ export function Students() {
   useEffect(() => {
     if (locationTypeFilter) {
       console.log("Fetching batches for location:", locationTypeFilter);
-      dispatch(fetchBatches({ location: locationTypeFilter, status : "ACTIVE", limit: 0 }));
+      dispatch(
+        fetchBatches({
+          location: locationTypeFilter,
+          status: "ACTIVE",
+          limit: 0,
+        })
+      );
     }
   }, [locationTypeFilter, dispatch]);
 
@@ -555,7 +561,7 @@ export function Students() {
 
             {/* Mode Filter */}
             <div className=" w-full flex flex-col">
-              <span className="text-xs text-gray-200 mb-1">Mode</span>
+              <span className="text-xs text-gray-200 mb-1">Batch Mode</span>
               <Select
                 value={modeFilter}
                 onValueChange={(value) => setModeFilter(value)}
@@ -572,7 +578,7 @@ export function Students() {
             </div>
 
             {/* Status Filter */}
-            <div className=" w-full flex flex-col">
+            {/* <div className=" w-full flex flex-col">
               <span className="text-xs text-gray-200 mb-1">Status</span>
               <Select
                 value={statusFilter}
@@ -589,7 +595,7 @@ export function Students() {
                   <SelectItem value="CANCELLED">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
 
             {/* Switched Filter */}
             <div className=" w-full flex flex-col">
