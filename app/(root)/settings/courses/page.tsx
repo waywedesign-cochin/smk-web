@@ -63,7 +63,7 @@ function CoursesPage() {
   };
 
   return (
-    <div className="space-y-6 ">
+    <div className="space-y-6 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-2 rounded-md ">
       {/* Header */}
       <div className="relative rounded-2xl overflow-hidden">
         {/* Darkveil background */}

@@ -188,11 +188,11 @@ export function Batches() {
   const years = Array.from({ length: 12 }, (_, i) => currentYear - 1 + i);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-2 rounded-md">
       {/* Header */}
-      <div className="relative rounded-2xl overflow-hidden">
+      <div className="relative rounded-2xl overflow-hidden w-full">
         {/* Darkveil background */}
-        <div className="absolute inset-0 z-0 h-[300px]">
+        <div className="absolute inset-0 z-0 h-[300px] w-full">
           <DarkVeil />
         </div>
 
@@ -221,7 +221,7 @@ export function Batches() {
       </div>
       {/* Filters */}
 
-      <Card className="bg-blue-100/10 text-white border-0">
+      <Card className="bg-gradient-to-br from-white/5 to-white/10 text-white border-0">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2 text-white">
             <Filter className="h-5 w-5 text-blue-300" /> Filters
