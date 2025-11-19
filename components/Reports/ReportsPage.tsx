@@ -49,6 +49,7 @@ import BatchPerformanceChart from "./BatchPerformanceChart";
 import LocationComparisonChart from "./LocationComparisonChart";
 import PaymentMethodPie from "./PaymentMethodPie";
 import CourseRevenueBar from "./CourseRevenueBar";
+import { sum } from "lodash";
 
 // Colors
 const COLORS = {
@@ -156,6 +157,7 @@ export function ReportsPage() {
       dispatch(fetchCurrentUser());
     }
   }, [locations, currentUser, dispatch]);
+  console.log(summary);
 
   return (
     <div className="space-y-6">
@@ -197,43 +199,48 @@ export function ReportsPage() {
             </div>
           </CardHeader>
           <CardContent className="relative">
-            {loading || !summary?.totalRevenue === undefined ? (
+            {loading || summary?.totalRevenue === undefined ? (
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             ) : (
               <>
                 <div className="text-3xl font-bold text-gray-900 mb-2">
                   ₹{summary?.totalRevenue?.toLocaleString() ?? "0"}
                 </div>
+                {summary?.totalRevenue !== 0 && (
+                  <div>
+                    {(() => {
+                      const growthValue = summary?.revenueGrowth
+                        ? Number(
+                            String(summary.revenueGrowth)
+                              .replace("%", "")
+                              .trim()
+                          )
+                        : 0;
 
-                {(() => {
-                  const growthValue = summary?.revenueGrowth
-                    ? Number(
-                        String(summary.revenueGrowth).replace("%", "").trim()
-                      )
-                    : 0;
-
-                  return (
-                    <div className="flex items-center gap-1.5">
-                      <div
-                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                          growthValue >= 0
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {growthValue >= 0 ? (
-                          <TrendingUp className="h-3.5 w-3.5" />
-                        ) : (
-                          <TrendingDown className="h-3.5 w-3.5" />
-                        )}
-                        <span>{Math.abs(growthValue).toFixed(1)}%</span>
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        vs last month
-                      </span>
-                    </div>
-                  );
-                })()}
+                      return (
+                        <div className="flex items-center gap-1.5">
+                          <div
+                            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                              growthValue >= 0
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {growthValue >= 0 ? (
+                              <TrendingUp className="h-3.5 w-3.5" />
+                            ) : (
+                              <TrendingDown className="h-3.5 w-3.5" />
+                            )}
+                            <span>{Math.abs(growthValue).toFixed(1)}%</span>
+                          </div>
+                          <span className="text-xs text-gray-500">
+                            vs last month
+                          </span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
               </>
             )}
           </CardContent>
@@ -259,9 +266,11 @@ export function ReportsPage() {
                 <div className="text-3xl font-bold text-gray-900 mb-2">
                   {summary?.collectionRate}
                 </div>
-                <div className="text-xs text-green-600 bg-green-500/10  px-2 py-1 rounded-full w-fit">
-                  ₹{summary?.totalCollections.toLocaleString()} collected
-                </div>
+                {summary?.collectionRate !== "0.00%" && (
+                  <div className="text-xs text-green-600 bg-green-500/10  px-2 py-1 rounded-full w-fit">
+                    ₹{summary?.totalCollections.toLocaleString()} collected
+                  </div>
+                )}
               </>
             )}
           </CardContent>
@@ -288,24 +297,30 @@ export function ReportsPage() {
                   {summary?.totalStudents}
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div
-                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                      summary?.newAdmissions ?? 0 >= 0
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {summary?.newAdmissions ?? 0 >= 0 ? (
-                      <TrendingUp className="h-3.5 w-3.5" />
-                    ) : (
-                      <TrendingDown className="h-3.5 w-3.5" />
-                    )}
-                    <span>
-                      {summary?.newAdmissions ?? 0 > 0 ? "+" : ""}
-                      {summary?.newAdmissions ?? 0}
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-500">new admissions</span>
+                  {summary?.totalStudents !== 0 && (
+                    <>
+                      <div
+                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                          summary?.newAdmissions ?? 0 >= 0
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {summary?.newAdmissions ?? 0 >= 0 ? (
+                          <TrendingUp className="h-3.5 w-3.5" />
+                        ) : (
+                          <TrendingDown className="h-3.5 w-3.5" />
+                        )}
+                        <span>
+                          {summary?.newAdmissions ?? 0 > 0 ? "+" : ""}
+                          {summary?.newAdmissions ?? 0}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        new admissions
+                      </span>{" "}
+                    </>
+                  )}
                 </div>
               </>
             )}
@@ -332,14 +347,19 @@ export function ReportsPage() {
                 <div className="text-3xl font-bold text-gray-900 mb-2">
                   ₹{summary?.outstandingFees.toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-500">
-                  {(
-                    ((summary?.outstandingFees ?? 0) /
-                      (summary?.totalRevenue ?? 1)) *
-                    100
-                  ).toFixed(1)}
-                  % of total revenue
-                </div>
+                {summary?.outstandingFees !== 0 &&
+                  summary?.totalRevenue !== 0 && (
+                    <div className="text-xs text-green-600 bg-green-500/10  px-2 py-1 rounded-full w-fit">
+                      {summary.outstandingFees &&
+                        summary.totalRevenue &&
+                        (
+                          ((summary?.outstandingFees ?? 0) /
+                            (summary?.totalRevenue ?? 1)) *
+                          100
+                        ).toFixed(1)}
+                      % of total revenue
+                    </div>
+                  )}
               </>
             )}
           </CardContent>
