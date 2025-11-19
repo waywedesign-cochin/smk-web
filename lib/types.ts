@@ -84,6 +84,8 @@ export interface BatchResponse {
     totalEnrollment: number;
     availableSlots: number;
     totalRevenue: number;
+    outstandingFees: number;
+    totalFees?: number;
   };
   batches: Batch[];
   pagination: {

@@ -1,5 +1,4 @@
 import { Batch, BatchResponse } from "@/lib/types";
-import { BatchFormValues } from "@/lib/validation/batchSchema";
 import { BASE_URL } from "@/redux/baseUrl";
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
@@ -11,6 +10,8 @@ interface DashboardStats {
   totalEnrollment: number;
   availableSlots: number;
   totalRevenue: number;
+  outstandingFees: number;
+  totalFees?: number;
 }
 
 interface BatchState {
@@ -43,6 +44,8 @@ const initialState: BatchState = {
     totalEnrollment: 0,
     availableSlots: 0,
     totalRevenue: 0,
+    outstandingFees: 0,
+    totalFees: 0,
   },
   pagination: { currentPage: 1, limit: 10, totalPages: 0, totalCount: 0 },
   loading: false,
@@ -84,12 +87,9 @@ export const fetchBatches = createAsyncThunk<BatchResponse, FetchBatchesParams>(
   "batches/fetch",
   async (params = {}, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `${BASE_URL}/api/batch/get-batches`,
-        {
-          params: params || {},
-        }
-      );
+      const response = await axios.get(`${BASE_URL}/api/batch/get-batches`, {
+        params: params || {},
+      });
       return response.data.data as BatchResponse;
     } catch (error: unknown) {
       let errorMessage = "Failed to fetch batches";

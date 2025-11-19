@@ -30,6 +30,7 @@ import {
   Users,
   Loader2,
   Download,
+  IndianRupee,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
@@ -194,7 +195,7 @@ export function ReportsPage() {
                 Total Revenue
               </CardTitle>
               <div className="p-2 bg-blue-500/10 rounded-lg">
-                <DollarSign className="h-5 w-5 text-blue-600" />
+                <IndianRupee className="h-5 w-5 text-blue-600" />
               </div>
             </div>
           </CardHeader>
