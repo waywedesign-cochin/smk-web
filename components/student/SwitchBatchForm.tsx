@@ -89,7 +89,7 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
           required
           disabled={loading}
         >
-          <SelectTrigger className="border-white/80 w-full !h-16">
+          <SelectTrigger className="border-white/80 w-full text-wrap !h-16">
             <SelectValue placeholder="Choose a batch" />
           </SelectTrigger>
           <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
@@ -98,9 +98,7 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
               .map((batch) => (
                 <SelectItem key={batch.id} value={batch.id ?? ""}>
                   <div className="flex flex-col justify-start items-start">
-                    <span>
-                      {batch.name} - {batch?.course?.name}
-                    </span>
+                    <span className="text-wrap">{batch.name}</span>
                     <span className="text-xs text-gray-300">
                       {batch?.course?.mode} • {batch?.location?.name} • ₹
                       {batch?.course?.baseFee.toLocaleString()}
