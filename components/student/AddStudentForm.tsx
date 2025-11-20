@@ -15,11 +15,13 @@ import { Textarea } from "../ui/textarea";
 
 import { Batch, Student } from "@/lib/types";
 import { StudentSchema, StudentInput } from "@/lib/validation/studentSchema";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { fetchBatches } from "@/redux/features/batch/batchSlice";
+import { Loader2 } from "lucide-react";
 
 interface AddStudentFormProps {
   onSubmit: (studentData: StudentInput) => void;
   onCancel: () => void;
-  batches: Batch[];
   student?: Student;
   loading?: boolean;
 }
@@ -27,10 +29,15 @@ interface AddStudentFormProps {
 const AddStudentForm: React.FC<AddStudentFormProps> = ({
   onSubmit,
   onCancel,
-  batches,
   student,
   loading = false,
 }) => {
+  const dispatch = useAppDispatch();
+  const { batches, loading: batchesLoading } = useAppSelector(
+    (state) => state.batches
+  );
+  const { currentUser } = useAppSelector((state) => state.users);
+
   const [formData, setFormData] = useState<StudentInput>({
     name: student?.name || "",
     email: student?.email || "",
@@ -42,6 +49,8 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
     admissionNo: student?.admissionNo || "",
     referralInfo: student?.referralInfo || "",
   });
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
 
   const [errors, setErrors] = useState<
     Partial<Record<keyof StudentInput, string>>
@@ -72,6 +81,16 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
     validateField(field, value);
   };
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 250);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [search]);
+
   const handleSubmit = () => {
     const result = StudentSchema.safeParse(formData);
 
@@ -88,6 +107,17 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
     setErrors({});
     onSubmit(result.data);
   };
+
+  useEffect(() => {
+    dispatch(
+      fetchBatches({
+        status: "ACTIVE",
+        limit: 10,
+        search: debouncedSearch ?? undefined,
+        location: currentUser?.locationId || undefined,
+      })
+    );
+  }, [dispatch, debouncedSearch]);
 
   return (
     <div className="w-full mx-auto rounded-xl p-6 bg-[#0E1628] text-gray-200 border border-white/10 shadow-xl">
@@ -200,28 +230,59 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
                 }
                 disabled={loading}
               >
-                <SelectTrigger className="bg-[#1B2437] border border-gray-600 text-white max-w-full">
+                <SelectTrigger className="bg-[#1B2437] border border-gray-600 text-white w-full ">
                   <SelectValue
                     placeholder="Select batch"
                     className="truncate"
                   />
                 </SelectTrigger>
 
-                <SelectContent className="bg-[#1B2437] text-white text-xs max-h-48 overflow-y-auto">
-                  {batches
-                    .filter(
+                <SelectContent className="bg-[#1B2437] text-white  text-xs max-h-90 overflow-y-auto w-[var(--radix-select-trigger-width)]">
+                  {/*  Search Bar (Shadcn Input) */}
+                  <div className="p-2 sticky top-0 bg-[#1B2437] z-10 border-b border-gray-700">
+                    <Input
+                      placeholder="Search batch..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="bg-[#111827] text-white border border-gray-600 h-8 text-xs"
+                    />
+                  </div>
+
+                  {/* Filtered Batch List */}
+                  {batchesLoading ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="animate-spin text-muted-foreground" />
+                    </div>
+                  ) : batches.filter(
                       (b) =>
-                        b.status === "ACTIVE" && b.currentCount !== b.slotLimit
-                    )
-                    .map((batch) => (
-                      <SelectItem
-                        key={batch.id}
-                        value={batch.id as string}
-                        className="text-xs w-full "
-                      >
-                        {batch.name} ({batch.course?.name})
-                      </SelectItem>
-                    ))}
+                        b.currentCount !== b.slotLimit &&
+                        `${b.name} ${b.course?.name}`
+                          .toLowerCase()
+                          .includes(search.toLowerCase())
+                    ).length === 0 ? (
+                    <div className="text-center py-4 text-gray-400 text-xs">
+                      No batches found
+                    </div>
+                  ) : (
+                    batches
+                      .filter(
+                        (b) =>
+                          b.status === "ACTIVE" &&
+                          b.currentCount !== b.slotLimit &&
+                          `${b.name} ${b.course?.name}`
+                            .toLowerCase()
+                            .includes(search.toLowerCase())
+                      )
+                      .map((batch) => (
+                        <SelectItem
+                          key={batch.id}
+                          value={batch.id as string}
+                          className="text-xs w-full truncate"
+                        >
+                          {batch.name} ({batch.course?.name})
+                        </SelectItem>
+                      ))
+                  )}
                 </SelectContent>
               </Select>
 
