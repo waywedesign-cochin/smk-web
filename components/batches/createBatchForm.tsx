@@ -185,7 +185,7 @@ export default function AddBatchSheet({
 
       <SheetContent
         side="right"
-        className="!max-w-3xl w-full p-0 bg-[#111827] text-white overflow-y-auto"
+        className="!max-w-lg w-full p-0 bg-[#111827] text-white overflow-y-auto"
       >
         {/* Header */}
         <SheetHeader className="px-8 py-6 border-b border-gray-800">
@@ -455,7 +455,7 @@ export default function AddBatchSheet({
             <Button
               disabled={isSubmitting}
               onClick={handleSubmit(submitHandler)}
-              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+              className="bg-blue/90 border border-gray-500 text-white hover:bg-white hover:text-black hover:border-black"
             >
               {isSubmitting ? (
                 <>
