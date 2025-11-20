@@ -105,7 +105,7 @@ export function useCashbookForm({
     const loadBatches = async () => {
       setLoadingBatches(true);
       try {
-        await dispatch(fetchBatches({ location: locationId })).unwrap();
+        await dispatch(fetchBatches({ location: locationId,limit:0,status:"ACTIVE" })).unwrap();
         fetchedBatchesForLocation.current = locationId;
       } catch (error) {
         console.error("❌ Failed to fetch batches:", error);

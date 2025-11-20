@@ -129,7 +129,13 @@ export function LedgerForm({
   // Fetch batches when location changes
   useEffect(() => {
     if (formData.locationId) {
-      dispatch(fetchBatches({ location: formData.locationId, limit: 100 }));
+      dispatch(
+        fetchBatches({
+          location: formData.locationId,
+          limit: 0,
+          status: "ACTIVE",
+        })
+      );
     }
   }, [formData.locationId, dispatch]);
 
@@ -399,7 +405,7 @@ export function LedgerForm({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {/* Transaction Type */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-300 block">
