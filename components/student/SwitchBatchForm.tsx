@@ -140,10 +140,10 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
           <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
             <SelectItem value="TRANSFER">
               {" "}
-              Move existing fee records to the new batch
+              Keep same fees no change (Late switch).
             </SelectItem>
             <SelectItem value="NEW_FEE">
-              Create new fee record for new batch
+              Create new fee record for new batch (Early switch).
             </SelectItem>
             <SelectItem value="SPLIT">
               Keep current batch fees, apply new fees in new batch
