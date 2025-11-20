@@ -306,7 +306,7 @@ export function Batches() {
               <SelectContent className="bg-[#0A1533] text-white border-white/20">
                 <SelectItem value="all">All Courses</SelectItem>
                 {courses.map((course) => (
-                  <SelectItem key={course.id} value={course.name}>
+                  <SelectItem key={course.id} value={course.id as string}>
                     {course.name}
                   </SelectItem>
                 ))}
