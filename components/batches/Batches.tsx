@@ -32,6 +32,10 @@ import {
   ChevronRight,
   IndianRupee,
   Filter,
+  AlertCircle,
+  Activity,
+  CheckCheck,
+  Loader2,
 } from "lucide-react";
 import AddBatchSheet from "./createBatchForm";
 import { Batch, BatchMode, BatchStatus } from "@/lib/types";
@@ -372,7 +376,7 @@ export function Batches() {
       </Card>
 
       {/* Batch Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {[
           {
             icon: Users,
@@ -382,21 +386,33 @@ export function Batches() {
           },
           {
             icon: GraduationCap,
-            color: "blue",
+            color: "purple",
             label: "Total Enrollment",
             value: dashboardStats?.totalEnrollment,
           },
           {
             icon: BookOpen,
-            color: "red",
+            color: "orange",
             label: "Available Slots",
             value: dashboardStats?.availableSlots,
           },
           {
             icon: IndianRupee,
-            color: "purple",
-            label: "Total Revenue",
+            color: "blue",
+            label: "Total Fees",
+            value: dashboardStats?.totalFees?.toLocaleString("en-IN"),
+          },
+          {
+            icon: CheckCheck,
+            color: "green",
+            label: "Total Collected Revenue",
             value: dashboardStats?.totalRevenue.toLocaleString("en-IN"),
+          },
+          {
+            icon: AlertCircle,
+            color: "red",
+            label: "Outstanding Fees",
+            value: dashboardStats?.outstandingFees.toLocaleString("en-IN"),
           },
         ].map(({ icon: Icon, color, label, value }, i) => (
           <Card
@@ -412,7 +428,11 @@ export function Batches() {
                   <p className="text-sm font-medium text-muted-foreground mb-1">
                     {label}
                   </p>
-                  <p className="text-2xl font-bold tracking-tight">{value}</p>
+                  {loading || !dashboardStats ? (
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  ) : (
+                    <p className="text-2xl font-bold tracking-tight">{value}</p>
+                  )}
                 </div>
               </div>
             </CardContent>

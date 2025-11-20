@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const COLORS = { secondary: "#06b6d4" }; 
+const COLORS = { secondary: "#10B981" }; 
 
 export default function CourseRevenueBar({ data }: { data: Report[] }) {
   return (
@@ -56,7 +56,7 @@ export default function CourseRevenueBar({ data }: { data: Report[] }) {
                   type="category"
                   width={150}
                   stroke="#6b7280"
-                  tick={{ fill: "#fff", fontSize: 13, fontWeight: 500 }}
+                  tick={{ fill: "#fff", fontSize: 10, fontWeight: 500 }}
                 />
                 <Tooltip
                   formatter={(value) => `₹${Number(value).toLocaleString()}`}

@@ -3,7 +3,7 @@ import React from "react";
 const DarkVeil = () => {
   return (
     <div>
-      <div className="absolute top-0 left-0 right-0 z-0 h-[200px] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="absolute top-0 left-0 right-0 z-0 h-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         {/* Subtle gradient orbs for depth */}
         <div className="absolute -top-20 right-0 w-80 h-80 bg-gradient-to-br from-emerald-500/15 to-teal-600/15 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-20 left-0 w-80 h-80 bg-gradient-to-tr from-blue-500/10 to-cyan-600/10 rounded-full blur-3xl"></div>
@@ -39,7 +39,7 @@ const DarkVeil = () => {
         </div>
 
         {/* Candlestick pattern overlay */}
-        <div className="absolute right-10 top-10 opacity-5">
+        <div className="absolute right-10 top-10 opacity-10">
           <div className="flex gap-2 items-end">
             <div className="w-1 h-16 bg-emerald-500"></div>
             <div className="w-1 h-12 bg-emerald-500"></div>
