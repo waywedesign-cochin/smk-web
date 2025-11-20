@@ -107,7 +107,9 @@ const months = [
 ];
 export function Students() {
   const dispatch = useAppDispatch();
-  const batches = useAppSelector((state) => state.batches.batches);
+  const { batches, loading: batchesLoading } = useAppSelector(
+    (state) => state.batches
+  );
   const { students, pagination, loading, submitting, error } = useAppSelector(
     (state) => state.students
   );
@@ -115,6 +117,8 @@ export function Students() {
   const { currentUser } = useAppSelector((state) => state.users);
   // State variables
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [batchSearch, setBatchSearch] = useState("");
+  const [batchDebouncedSearch, setBatchDebouncedSearch] = useState(batchSearch);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
   const [accountTypeFilter, setAccountTypeFilter] = useState<
@@ -182,11 +186,12 @@ export function Students() {
         fetchBatches({
           location: locationTypeFilter,
           status: "ACTIVE",
-          limit: 0,
+          limit: 10,
+          search: batchDebouncedSearch ?? undefined,
         })
       );
     }
-  }, [locationTypeFilter, dispatch]);
+  }, [locationTypeFilter, dispatch, batchDebouncedSearch]);
 
   // Set initial location when locations are loaded
   useEffect(() => {
@@ -217,6 +222,17 @@ export function Students() {
       clearTimeout(handler);
     };
   }, [searchTerm]);
+
+  //batch search debounce
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setBatchDebouncedSearch(batchSearch);
+    }, 250);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [batchSearch]);
 
   // Main data fetching with all filters
   useEffect(() => {
@@ -426,7 +442,6 @@ export function Students() {
                         selectedStudent ? handleUpdateStudent : handleAddStudent
                       }
                       onCancel={() => setIsAddFormOpen(false)}
-                      batches={batches}
                       loading={submitting}
                     />
                   </div>
@@ -542,19 +557,64 @@ export function Students() {
                 value={batchTypeFilter}
                 onValueChange={(value) => setBatchTypeFilter(value)}
               >
-                <SelectTrigger className=" w-full border-white/50">
-                  <SelectValue placeholder="Select Batch" />
+                <SelectTrigger className=" border border-gray-600 text-white w-full">
+                  <SelectValue
+                    placeholder="Select Batch"
+                    className="truncate"
+                  />
                 </SelectTrigger>
-                <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
-                  <SelectItem value="all">All Batches</SelectItem>
-                  {filteredBatches?.map((batch) => (
-                    <SelectItem key={batch.id} value={batch.id as string}>
-                      {batch.name}{" "}
-                      <span className="capitalize">
-                        ({batch?.status.toLowerCase()})
-                      </span>
-                    </SelectItem>
-                  ))}
+
+                <SelectContent className="bg-[#1B2437] text-white text-xs max-h-90 overflow-y-auto w-[var(--radix-select-trigger-width)]">
+                  {/*  Search Bar (Shadcn Input) */}
+                  <div className="p-2 sticky top-0 bg-[#1B2437] z-10 border-b border-gray-700">
+                    <Input
+                      placeholder="Search batch..."
+                      value={batchSearch}
+                      onChange={(e) => setBatchSearch(e.target.value)}
+                      className="bg-[#111827] text-white border border-gray-600 h-8 text-xs"
+                    />
+                  </div>
+
+                  {/*  All Batches Option */}
+                  <SelectItem value="all" className="text-xs w-full truncate">
+                    All Batches
+                  </SelectItem>
+
+                  {/* Filtered Batch List (With Search) */}
+                  {/* Filtered Batch List (With Search) */}
+                  {batchesLoading ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="animate-spin text-muted-foreground" />
+                    </div>
+                  ) : filteredBatches?.filter((batch) =>
+                      `${batch.name} ${batch.status}`
+                        .toLowerCase()
+                        .includes(batchSearch.toLowerCase())
+                    ).length === 0 ? (
+                    <div className="text-center py-4 text-gray-400 text-xs">
+                      No batches found
+                    </div>
+                  ) : (
+                    // ✅ Results available
+                    filteredBatches
+                      ?.filter((batch) =>
+                        `${batch.name} ${batch.status}`
+                          .toLowerCase()
+                          .includes(batchSearch.toLowerCase())
+                      )
+                      .map((batch) => (
+                        <SelectItem
+                          key={batch.id}
+                          value={batch.id as string}
+                          className="text-xs w-full truncate"
+                        >
+                          {batch.name}{" "}
+                          <span className="capitalize">
+                            ({batch.status.toLowerCase()})
+                          </span>
+                        </SelectItem>
+                      ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
