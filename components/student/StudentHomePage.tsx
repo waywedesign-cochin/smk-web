@@ -564,13 +564,20 @@ export function Students() {
                   />
                 </SelectTrigger>
 
-                <SelectContent className="bg-[#1B2437] text-white text-xs max-h-90 overflow-y-auto w-[var(--radix-select-trigger-width)]">
+                <SelectContent
+                  onPointerDown={(e) => e.preventDefault()}
+                  className="bg-[#1B2437] text-white text-xs max-h-90 overflow-y-auto w-[var(--radix-select-trigger-width)]"
+                >
                   {/*  Search Bar (Shadcn Input) */}
-                  <div className="p-2 sticky top-0 bg-[#1B2437] z-10 border-b border-gray-700">
+                  <div
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="p-2 sticky top-0 bg-[#1B2437] z-10 border-b border-gray-700"
+                  >
                     <Input
                       placeholder="Search batch..."
                       value={batchSearch}
                       onChange={(e) => setBatchSearch(e.target.value)}
+                      onPointerDown={(e) => e.stopPropagation()}
                       className="bg-[#111827] text-white border border-gray-600 h-8 text-xs"
                     />
                   </div>
@@ -581,39 +588,27 @@ export function Students() {
                   </SelectItem>
 
                   {/* Filtered Batch List (With Search) */}
-                  {/* Filtered Batch List (With Search) */}
                   {batchesLoading ? (
                     <div className="flex justify-center py-4">
                       <Loader2 className="animate-spin text-muted-foreground" />
                     </div>
-                  ) : filteredBatches?.filter((batch) =>
-                      `${batch.name} ${batch.status}`
-                        .toLowerCase()
-                        .includes(batchSearch.toLowerCase())
-                    ).length === 0 ? (
+                  ) : batches.length === 0 ? (
                     <div className="text-center py-4 text-gray-400 text-xs">
                       No batches found
                     </div>
                   ) : (
-                    // ✅ Results available
-                    filteredBatches
-                      ?.filter((batch) =>
-                        `${batch.name} ${batch.status}`
-                          .toLowerCase()
-                          .includes(batchSearch.toLowerCase())
-                      )
-                      .map((batch) => (
-                        <SelectItem
-                          key={batch.id}
-                          value={batch.id as string}
-                          className="text-xs w-full truncate"
-                        >
-                          {batch.name}{" "}
-                          <span className="capitalize">
-                            ({batch.status.toLowerCase()})
-                          </span>
-                        </SelectItem>
-                      ))
+                    batches.map((batch) => (
+                      <SelectItem
+                        key={batch.id}
+                        value={batch.id as string}
+                        className="text-xs w-full truncate"
+                      >
+                        {batch.name}{" "}
+                        <span className="capitalize">
+                          ({batch.status.toLowerCase()})
+                        </span>
+                      </SelectItem>
+                    ))
                   )}
                 </SelectContent>
               </Select>
