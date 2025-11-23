@@ -16,6 +16,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { Student, Fee, Payment } from "@/lib/types";
 import { PaymentSchema } from "@/lib/validation/paymentSchema";
+import { fa } from "zod/v4/locales";
 
 export interface PaymentInput {
   id?: string;
@@ -62,7 +63,11 @@ export default function PaymentForm({
     dueDate: existingPayment?.dueDate
       ? new Date(existingPayment.dueDate)
       : null,
-    isAdvance: true,
+    isAdvance: student?.fees?.some(
+      (fee) => fee.advanceAmount && fee.advanceAmount > 0
+    )
+      ? false
+      : true,
   });
 
   useEffect(() => {

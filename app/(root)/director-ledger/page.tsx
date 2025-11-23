@@ -21,6 +21,9 @@ export default function DirectorLedgerPage() {
     (state) => state.directorLedger
   );
   const { currentUser, users } = useAppSelector((state) => state.users);
+  const [month, setMonth] = useState((new Date().getMonth() + 1).toString());
+  const [year, setYear] = useState(new Date().getFullYear().toString());
+
   useEffect(() => {
     if (!users || users.length === 0) {
       dispatch(fetchUsers());
@@ -61,9 +64,6 @@ export default function DirectorLedgerPage() {
       })
     );
   }, [dispatch, directorId, pagination.page]);
-
-  const [month, setMonth] = useState((new Date().getMonth() + 1).toString());
-  const [year, setYear] = useState(new Date().getFullYear().toString());
 
   const handleEdit = (entry: DirectorLedgerEntry) => {
     setEditingEntry(entry);

@@ -713,14 +713,14 @@ export default function EntryDialog({
               type="button"
               variant="outline"
               onClick={handleClose}
-              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700 hover:text-white"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-blue/90 border border-gray-500 text-white hover:bg-white hover:text-black hover:border-black"
             >
               {isSubmitting ? (
                 <>

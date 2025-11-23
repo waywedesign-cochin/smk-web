@@ -31,7 +31,7 @@ export function LedgerSummary({ totals }: LedgerSummaryProps) {
       value: totals.otherExpenses,
       color: "from-red-200 to-red-300",
       lightBg: "bg-red-50",
-      textColor: "text-red-300",
+      textColor: "text-red-400",
       description: " Other expenses by director",
     },
     {
