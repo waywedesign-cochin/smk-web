@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DirectorLedgerTotals } from "@/redux/features/directorledger/directorSlice";
-import { de } from "date-fns/locale";
 
 interface LedgerSummaryProps {
   totals: DirectorLedgerTotals | null;
+  debitOrCredit: string;
 }
 
-export function LedgerSummary({ totals }: LedgerSummaryProps) {
+export function LedgerSummary({ totals, debitOrCredit }: LedgerSummaryProps) {
   if (!totals) return null;
 
   const summaryData = [
@@ -43,8 +43,18 @@ export function LedgerSummary({ totals }: LedgerSummaryProps) {
       description: "Payments from Institution to director bank account",
     },
     {
-      title: "Period Balance",
-      value: totals.periodBalance,
+      title:
+        debitOrCredit === "CREDIT"
+          ? "Total Credit"
+          : debitOrCredit === "DEBIT"
+          ? "Total Debit"
+          : "Period Balance",
+      value:
+        debitOrCredit === "CREDIT"
+          ? totals.totalCredit
+          : debitOrCredit === "DEBIT"
+          ? totals.totalDebit
+          : totals.periodBalance,
       color:
         totals.periodBalance >= 0
           ? "from-emerald-200 to-emerald-100"
@@ -52,7 +62,12 @@ export function LedgerSummary({ totals }: LedgerSummaryProps) {
       lightBg: totals.periodBalance >= 0 ? "bg-emerald-50" : "bg-orange-50",
       textColor:
         totals.periodBalance >= 0 ? "text-emerald-100" : "text-orange-100",
-      description: "Closing balance of the period",
+      description:
+        debitOrCredit === "CREDIT"
+          ? "Total credited amount "
+          : debitOrCredit === "DEBIT"
+          ? "Total debited amount"
+          : "Total period balance amount",
     },
   ];
 

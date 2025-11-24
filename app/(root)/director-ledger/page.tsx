@@ -130,7 +130,7 @@ export default function DirectorLedgerPage() {
           year={year}
           setYear={setYear}
         />
-        <LedgerSummary totals={totals} />
+        {/* <LedgerSummary totals={totals} /> */}
 
         {/* Table Section */}
         {loading ? (
