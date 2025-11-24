@@ -52,6 +52,7 @@ export interface DirectorLedgerFilters {
   year?: string;
   search?: string;
   transactionType?: string;
+  debitCredit?: string;
 }
 
 export interface DirectorLedgerPagination {
