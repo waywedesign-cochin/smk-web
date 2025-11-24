@@ -76,7 +76,7 @@ export default function FeeConfigurationTab({
       </CardHeader>
 
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           <div>
             <p className="text-sm text-muted-foreground">Total Fee</p>
             <p className="font-semibold text-lg">
@@ -105,6 +105,22 @@ export default function FeeConfigurationTab({
             <p className="text-sm text-muted-foreground">Fee Payment Mode</p>
             <p className="font-semibold text-lg text-blue-800 capitalize">
               {latestFee.feePaymentMode ?? "N/A"}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Fee Status</p>
+            <p
+              className={`font-semibold text-lg ${
+                latestFee.status === "PAID"
+                  ? "text-green-600"
+                  : latestFee.status === "PENDING"
+                  ? "text-yellow-600"
+                  : latestFee.status === "REFUNDED"
+                  ? "text-blue-600"
+                  : "text-red-600"
+              } capitalize`}
+            >
+              {latestFee.status.toLocaleLowerCase() ?? "N/A"}
             </p>
           </div>
         </div>
