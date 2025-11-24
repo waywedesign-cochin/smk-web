@@ -833,9 +833,14 @@ export function Students() {
                       <TableCell className="px-6 py-4 whitespace-nowrap">
                         <p className="font-medium text-white">
                           {student.currentBatch?.name}
-                          {student?.fees?.[0].status === "REFUNDED"
-                            ? <span className="text-gray-400 text-sm"> (Refunded)</span>
-                            : ""}
+                          {student?.fees?.[0].status === "REFUNDED" ? (
+                            <span className="text-gray-400 text-sm">
+                              {" "}
+                              (Refunded)
+                            </span>
+                          ) : (
+                            ""
+                          )}
                         </p>
                         <p className="text-[10px] mt-2 text-white/50">
                           COURSE : {student.currentBatch?.course?.name}
