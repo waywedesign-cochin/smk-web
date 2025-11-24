@@ -88,6 +88,7 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
         finalFee: 0,
         balanceAmount: 0,
         feePaymentMode: "",
+        status: "",
         payments: [],
       };
 
@@ -225,7 +226,9 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
               {/* Main Paid Amount */}
               <div className="text-2xl font-bold text-green-600">
                 ₹
-                {latestFee.balanceAmount != null
+                {latestFee.status === "REFUNDED"
+                  ? 0
+                  : latestFee.balanceAmount != null
                   ? (
                       (latestFee.finalFee ?? 0) - latestFee.balanceAmount
                     ).toLocaleString()
@@ -243,14 +246,18 @@ const DetailsofStudent: React.FC<DetailsofStudentProps> = ({ StudentId }) => {
           <CardContent>
             <div
               className={`text-2xl font-bold ${
-                latestFee.balanceAmount === 0
+                latestFee.status === "PAID"
                   ? "text-green-600"
+                  : latestFee.status === "PENDING"
+                  ? "text-yellow-600"
+                  : latestFee.status === "REFUNDED"
+                  ? "text-blue-600"
                   : "text-red-600"
               }`}
             >
-              {latestFee?.balanceAmount === 0
-                ? "PAID"
-                : `₹${latestFee.balanceAmount?.toLocaleString() ?? 0}`}
+              {latestFee.balanceAmount !== 0
+                ? `₹${latestFee.balanceAmount?.toLocaleString() ?? 0}`
+                : latestFee.status}
             </div>
           </CardContent>
         </Card>

@@ -15,6 +15,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { Fee, Student } from "@/lib/types";
 import { FeeSchema, FeeInput } from "@/lib/validation/feeSchema";
+import { stat } from "fs";
 
 interface FeeData {
   id: string;
@@ -24,6 +25,7 @@ interface FeeData {
   finalFee: string | number;
   balanceAmount: string | number;
   feePaymentMode: string;
+  status: string;
 }
 
 export interface FeeSubmission {
@@ -33,6 +35,7 @@ export interface FeeSubmission {
   finalFee?: number;
   balanceAmount?: number;
   feePaymentMode: string;
+  status: string;
 }
 
 interface FeeConfigurationFormProps {
@@ -58,6 +61,7 @@ export default function FeeConfigurationForm({
     finalFee: "",
     balanceAmount: "",
     feePaymentMode: "",
+    status: "",
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof FeeInput, string>>>(
@@ -83,6 +87,7 @@ export default function FeeConfigurationForm({
           existingConfig.balanceAmount ?? existingConfig.finalFee ?? ""
         ),
         feePaymentMode: existingConfig.feePaymentMode ?? "",
+        status: existingConfig.status ?? "",
       });
     }
   }, [initialConfig, student.fees]);
@@ -161,6 +166,7 @@ export default function FeeConfigurationForm({
       finalFee: feeData.finalFee,
       balanceAmount: feeData.balanceAmount,
       feePaymentMode: feeData.feePaymentMode,
+      status: feeData.status,
     });
 
     if (!result.success) {
@@ -184,6 +190,7 @@ export default function FeeConfigurationForm({
       finalFee: Number(feeData.finalFee || 0),
       balanceAmount: Number(feeData.balanceAmount || 0),
       feePaymentMode: feeData.feePaymentMode,
+      status: feeData.status,
     };
 
     onSave(payload);
@@ -327,6 +334,29 @@ export default function FeeConfigurationForm({
 
           {errors.feePaymentMode && (
             <p className="text-red-400 text-xs mt-1">{errors.feePaymentMode}</p>
+          )}
+        </div>
+        <div>
+          <label className="text-sm mb-1 block">Fee Status</label>
+          <Select
+            value={feeData.status || undefined}
+            onValueChange={(v) => handleInputChange("status", v)}
+            disabled={loading}
+          >
+            <SelectTrigger className="bg-[#1B2437] border border-gray-600 text-white">
+              <SelectValue placeholder="Select fee status" />
+            </SelectTrigger>
+
+            <SelectContent className="bg-[#1B2437] text-white text-sm border-gray-600">
+              <SelectItem value="PENDING" disabled>Pending</SelectItem>
+              <SelectItem value="PAID" disabled>Paid</SelectItem>
+              <SelectItem value="CANCELLED" disabled>Cancelled</SelectItem>
+              <SelectItem value="REFUNDED">Refunded</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {errors.status && (
+            <p className="text-red-400 text-xs mt-1">{errors.status}</p>
           )}
         </div>
 

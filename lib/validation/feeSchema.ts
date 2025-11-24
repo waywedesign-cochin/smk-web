@@ -29,6 +29,13 @@ export const FeeSchema = z.object({
   feePaymentMode: z.enum(["fullPayment", "weekly", "70/30", "others"], {
     message: "Please select a valid fee payment mode",
   }),
+
+  status: z.enum(
+    ["PENDING", "PAID", "CANCELLED", "REFUNDED", "INACTIVE", "ACTIVE"],
+    {
+      message: "Please select a valid status",
+    }
+  ),
 });
 
 export type FeeInput = z.infer<typeof FeeSchema>;

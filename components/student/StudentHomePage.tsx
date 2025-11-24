@@ -685,6 +685,7 @@ export function Students() {
                   <SelectItem value="all">All Students</SelectItem>
                   <SelectItem value="PENDING">Pending</SelectItem>
                   <SelectItem value="PAID">Paid</SelectItem>
+                  <SelectItem value="REFUNDED">Refunded</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -832,6 +833,9 @@ export function Students() {
                       <TableCell className="px-6 py-4 whitespace-nowrap">
                         <p className="font-medium text-white">
                           {student.currentBatch?.name}
+                          {student?.fees?.[0].status === "REFUNDED"
+                            ? <span className="text-gray-400 text-sm"> (Refunded)</span>
+                            : ""}
                         </p>
                         <p className="text-[10px] mt-2 text-white/50">
                           COURSE : {student.currentBatch?.course?.name}
