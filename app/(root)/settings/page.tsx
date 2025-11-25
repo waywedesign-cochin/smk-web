@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { GraduationCap, MapPin } from "lucide-react";
+import { Banknote, GraduationCap, MapPin } from "lucide-react";
 import Link from "next/link";
 
 // This is a reusable component for each setting card.
@@ -73,6 +73,12 @@ export default function SettingsPage() {
           icon={MapPin}
           title="Location Management"
           description="Manage multiple branches and configure location-specific settings."
+        />
+        <SettingsCard
+          path="/settings/banks"
+          icon={Banknote}
+          title="Bank Accounts"
+          description="Manage multiple Accounts"
         />
       </div>
     </div>

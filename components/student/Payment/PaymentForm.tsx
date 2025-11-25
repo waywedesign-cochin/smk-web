@@ -162,7 +162,7 @@ export default function PaymentForm({
               <SelectValue placeholder="Select payment mode" />
             </SelectTrigger>
             <SelectContent className="bg-[#1B2437] text-white text-xs">
-              <SelectItem value="CARD">Card</SelectItem>
+              <SelectItem value="RAZORPAY">Razorpay</SelectItem>
               <SelectItem value="UPI">UPI</SelectItem>
               <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
               {existingPayment?.mode === "CASH" && (
