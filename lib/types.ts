@@ -11,6 +11,16 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
 }
+export type BankAccount = {
+  id: string; // Assuming Prisma uses string CUID/UUID
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  ifscCode: string;
+  branch: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
 
 // export enum UserRole {
 //   ADMIN = "ADMIN",
