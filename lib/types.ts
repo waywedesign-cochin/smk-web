@@ -184,21 +184,41 @@ export interface Payment {
   transactionId?: string;
   note?: string;
   status: "PENDING" | "COMPLETED" | "FAILED" | string; // optional enum expansion
+  bankTransaction?: BankTransaction;
   studentId: string;
   feeId: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface BankStatement {
-  id: number;
-  date: Date;
-  particulars: string;
-  debit: number;
-  credit: number;
+export interface BankTransaction {
+  id: string;
+  transactionDate: Date;
+  transactionType: "DEBIT" | "CREDIT";
   transactionId?: string;
+  amount: number;
+  description?: string;
+  transactionMode: string;
+  status: "PENDING" | "COMPLETED" | "FAILED";
+  category: "STUDENT_PAYMENT" | "FEE_REFUND" | "OTHER";
+
+  bankAccountId: string;
+  locationId: string;
+
+  studentId?: string;
+  feeId?: string;
+  directorId?: string;
+
   student?: Student;
+  fee?: Fee;
+  director?: User;
+  bankAccount?: BankAccount;
+  location?: Location;
+
   payment?: Payment;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CashBook {

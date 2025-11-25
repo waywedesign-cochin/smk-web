@@ -16,7 +16,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { Student, Fee, Payment } from "@/lib/types";
 import { PaymentSchema } from "@/lib/validation/paymentSchema";
-import { fa } from "zod/v4/locales";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { fetchBankAccounts } from "@/redux/features/bank/bankSlice";
 
 export interface PaymentInput {
   id?: string;
@@ -26,6 +27,7 @@ export interface PaymentInput {
   transactionId?: string;
   note?: string;
   feeId: string;
+  bankAccountId?: string;
   isAdvance?: boolean;
   dueDate?: Date | null;
 }
@@ -47,7 +49,11 @@ export default function PaymentForm({
   onUpdate,
   onClose,
 }: PaymentFormProps) {
+  const dispatch = useAppDispatch();
   const loading = useSelector((state: RootState) => state.payments.submitting);
+  const { bankAccounts, loading: bankLoading } = useAppSelector(
+    (state) => state.bank
+  );
   const [errors, setErrors] = useState<
     Partial<Record<keyof PaymentInput, string>>
   >({});
@@ -60,6 +66,7 @@ export default function PaymentForm({
     transactionId: existingPayment?.transactionId || "",
     note: existingPayment?.note || "",
     feeId: fee?.id || existingPayment?.feeId || "",
+    bankAccountId: existingPayment?.bankTransaction?.bankAccountId || "",
     dueDate: existingPayment?.dueDate
       ? new Date(existingPayment.dueDate)
       : null,
@@ -71,6 +78,8 @@ export default function PaymentForm({
   });
 
   useEffect(() => {
+    console.log(existingPayment);
+
     if (existingPayment) {
       setFormData({
         amount: existingPayment.amount,
@@ -81,6 +90,7 @@ export default function PaymentForm({
         transactionId: existingPayment.transactionId || "",
         note: existingPayment.note || "",
         feeId: existingPayment.feeId,
+        bankAccountId: existingPayment.bankTransaction?.bankAccountId || "",
         dueDate: existingPayment.dueDate
           ? new Date(existingPayment.dueDate)
           : null,
@@ -88,6 +98,15 @@ export default function PaymentForm({
       });
     }
   }, [existingPayment]);
+
+  //get bank accounts
+  const getBankAccounts = () => {
+    dispatch(fetchBankAccounts());
+  };
+
+  useEffect(() => {
+    getBankAccounts();
+  }, [formData.mode === "BANK_TRANSFER" || formData.mode === "RAZORPAY"]);
 
   const handleChange = (
     field: keyof PaymentInput,
@@ -178,6 +197,52 @@ export default function PaymentForm({
             <p className="text-red-400 text-xs mt-1">{errors.mode}</p>
           )}
         </div>
+
+        {/* Bank Account */}
+        {(formData.mode === "BANK_TRANSFER" ||
+          formData.mode === "RAZORPAY") && (
+          <div>
+            <label className="text-sm mb-1 block">Bank Account</label>
+
+            <Select
+              value={formData.bankAccountId}
+              onValueChange={(value) => handleChange("bankAccountId", value)}
+              disabled={bankLoading || loading}
+            >
+              <SelectTrigger className="bg-[#1B2437] border border-gray-600 text-white">
+                <SelectValue
+                  placeholder={
+                    bankLoading
+                      ? "Loading bank accounts..."
+                      : "Select bank account"
+                  }
+                />
+              </SelectTrigger>
+
+              <SelectContent className="bg-[#1B2437] text-white text-xs">
+                {bankLoading ? (
+                  <div className="px-3 py-2 text-gray-400">Loading...</div>
+                ) : bankAccounts.length === 0 ? (
+                  <div className="px-3 py-2 text-gray-400">
+                    No bank accounts found
+                  </div>
+                ) : (
+                  bankAccounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      {account.bankName}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+
+            {errors.bankAccountId && (
+              <p className="text-red-400 text-xs mt-1">
+                {errors.bankAccountId}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Paid Date */}
         <div>

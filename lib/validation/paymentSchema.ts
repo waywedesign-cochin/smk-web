@@ -15,6 +15,7 @@ export const PaymentSchema = z.object({
   transactionId: z.string().optional(),
   note: z.string().optional(),
   feeId: z.string().nonempty("Fee ID is required"),
+  bankAccountId: z.string().optional(),
 });
 
 export const duePaymentSchema = z.object({
