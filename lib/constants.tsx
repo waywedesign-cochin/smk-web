@@ -8,6 +8,9 @@ import {
   DollarSign,
   Laptop,
   Activity,
+  Book,
+  IndianRupee,
+  Building2,
 } from "lucide-react";
 
 export const menuItems = [
@@ -45,8 +48,14 @@ export const menuItems = [
   {
     id: "director-ledger",
     label: "Director Ledger",
-    icon: DollarSign,
+    icon: Book,
     description: "Track director transactions and accounts",
+  },
+  {
+    id: "bank-transactions",
+    label: "Bank Transactions",
+    icon: Building2,
+    description: "Manage bank-related transactions",
   },
 
   {

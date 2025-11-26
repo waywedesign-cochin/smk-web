@@ -16,6 +16,7 @@ type BankAccount = {
   accountName: string;
   accountNumber: string;
   bankName: string;
+  balance?: number;
   ifscCode: string;
   branch: string;
 };

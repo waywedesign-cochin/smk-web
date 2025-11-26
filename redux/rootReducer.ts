@@ -11,6 +11,7 @@ import communicationLogReducer from "@/redux/features/communication-log/communic
 import reportsReducer from "@/redux/features/reports/reportsSlice";
 import directorLedgerReducer from "@/redux/features/directorledger/directorSlice";
 import bankReducer from "@/redux/features/bank/bankSlice";
+import bankTransactionReducer from "@/redux/features/bankTransactions/bankTransactionSlice";
 const rootReducer = combineReducers({
   // Add your feature reducers here
   courses: courseReducer,
@@ -25,6 +26,7 @@ const rootReducer = combineReducers({
   reports: reportsReducer,
   directorLedger: directorLedgerReducer,
   bank: bankReducer,
+  bankTransactions: bankTransactionReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
