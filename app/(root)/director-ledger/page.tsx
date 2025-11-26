@@ -146,6 +146,7 @@ export default function DirectorLedgerPage() {
               entries={entries}
               canEdit={canEdit}
               onEdit={handleEdit}
+              directorId={directorId}
               currentPage={pagination.page}
               totalPages={pagination.totalPages}
               onPageChange={handlePageChange}

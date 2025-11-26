@@ -26,6 +26,8 @@ import {
   fetchDirectorLedgerEntries,
   updateDirectorLedgerEntry,
 } from "@/redux/features/directorledger/directorSlice";
+import { fetchBankAccounts } from "@/redux/features/bank/bankSlice";
+import { BankTransaction } from "@/lib/types";
 
 type EntryFormData = {
   transactionDate: Date;
@@ -36,6 +38,8 @@ type EntryFormData = {
     | "INSTITUTION_GAVE_BANK"
     | "OWNER_TAKEN";
   description: string;
+  bankAccountId?: string;
+  bankTransaction?: BankTransaction | null;
   id?: string | undefined;
   referenceId?: string | undefined;
   studentId?: string | undefined;
@@ -97,7 +101,9 @@ export function LedgerForm({
   const { students, loading: studentsLoading } = useAppSelector(
     (state) => state.students
   );
-
+  const { bankAccounts, loading: bankLoading } = useAppSelector(
+    (state) => state.bank
+  );
   const { currentUser } = useAppSelector((state) => state.users);
 
   const [successMessage, setSuccessMessage] = useState("");
@@ -115,11 +121,13 @@ export function LedgerForm({
       | "INSTITUTION_GAVE_BANK"
       | "OWNER_TAKEN",
     description: "",
+    bankAccountId: "",
     referenceId: "",
     studentId: "",
     locationId: entry?.locationId || "",
     batchId: entry?.student?.currentBatchId || "",
   });
+  console.log("entry", entry);
 
   // Fetch locations on mount
   useEffect(() => {
@@ -151,6 +159,15 @@ export function LedgerForm({
     }
   }, [formData.batchId]);
 
+  //get bank accounts
+  const getBankAccounts = () => {
+    dispatch(fetchBankAccounts());
+  };
+
+  useEffect(() => {
+    getBankAccounts();
+  }, [formData.transactionType, dispatch]);
+
   useEffect(() => {
     if (entry) {
       const dateStr =
@@ -163,17 +180,12 @@ export function LedgerForm({
         amount: String(entry.amount),
         transactionType: entry.transactionType,
         description: entry.description,
+        bankAccountId: entry.bankTransaction?.bankAccountId || "",
         referenceId: entry.referenceId || "",
         studentId: entry.studentId || "",
         locationId: entry.locationId || "",
         batchId: entry.student?.currentBatchId || "", // Make sure batchId is set from entry
       });
-
-      // If it's a student paid entry and we have student data, ensure location is set
-      if (entry.transactionType === "STUDENT_PAID" && entry.student) {
-        // We don't need to set formData again here as it's already set above
-        // The useEffect for batches will automatically trigger based on locationId
-      }
     }
   }, [entry]); // Remove students from dependencies to avoid infinite loops
   // Auto-select location for staff (role === 3)
@@ -239,6 +251,7 @@ export function LedgerForm({
       amount: formData.amount,
       transactionType: formData.transactionType || entry?.transactionType,
       description: formData.description,
+      bankAccountId: formData.bankAccountId,
       referenceId: formData.referenceId,
       studentId: formData.studentId,
       // locationId: formData.locationId,
@@ -309,6 +322,7 @@ export function LedgerForm({
         ? entry?.transactionType
         : formData.transactionType,
       description: formData.description,
+      bankAccountId: formData.bankAccountId,
       referenceId: formData.referenceId,
       studentId:
         formData.transactionType === "STUDENT_PAID"
@@ -334,7 +348,7 @@ export function LedgerForm({
             "id" | "debitCredit" | "createdAt" | "updatedAt"
           >
         )
-      );
+      )
       await fetchDirectorLedgerEntries({ directorId, page: 1 });
       setSuccessMessage("Entry added successfully!");
     }
@@ -344,6 +358,7 @@ export function LedgerForm({
       amount: "",
       transactionType: "STUDENT_PAID",
       description: "",
+      bankAccountId: "",
       referenceId: "",
       studentId: "",
       locationId: "",
@@ -405,7 +420,7 @@ export function LedgerForm({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Transaction Type */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-300 block">
@@ -420,7 +435,7 @@ export function LedgerForm({
                 }
                 disabled={entry ? true : false}
               >
-                <SelectTrigger className="bg-[#1E293B] border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1">
+                <SelectTrigger className="bg-[#1E293B] w-full border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-[#151D2A] text-white border border-slate-700">
@@ -435,102 +450,6 @@ export function LedgerForm({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            {/* Date */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-300 block">
-                Date <span className="text-red-400">*</span>
-              </label>
-              <Input
-                type="date"
-                name="transactionDate"
-                value={formData.transactionDate}
-                onChange={handleChange}
-                required
-                disabled={disableDate}
-                className={`bg-[#1E293B] 
-              border 
-              border-slate-700 
-              text-white 
-              hover:border-blue-500 
-              transition 
-              focus:ring-blue-500 
-              focus:ring-1 ${
-                validationErrors.transactionDate
-                  ? "border-red-500 focus:border-red-500"
-                  : ""
-              }`}
-              />
-              {validationErrors.transactionDate && (
-                <p className="text-red-500 text-xs font-medium">
-                  {validationErrors.transactionDate}
-                </p>
-              )}
-            </div>
-
-            {/* Amount */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-300 block">
-                Amount <span className="text-red-400">*</span>
-              </label>
-              <Input
-                type="number"
-                name="amount"
-                value={formData.amount}
-                onChange={handleChange}
-                placeholder="0.00"
-                step="0.01"
-                required
-                disabled={disableAmount}
-                className={`bg-[#1E293B] 
-              border 
-              border-slate-700 
-              text-white 
-              hover:border-blue-500 
-              transition 
-              focus:ring-blue-500 
-              focus:ring-1 ${
-                validationErrors.amount
-                  ? "border-red-500 focus:border-red-500"
-                  : ""
-              }`}
-              />
-              {validationErrors.amount && (
-                <p className="text-red-500 text-xs font-medium">
-                  {validationErrors.amount}
-                </p>
-              )}
-              {formData.transactionType === "OTHER_EXPENSE" &&
-                !isEdit &&
-                Number(formData.amount) > periodBalance && (
-                  <p className="text-yellow-400 text-sm">
-                    ⚠️ Entered amount exceedsclosing balance (₹{periodBalance})
-                  </p>
-                )}
-              {formData.transactionType === "OTHER_EXPENSE" &&
-                isEdit &&
-                Number(formData.amount) - (entry?.amount ?? 0) >
-                  periodBalance && (
-                  <p className="text-yellow-400 text-sm">
-                    ⚠️ Entered amount exceeds closing balance (₹{periodBalance})
-                  </p>
-                )}
-            </div>
-
-            {/* Reference ID */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-300 block">
-                Reference ID (Optional)
-              </label>
-              <Input
-                type="text"
-                name="referenceId"
-                value={formData.referenceId}
-                onChange={handleChange}
-                placeholder="e.g., CHQ-12345"
-                className="bg-[#1E293B] border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1"
-              />
             </div>
 
             {/* Location Selector - Only for Student Paid */}
@@ -552,7 +471,7 @@ export function LedgerForm({
                     disabled={currentUser?.role === 3} // disable for staff users
                   >
                     <SelectTrigger
-                      className={`bg-[#1E293B] border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1  ${
+                      className={`bg-[#1E293B] w-full border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1  ${
                         currentUser?.role === 3
                           ? "opacity-60 cursor-not-allowed"
                           : ""
@@ -594,7 +513,7 @@ export function LedgerForm({
                       handleSelectChange("batchId", value)
                     }
                   >
-                    <SelectTrigger className="bg-[#1E293B] border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1">
+                    <SelectTrigger className="bg-[#1E293B] w-full border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1">
                       {" "}
                       <SelectValue placeholder="Select batch">
                         {formData.batchId &&
@@ -656,6 +575,150 @@ export function LedgerForm({
                 )}
               </div>
             )}
+            {/* Bank Account */}
+            {formData.transactionType === "INSTITUTION_GAVE_BANK" && (
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-300 block">
+                  Bank Account <span className="text-red-500">*</span>
+                </label>
+
+                <Select
+                  value={formData.bankAccountId}
+                  onValueChange={(value) =>
+                    handleSelectChange("bankAccountId", value)
+                  }
+                  disabled={bankLoading || loading}
+                >
+                  <SelectTrigger className="bg-[#1E293B] w-full border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1">
+                    <SelectValue
+                      placeholder={
+                        bankLoading
+                          ? "Loading bank accounts..."
+                          : "Select bank account"
+                      }
+                    />
+                  </SelectTrigger>
+
+                  <SelectContent className="bg-[#151D2A] text-white border border-slate-700">
+                    {bankLoading ? (
+                      <div className="px-3 py-2 text-gray-400">Loading...</div>
+                    ) : bankAccounts.length === 0 ? (
+                      <div className="px-3 py-2 text-gray-400">
+                        No bank accounts found
+                      </div>
+                    ) : (
+                      bankAccounts.map((account) => (
+                        <SelectItem key={account.id} value={account.id}>
+                          {account.bankName}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+
+                {validationErrors.bankAccountId && (
+                  <p className="text-red-400 text-xs mt-1">
+                    {validationErrors.bankAccountId}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Date */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-300 block">
+              Date <span className="text-red-400">*</span>
+            </label>
+            <Input
+              type="date"
+              name="transactionDate"
+              value={formData.transactionDate}
+              onChange={handleChange}
+              required
+              disabled={disableDate}
+              className={`bg-[#1E293B] 
+              border 
+              border-slate-700 
+              text-white 
+              hover:border-blue-500 
+              transition 
+              focus:ring-blue-500 
+              focus:ring-1 ${
+                validationErrors.transactionDate
+                  ? "border-red-500 focus:border-red-500"
+                  : ""
+              }`}
+            />
+            {validationErrors.transactionDate && (
+              <p className="text-red-500 text-xs font-medium">
+                {validationErrors.transactionDate}
+              </p>
+            )}
+          </div>
+
+          {/* Amount */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-300 block">
+              Amount <span className="text-red-400">*</span>
+            </label>
+            <Input
+              type="number"
+              name="amount"
+              value={formData.amount}
+              onChange={handleChange}
+              placeholder="0.00"
+              step="0.01"
+              required
+              disabled={disableAmount}
+              className={`bg-[#1E293B] 
+              border 
+              border-slate-700 
+              text-white 
+              hover:border-blue-500 
+              transition 
+              focus:ring-blue-500 
+              focus:ring-1 ${
+                validationErrors.amount
+                  ? "border-red-500 focus:border-red-500"
+                  : ""
+              }`}
+            />
+            {validationErrors.amount && (
+              <p className="text-red-500 text-xs font-medium">
+                {validationErrors.amount}
+              </p>
+            )}
+            {formData.transactionType === "OTHER_EXPENSE" &&
+              !isEdit &&
+              Number(formData.amount) > periodBalance && (
+                <p className="text-yellow-400 text-sm">
+                  ⚠️ Entered amount exceedsclosing balance (₹{periodBalance})
+                </p>
+              )}
+            {formData.transactionType === "OTHER_EXPENSE" &&
+              isEdit &&
+              Number(formData.amount) - (entry?.amount ?? 0) >
+                periodBalance && (
+                <p className="text-yellow-400 text-sm">
+                  ⚠️ Entered amount exceeds closing balance (₹{periodBalance})
+                </p>
+              )}
+          </div>
+
+          {/* Reference ID */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-300 block">
+              Reference ID (Optional)
+            </label>
+            <Input
+              type="text"
+              name="referenceId"
+              value={formData.referenceId}
+              onChange={handleChange}
+              placeholder="e.g., CHQ-12345"
+              className="bg-[#1E293B] border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1"
+            />
           </div>
 
           {/* Description */}

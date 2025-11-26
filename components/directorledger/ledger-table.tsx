@@ -13,6 +13,7 @@ import {
 import {
   deleteDirectorLedgerEntry,
   DirectorLedgerEntry,
+  fetchDirectorLedgerEntries,
 } from "@/redux/features/directorledger/directorSlice";
 import { useAppDispatch } from "@/lib/hooks";
 import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
@@ -22,6 +23,7 @@ import { fetchStudents } from "@/redux/features/student/studentSlice";
 interface LedgerTableProps {
   entries: DirectorLedgerEntry[];
   onEdit?: (entry: DirectorLedgerEntry) => void;
+  directorId: string;
   canEdit: boolean;
   currentPage: number;
   totalPages: number;
@@ -47,6 +49,7 @@ export function LedgerTable({
   entries,
   onEdit,
   canEdit = true,
+  directorId,
   currentPage,
   totalPages,
   onPageChange,
@@ -56,7 +59,10 @@ export function LedgerTable({
   const dispatch = useAppDispatch();
 
   const handleDelete = async (id: string) => {
-    dispatch(deleteDirectorLedgerEntry(id));
+    await dispatch(deleteDirectorLedgerEntry(id)).unwrap();
+    await dispatch(
+      fetchDirectorLedgerEntries({ page: currentPage, directorId })
+    );
   };
 
   return (

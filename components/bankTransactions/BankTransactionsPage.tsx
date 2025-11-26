@@ -57,7 +57,7 @@ export default function BankTransactionsPage() {
     search: "",
     transactionType: "",
     transactionMode: "",
-    //   category: "",
+    category: "",
   });
   const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
 
@@ -83,6 +83,7 @@ export default function BankTransactionsPage() {
           filters.transactionMode === "ALL"
             ? undefined
             : filters.transactionMode,
+        category: filters.category === "ALL" ? undefined : filters.category,
         search: debouncedSearch,
       })
     );
@@ -107,6 +108,7 @@ export default function BankTransactionsPage() {
           filters.transactionMode === "ALL"
             ? undefined
             : filters.transactionMode,
+        category: filters.category === "ALL" ? undefined : filters.category,
         search: debouncedSearch,
       })
     );
@@ -122,6 +124,7 @@ export default function BankTransactionsPage() {
     debouncedSearch,
     filters.transactionType,
     filters.transactionMode,
+    filters.category,
   ]);
 
   useEffect(() => {
@@ -129,15 +132,15 @@ export default function BankTransactionsPage() {
   }, [dispatch]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white p-3 space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white p-2 space-y-6">
       {/* Header */}
       <div className="relative flex items-center justify-between border border-white/10 rounded-2xl p-4 shadow-xl overflow-hidden">
         <div className="absolute inset-0 z-0 h-[300px] w-full">
           <DarkVeil />
         </div>
 
-        <div className="relative z-10 flex w-full items-center justify-between">
-          <div>
+        <div className="relative z-10 flex w-full items-center justify-between p-1">
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold">Bank Transactions</h1>
             <p className="text-sm text-gray-300">
               Track all bank-related transactions
@@ -397,6 +400,29 @@ export default function BankTransactionsPage() {
                   <SelectItem value="ALL">All</SelectItem>
                   <SelectItem value="RAZORPAY">Razorpay</SelectItem>
                   <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
+                  <SelectItem value="UPI">UPI</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select
+                value={filters.category}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({ ...prev, category: value }))
+                }
+              >
+                <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
+                  <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#0A1533] text-white border-white/20">
+                  <SelectItem value="ALL">All</SelectItem>
+                  <SelectItem value="STUDENT_PAYMENT">
+                    Students Payment
+                  </SelectItem>
+                  <SelectItem value="PAYMENT_TO_DIRECTOR">
+                    Payment To Director
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -408,7 +434,7 @@ export default function BankTransactionsPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search description..."
-                  className="pl-9 bg-white/10 border-white/20 text-white h-10"
+                  className="pl-9 bg-white/10 border-white/20 text-white"
                   value={filters.search}
                   onChange={(e) =>
                     setFilters((prev) => ({ ...prev, search: e.target.value }))
@@ -475,7 +501,7 @@ export default function BankTransactionsPage() {
                   transactions?.map((t) => (
                     <TableRow
                       key={t.id}
-                      className="border-b border-white/5 hover:bg-white/5 transition"
+                      className="border-b border-white/5 hover:bg-white/10 transition"
                     >
                       <TableCell className="text-sm text-gray-300 whitespace-nowrap">
                         {new Date(t.transactionDate).toLocaleDateString(
