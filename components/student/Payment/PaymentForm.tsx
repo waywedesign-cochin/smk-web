@@ -106,7 +106,7 @@ export default function PaymentForm({
 
   useEffect(() => {
     getBankAccounts();
-  }, [formData.mode === "BANK_TRANSFER" || formData.mode === "RAZORPAY"]);
+  }, [formData.mode]);
 
   const handleChange = (
     field: keyof PaymentInput,
@@ -199,8 +199,7 @@ export default function PaymentForm({
         </div>
 
         {/* Bank Account */}
-        {(formData.mode === "BANK_TRANSFER" ||
-          formData.mode === "RAZORPAY") && (
+        {formData.mode && (
           <div>
             <label className="text-sm mb-1 block">Bank Account</label>
 

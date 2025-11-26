@@ -1,4 +1,4 @@
-import { Student } from "@/lib/types";
+import { BankTransaction, Student } from "@/lib/types";
 import { BASE_URL } from "@/redux/baseUrl";
 import {
   createSlice,
@@ -20,6 +20,8 @@ export interface DirectorLedgerEntry {
     | "INSTITUTION_GAVE_BANK";
   debitCredit: "DEBIT" | "CREDIT";
   description: string;
+  bankAccountId?: string;
+ bankTransaction:BankTransaction | null;
   locationId: string;
   referenceId?: string;
   studentId?: string;
