@@ -50,7 +50,7 @@ export default function BankTransactionsPage() {
   const bankAccounts = useAppSelector((s) => s.bank.bankAccounts);
 
   const [filters, setFilters] = useState({
-    locationId:  "ALL",
+    locationId: "ALL",
     year: new Date().getFullYear().toString(),
     month: (new Date().getMonth() + 1).toString(),
     bankAccountId: "",
