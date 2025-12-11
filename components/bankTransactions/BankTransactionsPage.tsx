@@ -50,7 +50,7 @@ export default function BankTransactionsPage() {
   const bankAccounts = useAppSelector((s) => s.bank.bankAccounts);
 
   const [filters, setFilters] = useState({
-    locationId: currentUser?.locationId || "",
+    locationId:  "ALL",
     year: new Date().getFullYear().toString(),
     month: (new Date().getMonth() + 1).toString(),
     bankAccountId: "",
@@ -75,6 +75,8 @@ export default function BankTransactionsPage() {
         ...filters,
         page: 1,
         limit: pagination?.limit,
+        locationId:
+          filters.locationId === "ALL" ? undefined : filters.locationId,
         transactionType:
           filters.transactionType === "ALL"
             ? undefined
@@ -283,6 +285,7 @@ export default function BankTransactionsPage() {
                     <SelectValue placeholder="Select location" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#0A1533] text-white border-white/20">
+                    <SelectItem value="ALL">All Locations</SelectItem>
                     {locations.map((loc) => (
                       <SelectItem key={loc.id} value={loc.id as string}>
                         {loc.name}
