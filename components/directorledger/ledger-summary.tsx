@@ -35,7 +35,7 @@ export function LedgerSummary({ totals, debitOrCredit }: LedgerSummaryProps) {
       description: " Other expenses by director",
     },
     {
-      title: "To Bank ",
+      title: "By Bank ",
       value: totals.institutionGaveBank,
       color: "from-purple-200 to-purple-100",
       lightBg: "bg-purple-50",
