@@ -29,14 +29,18 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { useAppDispatch } from "@/lib/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { ZodError } from "zod";
 import { bankTransactionSchema } from "@/lib/validation/bankTransactionSchemas";
-import {addBankTransaction} from "@/redux/features/bankTransactions/bankTransactionSlice"
+import {
+  addBankTransaction,
+  updateBankTransaction,
+} from "@/redux/features/bankTransactions/bankTransactionSlice";
 import { fetchBankAccounts } from "@/redux/features/bank/bankSlice";
-
+import toast from "react-hot-toast";
 
 export interface BankTransactionFormData {
+  id?: string;
   transactionDate: Date;
   transactionId?: string;
   amount: number | string;
@@ -58,7 +62,6 @@ interface BankTransactionFormDialogProps {
   getTransactions?: () => void;
 }
 
-
 export default function BankTransactionFormDialog({
   open,
   onClose,
@@ -69,6 +72,8 @@ export default function BankTransactionFormDialog({
   getTransactions = () => {},
 }: BankTransactionFormDialogProps) {
   const dispatch = useAppDispatch();
+  const bank = useAppSelector((state) => state.bank.bankAccounts);
+
   const [form, setForm] = useState<BankTransactionFormData>({
     transactionDate: new Date(),
     amount: "",
@@ -85,7 +90,7 @@ export default function BankTransactionFormDialog({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-//populate form in edit mode
+  //populate form in edit mode
   useEffect(() => {
     if (isEdit && existingData) {
       setForm({
@@ -124,32 +129,50 @@ export default function BankTransactionFormDialog({
     setSubmitting(true);
     setErrors({});
 
+    const selectedBank = bank.find((b) => b.id === form.bankAccountId);
+
+    if (
+      form.category === "OTHER_EXPENSE" &&
+      selectedBank &&
+      Number(form.amount) > (selectedBank.balance ?? 0)
+    ) {
+      setErrors({ amount: "Insufficient bank balance" });
+      toast.error("Insufficient bank balance");
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const parsed = bankTransactionSchema.parse({
         ...form,
         amount: Number(form.amount),
       });
 
-      const payload = {
-        ...parsed,
-      };
+      if (isEdit && existingData?.id) {
+        await dispatch(
+          updateBankTransaction({ id: existingData.id, ...parsed })
+        );
+      } else {
+        await dispatch(addBankTransaction(parsed));
+      }
 
-      await dispatch(addBankTransaction(payload));
       await dispatch(fetchBankAccounts());
       await getTransactions();
-      setSubmitting(false);
       onClose();
-      setForm({
-        transactionDate: new Date(),
-        amount: "",
-        transactionId: "",
-        description: "",
-        transactionMode: "",
-        status: "COMPLETED",
-        category: "",
-        bankAccountId: "",
-        locationId,
-      });
+      setSubmitting(false);
+      if (!isEdit) {
+        setForm({
+          transactionDate: new Date(),
+          amount: "",
+          transactionId: "",
+          description: "",
+          transactionMode: "",
+          status: "COMPLETED",
+          category: "",
+          bankAccountId: "",
+          locationId,
+        });
+      }
     } catch (err) {
       if (err instanceof ZodError) {
         const fieldErrors: Record<string, string> = {};
@@ -314,6 +337,18 @@ export default function BankTransactionFormDialog({
               <SelectContent className="bg-gray-800 border-gray-600 text-white">
                 <SelectItem value="OTHER_INCOME">Other Income</SelectItem>
                 <SelectItem value="OTHER_EXPENSE">Other Expense</SelectItem>
+                {isEdit &&
+                  (existingData?.category === "STUDENT_PAYMENT" ||
+                    existingData?.category === "PAYMENT_TO_DIRECTOR") && (
+                    <>
+                      <SelectItem value="STUDENT_PAYMENT" disabled>
+                        Student Paid
+                      </SelectItem>
+                      <SelectItem value="PAYMENT_TO_DIRECTOR" disabled>
+                        Payment to Director
+                      </SelectItem>
+                    </>
+                  )}
               </SelectContent>
             </Select>
             {errors.category && (

@@ -73,10 +73,10 @@ export function Batches() {
 
   const [filters, setFilters] = useState({
     search: "",
-    status: "all",
-    mode: "all",
+    status: "",
+    mode: "",
     location: currentUser?.locationId || "",
-    course: "all",
+    course: "",
     year: new Date().getFullYear().toString(),
   });
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -264,7 +264,7 @@ export function Batches() {
               }
             >
               <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent className="bg-[#0A1533] text-white border-white/20">
                 <SelectItem value="all">All Status</SelectItem>
@@ -283,7 +283,7 @@ export function Batches() {
               }
             >
               <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
-                <SelectValue placeholder="Mode" />
+                <SelectValue placeholder="Select Mode" />
               </SelectTrigger>
               <SelectContent className="bg-[#0A1533] text-white border-white/20">
                 <SelectItem value="all">All Modes</SelectItem>
@@ -301,7 +301,7 @@ export function Batches() {
               }
             >
               <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
-                <SelectValue placeholder="Course" />
+                <SelectValue placeholder="Select Course" />
               </SelectTrigger>
               <SelectContent className="bg-[#0A1533] text-white border-white/20">
                 <SelectItem value="all">All Courses</SelectItem>
