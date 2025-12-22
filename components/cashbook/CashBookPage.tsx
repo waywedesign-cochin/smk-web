@@ -101,6 +101,8 @@ export const CashBookPage = () => {
       students: "STUDENT_PAID",
       expenses: "OFFICE_EXPENSE",
       owner: "OWNER_TAKEN",
+      "other-income": "OTHER_INCOME",
+      "other-expense": "OTHER_EXPENSE",
     };
     setFilters((prev) => ({
       ...prev,
@@ -139,6 +141,8 @@ export const CashBookPage = () => {
         students: "STUDENT_PAID",
         expenses: "OFFICE_EXPENSE",
         owner: "OWNER_TAKEN",
+        otherIncome: "OTHER_INCOME",
+        otherExpense: "OTHER_EXPENSE",
       };
       return entries.filter(
         (entry) => entry.transactionType === typeMap[activeTab]
@@ -435,20 +439,25 @@ export const CashBookPage = () => {
       </Card>
 
       {/* Totals */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-10">
         {[
           {
-            title: "Students Paid",
-            value: totals.studentsPaid,
-            color: "text-green-500",
-          },
-          {
             title: "Opening Balance",
-            value: totals.openingBalance,
+            value: totals.openingBalance, // closing balce of the prev months
             color:
               (totals.openingBalance || 0) >= 0
                 ? "text-green-500"
                 : "text-red-500",
+          },
+          {
+            title: "Cash in Hand (Closing)",
+            value: totals.cashInHand,
+            color: "text-blue-500",
+          },
+          {
+            title: "Students Paid",
+            value: totals.studentsPaid,
+            color: "text-green-500",
           },
           {
             title: "Office Expenses",
@@ -461,14 +470,23 @@ export const CashBookPage = () => {
             color: "text-orange-600",
           },
           {
-            title: "Cash in Hand (Closing)",
-            value: totals.cashInHand,
-            color: "text-blue-500",
+            title: "Other Expense",
+            value: totals.otherExpenses,
+            color: "text-red-500",
+          },
+          {
+            title: "Other Income",
+            value: totals.otherIncome,
+            color: "text-green-500",
           },
         ].map((item, index) => (
           <Card
             key={index}
-            className="bg-white/10 border border-white/10 backdrop-blur-md text-white transition-all hover:bg-white/20 hover:shadow-lg hover:shadow-black/20 gap-2"
+            className={`${
+              index === 0 || index === 1
+                ? "max-sm:col-span-1 lg:col-span-5 "
+                : " lg:col-span-2"
+            } bg-white/10 border flex-col flex justify-between  border-white/10 backdrop-blur-md text-white transition-all hover:bg-white/20 hover:shadow-lg hover:shadow-black/20 gap-2`}
           >
             <CardHeader className="pb-2 max-sm:pb-1">
               <CardTitle className="text-sm font-medium tracking-wide text-white/80">
@@ -477,7 +495,9 @@ export const CashBookPage = () => {
             </CardHeader>
 
             <CardContent>
-              <div className={`text-2xl font-semibold ${item.color}`}>
+              <div
+                className={`text-2xl max-xl:text-lg font-semibold ${item.color}`}
+              >
                 {item.value?.toLocaleString("en-IN") || "0.00"} ₹
               </div>
             </CardContent>
@@ -547,6 +567,36 @@ export const CashBookPage = () => {
             >
               Owner Taken
             </TabsTrigger>
+            <TabsTrigger
+              className="
+              text-gray-400
+              data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-600 data-[state=active]:to-blue-700
+              data-[state=active]:text-white
+              data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30
+              hover:bg-white/5
+              hover:text-gray-200
+              transition-all duration-300
+              px-5 py-2.5 rounded-lg text-sm font-medium flex-shrink-0
+            "
+              value="other-income"
+            >
+              Other Income
+            </TabsTrigger>
+            <TabsTrigger
+              className="
+              text-gray-400
+              data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-600 data-[state=active]:to-blue-700
+              data-[state=active]:text-white
+              data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30
+              hover:bg-white/5
+              hover:text-gray-200
+              transition-all duration-300
+              px-5 py-2.5 rounded-lg text-sm font-medium flex-shrink-0
+            "
+              value="other-expense"
+            >
+              Other Expense
+            </TabsTrigger>
           </div>
         </TabsList>
 
@@ -577,6 +627,27 @@ export const CashBookPage = () => {
             entries={getFilteredEntries()}
             title="Owner Taken"
             emptyMessage="No owner withdrawals found"
+            handleEdit={handleEdit}
+            onDelete={handleDeleteEntry}
+            loading={loading}
+          />
+        </TabsContent>
+
+        <TabsContent value="other-income">
+          <TransactionTable
+            entries={getFilteredEntries()}
+            title="Other Income"
+            emptyMessage="No other incomes found"
+            handleEdit={handleEdit}
+            onDelete={handleDeleteEntry}
+            loading={loading}
+          />
+        </TabsContent>
+        <TabsContent value="other-expense">
+          <TransactionTable
+            entries={getFilteredEntries()}
+            title="Other Expense"
+            emptyMessage="No other expenses found"
             handleEdit={handleEdit}
             onDelete={handleDeleteEntry}
             loading={loading}

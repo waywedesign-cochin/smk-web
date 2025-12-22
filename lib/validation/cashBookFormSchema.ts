@@ -9,7 +9,13 @@ export const cashBookFormSchema = z
       })
     ),
     transactionType: z
-      .enum(["STUDENT_PAID", "OFFICE_EXPENSE", "OWNER_TAKEN"])
+      .enum([
+        "STUDENT_PAID",
+        "OFFICE_EXPENSE",
+        "OWNER_TAKEN",
+        "OTHER_EXPENSE",
+        "OTHER_INCOME",
+      ])
       .refine((val) => val !== undefined, {
         message: "Transaction type is required",
       }),

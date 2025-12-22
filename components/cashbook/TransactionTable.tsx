@@ -100,12 +100,14 @@ const TransactionTable = ({
                   <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Reference
                   </TableHead>
-                  {title !== "Office Expenses" && (
-                    <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
-                      {/* Student/Director */}{" "}
-                      {title === "Students Paid" ? "Student" : "Director"}
-                    </TableHead>
-                  )}
+                  {title !== "Office Expenses" &&
+                    title !== "Other Expense" &&
+                    title !== "Other Income" && (
+                      <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                        {/* Student/Director */}{" "}
+                        {title === "Students Paid" ? "Student" : "Director"}
+                      </TableHead>
+                    )}
                   <TableHead className="text-right text-gray-50">
                     Amount
                   </TableHead>
@@ -141,33 +143,36 @@ const TransactionTable = ({
                           <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
-                      {entry?.transactionType !== "OFFICE_EXPENSE" && (
-                        <TableCell>
-                          {entry.transactionType === "STUDENT_PAID" &&
-                          entry.student ? (
-                            <div>
-                              <div className="font-medium">
-                                {entry.student.name}
+                      {entry?.transactionType !== "OFFICE_EXPENSE" &&
+                        entry?.transactionType !== "OTHER_EXPENSE" &&
+                        entry?.transactionType !== "OTHER_INCOME" && (
+                          <TableCell>
+                            {entry.transactionType === "STUDENT_PAID" &&
+                            entry.student ? (
+                              <div>
+                                <div className="font-medium">
+                                  {entry.student.name}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {entry.student.currentBatch?.name ||
+                                    "No batch"}
+                                </div>
                               </div>
-                              <div className="text-xs text-muted-foreground">
-                                {entry.student.currentBatch?.name || "No batch"}
+                            ) : entry.transactionType === "OWNER_TAKEN" &&
+                              entry.director ? (
+                              <div>
+                                <div className="font-medium">
+                                  {entry.director.username}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {entry.director.email}
+                                </div>
                               </div>
-                            </div>
-                          ) : entry.transactionType === "OWNER_TAKEN" &&
-                            entry.director ? (
-                            <div>
-                              <div className="font-medium">
-                                {entry.director.username}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {entry.director.email}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                      )}
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        )}
 
                       <TableCell className="text-right font-medium">
                         {formatAmount(entry.amount)}
