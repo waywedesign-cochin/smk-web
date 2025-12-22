@@ -21,7 +21,6 @@ import {
   Search,
   Building2,
   Loader2,
-  Plus,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
@@ -39,7 +38,6 @@ import {
 import { fetchBankTransactions } from "@/redux/features/bankTransactions/bankTransactionSlice";
 import { fetchBankAccounts } from "@/redux/features/bank/bankSlice";
 import { Badge } from "../ui/badge";
-import BankTransactionFormDialog from "./AddTransactionForm";
 
 export default function BankTransactionsPage() {
   const dispatch = useAppDispatch();
@@ -50,7 +48,6 @@ export default function BankTransactionsPage() {
   );
 
   const bankAccounts = useAppSelector((s) => s.bank.bankAccounts);
-  const [showAddTransaction, setShowAddTransaction] = useState(false);
 
   const [filters, setFilters] = useState({
     locationId: "ALL",
@@ -151,24 +148,10 @@ export default function BankTransactionsPage() {
               Track all bank-related transactions
             </p>
           </div>
-          <BankTransactionFormDialog
-            open={showAddTransaction}
-            onClose={() => setShowAddTransaction(false)}
-            getTransactions={getTransactions}
-            locationId={
-              filters.locationId === "ALL"
-                ? currentUser?.locationId ?? ""
-                : filters.locationId
-            }
-            bankAccounts={bankAccounts.map((b) => ({
-              id: b.id,
-              name: b.bankName,
-            }))}
-          />
 
-          <Button onClick={() => setShowAddTransaction(true)} className="border border-white hover:bg-white hover:text-black">
-            <Plus className="h-4 w-4 " /> Add Transaction
-          </Button>
+          {/* <Button className="border border-white hover:bg-white hover:text-black">
+            <Download className="h-4 w-4 mr-2" /> Export
+          </Button> */}
         </div>
       </div>
 
