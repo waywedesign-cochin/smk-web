@@ -34,9 +34,7 @@ import { ZodError } from "zod";
 import { bankTransactionSchema } from "@/lib/validation/bankTransactionSchemas";
 import { addBankTransaction } from "@/redux/features/bankTransactions/bankTransactionSlice";
 import { fetchBankAccounts } from "@/redux/features/bank/bankSlice";
-import { set } from "lodash";
 
-/* ---------------- TYPES ---------------- */
 
 export interface BankTransactionFormData {
   transactionDate: Date;
@@ -60,7 +58,6 @@ interface BankTransactionFormDialogProps {
   getTransactions?: () => void;
 }
 
-/* ---------------- COMPONENT ---------------- */
 
 export default function BankTransactionFormDialog({
   open,
@@ -87,8 +84,8 @@ export default function BankTransactionFormDialog({
   const [submitting, setSubmitting] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  /* ---------------- PREFILL EDIT MODE ---------------- */
 
+//populate form in edit mode
   useEffect(() => {
     if (isEdit && existingData) {
       setForm({
@@ -105,7 +102,7 @@ export default function BankTransactionFormDialog({
     }
   }, [isEdit, existingData, locationId]);
 
-  /* ---------------- HELPERS ---------------- */
+  //onChange handler
 
   const setField = <K extends keyof BankTransactionFormData>(
     key: K,
@@ -121,8 +118,7 @@ export default function BankTransactionFormDialog({
     });
   };
 
-  /* ---------------- SUBMIT ---------------- */
-
+  //submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
