@@ -32,7 +32,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { useAppDispatch } from "@/lib/hooks";
 import { ZodError } from "zod";
 import { bankTransactionSchema } from "@/lib/validation/bankTransactionSchemas";
-import { addBankTransaction } from "@/redux/features/bankTransactions/bankTransactionSlice";
+import {addBankTransaction} from "@/redux/features/bankTransactions/bankTransactionSlice"
 import { fetchBankAccounts } from "@/redux/features/bank/bankSlice";
 
 

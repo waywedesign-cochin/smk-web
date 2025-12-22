@@ -45,6 +45,18 @@ interface fetchBankTransactionsParams {
   limit?: number;
 }
 
+interface addBankTransactionParams {
+  transactionDate: Date;
+  transactionId?: string;
+  amount: number | string;
+  description?: string;
+  transactionMode: "UPI" | "BANK_TRANSFER" | "CASH" | "CHEQUE";
+  status: "PENDING" | "COMPLETED" | "FAILED";
+  category: string | "OTHER_INCOME" | "OTHER_EXPENSE";
+  bankAccountId: string;
+  locationId: string;
+}
+
 // ---------------- INITIAL STATE ----------------
 const initialState: BankTransactionState = {
   transactions: [],
@@ -83,6 +95,38 @@ export const fetchBankTransactions = createAsyncThunk<
   }
 });
 
+export const addBankTransaction = createAsyncThunk<
+  BankTransaction,
+  addBankTransactionParams
+>("bankTransactions/addEntry", async (newBank, { rejectWithValue }) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/api/bank-transaction/add-bank-transaction`,
+      newBank,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (response.data.success === true) {
+      toast.success(
+        response.data.message || "Bank transaction added successfully"
+      );
+    }
+    return response.data.data as BankTransaction;
+  } catch (error: unknown) {
+    let errorMessage = "Failed to add bank transaction";
+    if (axios.isAxiosError(error) && error.response) {
+      errorMessage = error.response.data.message || errorMessage;
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    return rejectWithValue(errorMessage);
+  }
+});
+
 // ---------------- SLICE ----------------
 const bankTransactionSlice = createSlice({
   name: "bankTransactions",
@@ -107,6 +151,21 @@ const bankTransactionSlice = createSlice({
         state.pagination = action.payload.pagination;
       })
       .addCase(fetchBankTransactions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // ADD
+    builder
+      .addCase(addBankTransaction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addBankTransaction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.transactions.unshift(action.payload);
+      })
+      .addCase(addBankTransaction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
