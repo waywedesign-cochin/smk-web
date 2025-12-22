@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+// ✅ Validation schema for creating or updating a bank transaction
 export const bankTransactionSchema = z.object({
   transactionDate: z.preprocess(
     (val) =>

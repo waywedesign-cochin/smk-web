@@ -172,5 +172,4 @@ const bankTransactionSlice = createSlice({
   },
 });
 
-// ---------------- EXPORTS ----------------
 export default bankTransactionSlice.reducer;
