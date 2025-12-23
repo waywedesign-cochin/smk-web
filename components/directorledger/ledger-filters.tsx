@@ -69,8 +69,8 @@ export function LedgerFilters({
   // const [month, setMonth] = useState((new Date().getMonth() + 1).toString());
   // const [year, setYear] = useState(new Date().getFullYear().toString());
   const [search, setSearch] = useState("");
-  const [transactionType, setTransactionType] = useState("all-types");
-  const [debitOrCredit, setDebitOrCredit] = useState("all-types");
+  const [transactionType, setTransactionType] = useState("");
+  const [debitOrCredit, setDebitOrCredit] = useState("");
   const [selectedDirector, setSelectedDirector] = useState(directorId);
 
   const showDirectorFilter = userRole === 1 || userRole === 3;
@@ -187,7 +187,7 @@ export function LedgerFilters({
 
             <Select value={transactionType} onValueChange={setTransactionType}>
               <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
-                <SelectValue placeholder="All types" />
+                <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent className="bg-[#0A1533] text-white border-white/20">
                 {TRANSACTION_TYPES.map((t) => (
@@ -202,7 +202,7 @@ export function LedgerFilters({
             <Label>Mode</Label>
             <Select value={debitOrCredit} onValueChange={setDebitOrCredit}>
               <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
-                <SelectValue placeholder="All types" />
+                <SelectValue placeholder="Debit / Credit" />
               </SelectTrigger>
               <SelectContent className="bg-[#0A1533] text-white border-white/20">
                 {DEBITORCREDIT.map((t) => (

@@ -200,7 +200,12 @@ export interface BankTransaction {
   description?: string;
   transactionMode: string;
   status: "PENDING" | "COMPLETED" | "FAILED";
-  category: "STUDENT_PAYMENT" | "FEE_REFUND" | "OTHER";
+  category:
+    | "STUDENT_PAYMENT"
+    | "PAYMENT_TO_DIRECTOR"
+    | "FEE_REFUND"
+    | "OTHER_INCOME"
+    | "OTHER_EXPENSE";
 
   bankAccountId: string;
   locationId: string;

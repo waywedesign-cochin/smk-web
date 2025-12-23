@@ -121,22 +121,20 @@ export function Students() {
   const [batchDebouncedSearch, setBatchDebouncedSearch] = useState(batchSearch);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
-  const [accountTypeFilter, setAccountTypeFilter] = useState<
-    "all" | "funded" | "regular"
-  >("all");
+  const [accountTypeFilter, setAccountTypeFilter] = useState<string>("");
 
   // Set first location as default if locations exist, otherwise empty string
   const [locationTypeFilter, setLocationTypeFilter] = useState<string>(
     currentUser?.locationId || ""
   );
 
-  const [batchTypeFilter, setBatchTypeFilter] = useState<string>("all");
-  const [modeFilter, setModeFilter] = useState<string>("all");
+  const [batchTypeFilter, setBatchTypeFilter] = useState<string>("");
+  const [modeFilter, setModeFilter] = useState<string>("");
   const [switchFilter, setSwitchFilter] = useState<boolean>(false);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("");
   const [yearFilter, setYearFilter] = useState<string>("2025");
-  const [monthFilter, setMonthFilter] = useState<string>("all");
-  const [feeStatusFilter, setFeeStatusFilter] = useState<string>("all");
+  const [monthFilter, setMonthFilter] = useState<string>("");
+  const [feeStatusFilter, setFeeStatusFilter] = useState<string>("");
   const [dueThisWeekFilter, setDueThisWeekFilter] = useState<boolean>(false);
 
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
@@ -518,7 +516,7 @@ export function Students() {
                 }
               >
                 <SelectTrigger className=" w-full border-white/50">
-                  <SelectValue placeholder="All Accounts" />
+                  <SelectValue placeholder="Funded / Regular" />
                 </SelectTrigger>
                 <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
                   <SelectItem value="all">All Accounts</SelectItem>
@@ -622,7 +620,7 @@ export function Students() {
                 onValueChange={(value) => setModeFilter(value)}
               >
                 <SelectTrigger className=" w-full border-white/50">
-                  <SelectValue placeholder="Mode" />
+                  <SelectValue placeholder="Online / Offline" />
                 </SelectTrigger>
                 <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
                   <SelectItem value="all">All Modes</SelectItem>
@@ -679,7 +677,7 @@ export function Students() {
                 onValueChange={(value) => setFeeStatusFilter(value)}
               >
                 <SelectTrigger className="w-full border-white/50">
-                  <SelectValue placeholder="Fee Status" />
+                  <SelectValue placeholder="Pending / Paid / Refunded" />
                 </SelectTrigger>
                 <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
                   <SelectItem value="all">All Students</SelectItem>
