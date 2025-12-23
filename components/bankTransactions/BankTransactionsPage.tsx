@@ -49,6 +49,7 @@ import BankTransactionFormDialog, {
 } from "./AddTransactionForm";
 import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
 import { BankTransaction } from "@/lib/types";
+import { Arrow } from "@radix-ui/react-select";
 
 export default function BankTransactionsPage() {
   const dispatch = useAppDispatch();
@@ -308,6 +309,58 @@ export default function BankTransactionsPage() {
               }`}
             >
               ₹{(totals?.balance ?? 0).toLocaleString()}
+            </div>
+            <p className="text-xs text-gray-300 mt-1">For filtered period</p>
+          </CardContent>
+        </Card>
+
+        {/* Razorpay */}
+        <Card className="bg-white/10 border border-white/10 backdrop-blur-md shadow-md">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2 text-blue-400">
+              <ArrowDownCircle className="h-4 w-4" />
+              Razorpay
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-2xl font-semibold ${
+                totals?.razorpayTotal >= 0 ? "text-emerald-300" : "text-red-300"
+              }`}
+            >
+              ₹{(totals?.razorpayTotal ?? 0).toLocaleString()}
+            </div>
+            <p className="text-xs text-gray-300 mt-1">For filtered period</p>
+          </CardContent>
+        </Card>
+
+        {/* Other Income */}
+        <Card className="bg-white/10 border border-white/10 backdrop-blur-md shadow-md">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2 text-emerald-400">
+              <TrendingUp className="h-4 w-4" />
+              Other Income
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-semibold text-emerald-300`}>
+              ₹{(totals?.otherIncome ?? 0).toLocaleString()}
+            </div>
+            <p className="text-xs text-gray-300 mt-1">For filtered period</p>
+          </CardContent>
+        </Card>
+
+        {/* Other Expense */}
+        <Card className="bg-white/10 border border-white/10 backdrop-blur-md shadow-md">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2 text-red-400">
+              <ArrowUpCircle className="h-4 w-4" />
+              Other Expense
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-semibold text-red-300 `}>
+              ₹{(totals?.otherExpense ?? 0).toLocaleString()}
             </div>
             <p className="text-xs text-gray-300 mt-1">For filtered period</p>
           </CardContent>
