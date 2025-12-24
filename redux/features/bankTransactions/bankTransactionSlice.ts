@@ -13,6 +13,9 @@ interface Pagination {
 }
 
 interface totals {
+  razorpayTotal: number;
+  otherExpense: number;
+  otherIncome: number;
   balance: number;
   totalCredit: number;
   totalDebit: number;
@@ -60,7 +63,14 @@ interface addBankTransactionParams {
 // ---------------- INITIAL STATE ----------------
 const initialState: BankTransactionState = {
   transactions: [],
-  totals: { balance: 0, totalCredit: 0, totalDebit: 0 },
+  totals: {
+    balance: 0,
+    totalCredit: 0,
+    totalDebit: 0,
+    razorpayTotal: 0,
+    otherExpense: 0,
+    otherIncome: 0,
+  },
   pagination: null,
   loading: false,
   error: null,
