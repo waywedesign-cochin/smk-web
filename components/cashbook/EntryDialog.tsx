@@ -608,7 +608,10 @@ export default function EntryDialog({
                 <SelectContent className="bg-gray-800 border-gray-600 text-white">
                   {filteredStudents.map((student) => (
                     <SelectItem key={student.id} value={student.id as string}>
-                      {student.name}
+                      {student.name} -{" "}
+                      <span className="text-[10px] py-0.5 bg-blue-800 px-2 rounded-md">
+                        (AD.NO:{student?.admissionNo})
+                      </span>
                       {loadingStudents && <Loader2 className="animate-spin" />}
                     </SelectItem>
                   ))}
