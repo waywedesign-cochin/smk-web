@@ -179,6 +179,10 @@ export const CashBookPage = () => {
               ? "STUDENT_PAID"
               : activeTab === "expenses"
               ? "OFFICE_EXPENSE"
+              : activeTab === "other-income"
+              ? "OTHER_INCOME"
+              : activeTab === "other-expense"
+              ? "OTHER_EXPENSE"
               : "OWNER_TAKEN",
           limit: 10000,
         },
