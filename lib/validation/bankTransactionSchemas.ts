@@ -16,7 +16,7 @@ export const bankTransactionSchema = z.object({
     .union([z.string(), z.number()])
     .refine((val) => Number(val) > 0, "Amount must be greater than 0"),
 
-  transactionMode: z.enum(["UPI", "BANK_TRANSFER", "CASH", "CHEQUE"], {
+  transactionMode: z.enum(["UPI", "BANK_TRANSFER", "CASH", "CHEQUE","RAZORPAY"], {
     message: "Transaction mode is required",
   }),
 
