@@ -280,7 +280,7 @@ export default function BankTransactionFormDialog({
           </div>
 
           {/* Mode & Status */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <Label>Transaction Mode *</Label>
               <Select
@@ -301,7 +301,7 @@ export default function BankTransactionFormDialog({
               )}
             </div>
 
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label>Status *</Label>
               <Select
                 value={form.status}
@@ -321,7 +321,7 @@ export default function BankTransactionFormDialog({
               {errors.status && (
                 <p className="text-sm text-red-500">{errors.status}</p>
               )}
-            </div>
+            </div> */}
           </div>
 
           {/* Category */}
