@@ -53,7 +53,7 @@ interface addBankTransactionParams {
   transactionId?: string;
   amount: number | string;
   description?: string;
-  transactionMode: "UPI" | "BANK_TRANSFER" | "CASH" | "CHEQUE";
+  transactionMode: "UPI" | "BANK_TRANSFER" | "CASH" | "CHEQUE" | "RAZORPAY";
   status: "PENDING" | "COMPLETED" | "FAILED";
   category: string | "OTHER_INCOME" | "OTHER_EXPENSE";
   bankAccountId: string;
