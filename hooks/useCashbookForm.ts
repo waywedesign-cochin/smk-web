@@ -14,7 +14,12 @@ interface UseCashbookFormProps {
   isOpen: boolean;
   isEdit: boolean;
   existingData?: CashbookEntry | null;
-  transactionType: "STUDENT_PAID" | "OFFICE_EXPENSE" | "OWNER_TAKEN";
+  transactionType:
+    | "STUDENT_PAID"
+    | "OFFICE_EXPENSE"
+    | "OWNER_TAKEN"
+    | "OTHER_INCOME"
+    | "OTHER_EXPENSE";
   locationId: string;
 }
 
@@ -105,7 +110,9 @@ export function useCashbookForm({
     const loadBatches = async () => {
       setLoadingBatches(true);
       try {
-        await dispatch(fetchBatches({ location: locationId,limit:0,status:"ACTIVE" })).unwrap();
+        await dispatch(
+          fetchBatches({ location: locationId, limit: 0, status: "ACTIVE" })
+        ).unwrap();
         fetchedBatchesForLocation.current = locationId;
       } catch (error) {
         console.error("❌ Failed to fetch batches:", error);

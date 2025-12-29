@@ -21,6 +21,8 @@ import {
   Search,
   Building2,
   Loader2,
+  Plus,
+  Edit,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
@@ -35,9 +37,19 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { fetchBankTransactions } from "@/redux/features/bankTransactions/bankTransactionSlice";
+import {
+  addBankTransaction,
+  deleteBankTransaction,
+  fetchBankTransactions,
+} from "@/redux/features/bankTransactions/bankTransactionSlice";
 import { fetchBankAccounts } from "@/redux/features/bank/bankSlice";
 import { Badge } from "../ui/badge";
+import BankTransactionFormDialog, {
+  BankTransactionFormData,
+} from "./AddTransactionForm";
+import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
+import { BankTransaction } from "@/lib/types";
+import { Arrow } from "@radix-ui/react-select";
 
 export default function BankTransactionsPage() {
   const dispatch = useAppDispatch();
@@ -48,7 +60,9 @@ export default function BankTransactionsPage() {
   );
 
   const bankAccounts = useAppSelector((s) => s.bank.bankAccounts);
-
+  const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [editingTransaction, setEditingTransaction] =
+    useState<BankTransactionFormData | null>(null);
   const [filters, setFilters] = useState({
     locationId: "ALL",
     year: new Date().getFullYear().toString(),
@@ -75,6 +89,8 @@ export default function BankTransactionsPage() {
         ...filters,
         page: 1,
         limit: pagination?.limit,
+        bankAccountId:
+          filters.bankAccountId === "ALL" ? undefined : filters.bankAccountId,
         locationId:
           filters.locationId === "ALL" ? undefined : filters.locationId,
         transactionType:
@@ -106,6 +122,8 @@ export default function BankTransactionsPage() {
           filters.transactionType === "ALL"
             ? undefined
             : filters.transactionType,
+        bankAccountId:
+          filters.bankAccountId === "ALL" ? undefined : filters.bankAccountId,
         transactionMode:
           filters.transactionMode === "ALL"
             ? undefined
@@ -114,6 +132,19 @@ export default function BankTransactionsPage() {
         search: debouncedSearch,
       })
     );
+  };
+
+  //handle edit
+  const handleEdit = (item: BankTransactionFormData) => {
+    setEditingTransaction(item);
+    setShowAddTransaction(true);
+  };
+
+  //handle delete
+  const onDelete = async (id: string) => {
+    dispatch(deleteBankTransaction(id)).unwrap();
+    await getTransactions();
+    await dispatch(fetchBankAccounts());
   };
 
   useEffect(() => {
@@ -148,10 +179,33 @@ export default function BankTransactionsPage() {
               Track all bank-related transactions
             </p>
           </div>
+          <BankTransactionFormDialog
+            key={editingTransaction ? "edit" : "add"}
+            open={showAddTransaction}
+            onClose={() => {
+              setShowAddTransaction(false);
+              setEditingTransaction(null);
+            }}
+            getTransactions={getTransactions}
+            locationId={
+              filters.locationId === "ALL"
+                ? currentUser?.locationId ?? ""
+                : filters.locationId
+            }
+            bankAccounts={bankAccounts.map((b) => ({
+              id: b.id,
+              name: b.bankName,
+            }))}
+            existingData={editingTransaction || undefined}
+            isEdit={Boolean(editingTransaction)}
+          />
 
-          {/* <Button className="border border-white hover:bg-white hover:text-black">
-            <Download className="h-4 w-4 mr-2" /> Export
-          </Button> */}
+          <Button
+            onClick={() => setShowAddTransaction(true)}
+            className="border border-white hover:bg-white hover:text-black"
+          >
+            <Plus className="h-4 w-4 " /> Add Transaction
+          </Button>
         </div>
       </div>
 
@@ -259,6 +313,58 @@ export default function BankTransactionsPage() {
             <p className="text-xs text-gray-300 mt-1">For filtered period</p>
           </CardContent>
         </Card>
+
+        {/* Razorpay */}
+        <Card className="bg-white/10 border border-white/10 backdrop-blur-md shadow-md">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2 text-blue-400">
+              <ArrowDownCircle className="h-4 w-4" />
+              Razorpay
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-2xl font-semibold ${
+                totals?.razorpayTotal >= 0 ? "text-emerald-300" : "text-red-300"
+              }`}
+            >
+              ₹{(totals?.razorpayTotal ?? 0).toLocaleString()}
+            </div>
+            <p className="text-xs text-gray-300 mt-1">For filtered period</p>
+          </CardContent>
+        </Card>
+
+        {/* Other Income */}
+        <Card className="bg-white/10 border border-white/10 backdrop-blur-md shadow-md">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2 text-emerald-400">
+              <TrendingUp className="h-4 w-4" />
+              Other Income
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-semibold text-emerald-300`}>
+              ₹{(totals?.otherIncome ?? 0).toLocaleString()}
+            </div>
+            <p className="text-xs text-gray-300 mt-1">For filtered period</p>
+          </CardContent>
+        </Card>
+
+        {/* Other Expense */}
+        <Card className="bg-white/10 border border-white/10 backdrop-blur-md shadow-md">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2 text-red-400">
+              <ArrowUpCircle className="h-4 w-4" />
+              Other Expense
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-semibold text-red-300 `}>
+              ₹{(totals?.otherExpense ?? 0).toLocaleString()}
+            </div>
+            <p className="text-xs text-gray-300 mt-1">For filtered period</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}
@@ -360,6 +466,7 @@ export default function BankTransactionsPage() {
                   <SelectValue placeholder="Select bank" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#0A1533] text-white border-white/20">
+                  <SelectItem value="ALL">All Banks</SelectItem>
                   {bankAccounts.map((bank) => (
                     <SelectItem key={bank.id} value={bank.id}>
                       {bank.bankName}
@@ -379,7 +486,7 @@ export default function BankTransactionsPage() {
                 }
               >
                 <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
-                  <SelectValue placeholder="All" />
+                  <SelectValue placeholder="Debit / Credit" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#0A1533] text-white border-white/20">
                   <SelectItem value="ALL">All</SelectItem>
@@ -397,7 +504,7 @@ export default function BankTransactionsPage() {
                 }
               >
                 <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
-                  <SelectValue placeholder="All" />
+                  <SelectValue placeholder="Razorpay / Bank Transfer" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#0A1533] text-white border-white/20">
                   <SelectItem value="ALL">All</SelectItem>
@@ -416,7 +523,7 @@ export default function BankTransactionsPage() {
                 }
               >
                 <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
-                  <SelectValue placeholder="All" />
+                  <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#0A1533] text-white border-white/20">
                   <SelectItem value="ALL">All</SelectItem>
@@ -426,6 +533,8 @@ export default function BankTransactionsPage() {
                   <SelectItem value="PAYMENT_TO_DIRECTOR">
                     Payment To Director
                   </SelectItem>
+                  <SelectItem value="OTHER_EXPENSE">Other Expense</SelectItem>
+                  <SelectItem value="OTHER_INCOME">Other Income</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -484,6 +593,16 @@ export default function BankTransactionsPage() {
                   <TableHead className="px-2 py-2 text-right text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Amount
                   </TableHead>
+                  {(currentUser?.role === 1 || currentUser?.role === 3) &&
+                    transactions.some(
+                      (t) =>
+                        t.category !== "STUDENT_PAYMENT" &&
+                        t.category !== "PAYMENT_TO_DIRECTOR"
+                    ) && (
+                      <TableHead className="px-2 py-2 text-right text-xs font-medium text-gray-50 uppercase tracking-wider">
+                        Actions
+                      </TableHead>
+                    )}
                 </TableRow>
               </TableHeader>
 
@@ -545,6 +664,29 @@ export default function BankTransactionsPage() {
                       <TableCell className="text-right font-semibold text-gray-100 whitespace-nowrap">
                         ₹ {t.amount.toLocaleString()}
                       </TableCell>
+                      {(currentUser?.role === 1 || currentUser?.role === 3) &&
+                        t.category !== "STUDENT_PAYMENT" &&
+                        t.category !== "PAYMENT_TO_DIRECTOR" && (
+                          <TableCell>
+                            <div className="flex justify-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEdit(t)}
+                                disabled={loading}
+                                className="border-white/10 text-black hover:bg-white/80"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+
+                              <DeleteDialogue
+                                id={t.id as string}
+                                title="this entry"
+                                handelDelete={() => onDelete(t.id as string)}
+                              />
+                            </div>
+                          </TableCell>
+                        )}
                     </TableRow>
                   ))
                 )}

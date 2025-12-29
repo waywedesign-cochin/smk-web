@@ -40,7 +40,12 @@ import { cashBookFormSchema } from "@/lib/validation/cashBookFormSchema";
 
 interface CashBookFormData {
   transactionDate: Date;
-  transactionType: "STUDENT_PAID" | "OFFICE_EXPENSE" | "OWNER_TAKEN";
+  transactionType:
+    | "STUDENT_PAID"
+    | "OFFICE_EXPENSE"
+    | "OWNER_TAKEN"
+    | "OTHER_EXPENSE"
+    | "OTHER_INCOME";
   description: string;
   amount: number | string; // keep as string while typing; cast to number on submit
   locationId: string;
@@ -270,7 +275,8 @@ export default function EntryDialog({
         // If increasing the amount and difference > cashInHand, block it
         if (
           (validData.transactionType === "OFFICE_EXPENSE" ||
-            validData.transactionType === "OWNER_TAKEN") &&
+            validData.transactionType === "OWNER_TAKEN" ||
+            validData.transactionType === "OTHER_EXPENSE") &&
           difference > cashInHand
         ) {
           setFormErrors({
@@ -285,7 +291,8 @@ export default function EntryDialog({
       if (
         !isEdit &&
         (validData.transactionType === "OFFICE_EXPENSE" ||
-          validData.transactionType === "OWNER_TAKEN") &&
+          validData.transactionType === "OWNER_TAKEN" ||
+          validData.transactionType === "OTHER_EXPENSE") &&
         Number(validData.amount) > cashInHand
       ) {
         setFormErrors({
@@ -332,8 +339,11 @@ export default function EntryDialog({
         handleTabChange("owner");
       } else if (payload.transactionType === "OFFICE_EXPENSE") {
         handleTabChange("expenses");
+      } else if (payload.transactionType === "OTHER_EXPENSE") {
+        handleTabChange("other-expense");
+      } else if (payload.transactionType === "OTHER_INCOME") {
+        handleTabChange("other-income");
       }
-
       // Reset local states
       resetFormState();
       setForm({
@@ -368,7 +378,8 @@ export default function EntryDialog({
   const isTxCurrentMonth = selectedDate ? isCurrentMonth(selectedDate) : false;
   const isMoneyType =
     form.transactionType === "OFFICE_EXPENSE" ||
-    form.transactionType === "OWNER_TAKEN";
+    form.transactionType === "OWNER_TAKEN" ||
+    form.transactionType === "OTHER_EXPENSE";
   const disableDate = isEdit && isMoneyType;
 
   // ✅ disable amount in edit mode if money-type and old month
@@ -489,6 +500,8 @@ export default function EntryDialog({
                   <SelectItem value="STUDENT_PAID">Students Paid</SelectItem>
                   <SelectItem value="OFFICE_EXPENSE">Office Expense</SelectItem>
                   <SelectItem value="OWNER_TAKEN">Owner Taken</SelectItem>
+                  <SelectItem value="OTHER_INCOME">Other Income</SelectItem>
+                  <SelectItem value="OTHER_EXPENSE">Other Expense</SelectItem>
                 </SelectContent>
               </Select>
               {formErrors.transactionType && (
@@ -595,7 +608,10 @@ export default function EntryDialog({
                 <SelectContent className="bg-gray-800 border-gray-600 text-white">
                   {filteredStudents.map((student) => (
                     <SelectItem key={student.id} value={student.id as string}>
-                      {student.name}
+                      {student.name} -{" "}
+                      <span className="text-[10px] py-0.5 bg-blue-800 px-2 rounded-md">
+                        (AD.NO:{student?.admissionNo})
+                      </span>
                       {loadingStudents && <Loader2 className="animate-spin" />}
                     </SelectItem>
                   ))}

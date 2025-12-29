@@ -11,7 +11,12 @@ import { Student, User } from "@/lib/types";
 export interface CashbookEntry {
   id: string;
   transactionDate: string;
-  transactionType: "STUDENT_PAID" | "OFFICE_EXPENSE" | "OWNER_TAKEN";
+  transactionType:
+    | "STUDENT_PAID"
+    | "OFFICE_EXPENSE"
+    | "OWNER_TAKEN"
+    | "OTHER_INCOME"
+    | "OTHER_EXPENSE";
   amount: number;
   debitCredit: "DEBIT" | "CREDIT";
   description?: string;
@@ -34,6 +39,8 @@ export interface CashbookTotals {
   cashInHand: number;
   totalCredit: number;
   totalDebit: number;
+  otherIncome?: number;
+  otherExpenses?: number;
 }
 
 export interface Pagination {
@@ -71,7 +78,12 @@ export interface FetchCashbookParams {
 export interface AddCashbookEntryData {
   transactionDate: string;
   amount: number;
-  transactionType: "STUDENT_PAID" | "OFFICE_EXPENSE" | "OWNER_TAKEN";
+  transactionType:
+    | "STUDENT_PAID"
+    | "OFFICE_EXPENSE"
+    | "OWNER_TAKEN"
+    | "OTHER_INCOME"
+    | "OTHER_EXPENSE";
   description?: string;
   locationId: string;
   referenceId?: string;
