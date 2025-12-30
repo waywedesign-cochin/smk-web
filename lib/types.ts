@@ -89,14 +89,7 @@ export enum BatchStatus {
   PENDING = "PENDING",
 }
 export interface BatchResponse {
-  dashboardStats: {
-    activeBatches: number;
-    totalEnrollment: number;
-    availableSlots: number;
-    totalRevenue: number;
-    outstandingFees: number;
-    totalFees?: number;
-  };
+
   batches: Batch[];
   pagination: {
     currentPage: number;

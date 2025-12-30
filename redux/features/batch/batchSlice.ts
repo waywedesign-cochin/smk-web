@@ -24,6 +24,7 @@ interface BatchState {
     totalCount: number;
   };
   loading: boolean;
+  statsLoading: boolean;
   error: string | null;
 }
 
@@ -49,6 +50,7 @@ const initialState: BatchState = {
   },
   pagination: { currentPage: 1, limit: 10, totalPages: 0, totalCount: 0 },
   loading: false,
+  statsLoading: false,
   error: null,
 };
 
@@ -82,7 +84,6 @@ export const addBatch = createAsyncThunk<Batch, Batch>(
 );
 
 //get batches
-// ✅ FETCH batches (updated to include dashboard stats)
 export const fetchBatches = createAsyncThunk<BatchResponse, FetchBatchesParams>(
   "batches/fetch",
   async (params = {}, { rejectWithValue }) => {
@@ -100,6 +101,24 @@ export const fetchBatches = createAsyncThunk<BatchResponse, FetchBatchesParams>(
     }
   }
 );
+
+//fetch batch stats
+export const fetchBatchStats = createAsyncThunk<
+  DashboardStats,
+  { location: string; year?: string }
+>("batches/fetchStats", async (params, { rejectWithValue }) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/api/batch/get-batches/stats`,
+      {
+        params,
+      }
+    );
+    return response.data.data;
+  } catch (error) {
+    return rejectWithValue("Failed to fetch batch stats");
+  }
+});
 
 export const updateBatch = createAsyncThunk<Batch, Batch>(
   "batch/update",
@@ -192,12 +211,24 @@ const batchSlice = createSlice({
       .addCase(fetchBatches.fulfilled, (state, action) => {
         state.loading = false;
         state.batches = action.payload.batches;
-        state.dashboardStats = action.payload.dashboardStats;
         state.pagination = action.payload.pagination;
       })
       .addCase(fetchBatches.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to fetch batches";
+      })
+
+      // Fetch batch stats
+      .addCase(fetchBatchStats.pending, (state) => {
+        state.statsLoading = true;
+      })
+      .addCase(fetchBatchStats.fulfilled, (state, action) => {
+        state.statsLoading = false;
+        state.dashboardStats = action.payload;
+      })
+      .addCase(fetchBatchStats.rejected, (state, action) => {
+        state.statsLoading = false;
+        state.error = action.error.message || "Failed to fetch batch stats";
       })
 
       // Update batch

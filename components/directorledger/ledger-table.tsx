@@ -99,7 +99,7 @@ export function LedgerTable({
           {entries.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={6}
+                colSpan={7}
                 className="text-center py-8 text-slate-500"
               >
                 No entries found

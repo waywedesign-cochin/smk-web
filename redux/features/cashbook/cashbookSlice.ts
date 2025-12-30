@@ -260,6 +260,11 @@ const cashbookSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    setCurrentPage: (state, action) => {
+      if (state.pagination) {
+        state.pagination.page = action.payload;
+      }
+    },
   },
   extraReducers: (builder) => {
     // FETCH ENTRIES
@@ -344,5 +349,5 @@ const cashbookSlice = createSlice({
   },
 });
 
-export const { clearError } = cashbookSlice.actions;
+export const { clearError, setCurrentPage } = cashbookSlice.actions;
 export default cashbookSlice.reducer;
