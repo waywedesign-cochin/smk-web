@@ -212,8 +212,14 @@ export const switchStudentBatch = createAsyncThunk<
 const studentSlice = createSlice({
   name: "students",
   initialState,
-  reducers: {},
-  extraReducers: (builder) => {
+  reducers: {
+    setCurrentPage: (state, action) => {
+      if (state.pagination) {
+        state.pagination.currentPage = action.payload;
+      }
+    },
+  },
+    extraReducers: (builder) => {
     // ---------------- Fetch Students ----------------
     builder
       .addCase(fetchStudents.pending, (state) => {
@@ -320,3 +326,4 @@ const studentSlice = createSlice({
 });
 
 export default studentSlice.reducer;
+export const { setCurrentPage } = studentSlice.actions;

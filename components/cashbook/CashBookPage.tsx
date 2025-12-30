@@ -20,6 +20,7 @@ import {
   fetchCashbookEntries,
   deleteCashbookEntry,
   fetchGlobalTotals,
+  setCurrentPage,
 } from "@/redux/features/cashbook/cashbookSlice";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
 import { fetchCurrentUser, fetchUsers } from "@/redux/features/user/userSlice";
@@ -77,9 +78,10 @@ export const CashBookPage = () => {
     if (!user || !user.id) {
       dispatch(fetchCurrentUser());
     }
-
-    dispatch(fetchUsers());
-  }, [dispatch, locations]);
+    if (!users || users.length === 0) {
+      dispatch(fetchUsers());
+    }
+  }, [dispatch, locations, users, user]);
 
   // MAIN DATA FETCHING EFFECT (EXACTLY like students page)
   useEffect(() => {
@@ -108,19 +110,7 @@ export const CashBookPage = () => {
       ...prev,
       type: typeMap[tab] || "STUDENT_PAID",
     }));
-    dispatch(
-      fetchCashbookEntries({
-        page: 1,
-        limit: itemsPerPage,
-        locationId: filters.locationId,
-        month: filters.month === "ALL" ? undefined : filters.month,
-        year: filters.year === "ALL" ? undefined : filters.year,
-        transactionType: typeMap[tab] || "STUDENT_PAID",
-      })
-    );
   };
-
-  // Manual refetch function (like students page)
 
   // Edit handler
   const handleEdit = (entry: CashbookEntry) => {
@@ -153,18 +143,7 @@ export const CashBookPage = () => {
 
   // Pagination handler
   const handlePageChange = (page: number) => {
-    console.log("Page changed to", page);
-
-    dispatch(
-      fetchCashbookEntries({
-        page,
-        limit: itemsPerPage,
-        locationId: filters.locationId,
-        month: filters.month === "ALL" ? undefined : filters.month,
-        year: filters.year === "ALL" ? undefined : filters.year,
-        transactionType: filters.type,
-      })
-    );
+    dispatch(setCurrentPage(page));
   };
 
   const handleExportCashbook = async () => {

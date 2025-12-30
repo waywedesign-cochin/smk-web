@@ -1,5 +1,11 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   Card,
   CardContent,
@@ -52,6 +58,7 @@ import {
   addStudent,
   deleteStudent,
   fetchStudents,
+  setCurrentPage,
   SwitchBatchPayload,
   switchStudentBatch,
   updateStudent,
@@ -64,21 +71,14 @@ import {
   SelectValue,
 } from "../ui/select";
 import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
-import StudentDetailsView from "./StudentDetailsView";
 import Link from "next/link";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
 import SwitchBatchDialog from "./SwitchBatchDialog";
 import toast from "react-hot-toast";
-import { set } from "lodash";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Label } from "../ui/label";
 import { Checkbox } from "../ui/checkbox";
 import DarkVeil from "../DarkVeil";
 
-// import { mockStudents, mockPayments } from "../../lib/mock-data";
-// import { Student } from "../../types";
-// import { AddStudentForm } from "../add-student-form";
-// types.ts
 export interface StudentInput {
   name: string;
   email: string;
@@ -146,57 +146,49 @@ export function Students() {
 
   // Filter batches based on selected location - THIS IS CRITICAL
   const filteredBatches = useMemo(() => {
-    console.log("Filtering batches with location:", locationTypeFilter);
-    console.log("All batches:", batches);
-
     if (!batches || batches.length === 0) return [];
     if (!locationTypeFilter || locationTypeFilter === "all") return batches;
 
     const filtered = batches.filter(
       (batch) => batch.location?.id === locationTypeFilter
     );
-    console.log("Filtered batches:", filtered);
     return filtered;
   }, [batches, locationTypeFilter]);
 
   // Set batch filter when filteredBatches changes
   useEffect(() => {
-    console.log("filteredBatches changed:", filteredBatches);
-    if (filteredBatches && filteredBatches.length > 0) {
-      // If current batch filter is not in the filtered batches, reset to "all"
-      const isCurrentBatchValid = filteredBatches.some(
-        (batch) => batch.id === batchTypeFilter
-      );
-      if (!isCurrentBatchValid && batchTypeFilter !== "all") {
-        setBatchTypeFilter("all");
-      }
-    } else {
-      // If no batches available, set to "all"
+    if (!filteredBatches.length) return;
+    if (batchTypeFilter === "all") return;
+
+    const isValid = filteredBatches.some(
+      (batch) => batch.id === batchTypeFilter
+    );
+
+    if (!isValid) {
       setBatchTypeFilter("all");
     }
-  }, [filteredBatches, batchTypeFilter]);
+  }, [filteredBatches]);
 
   // Fetch batches when location changes
   useEffect(() => {
-    if (locationTypeFilter) {
-      console.log("Fetching batches for location:", locationTypeFilter);
-      dispatch(
-        fetchBatches({
-          location: locationTypeFilter,
-          status: "ACTIVE",
-          limit: 10,
-          search: batchDebouncedSearch ?? undefined,
-        })
-      );
-    }
-  }, [locationTypeFilter, dispatch, batchDebouncedSearch]);
+    if (!locationTypeFilter) return;
+    if (batchDebouncedSearch === "" && batches.length > 0) return;
+
+    dispatch(
+      fetchBatches({
+        location: locationTypeFilter,
+        status: "ACTIVE",
+        limit: 10,
+        search: batchDebouncedSearch || undefined,
+      })
+    );
+  }, [locationTypeFilter, batchDebouncedSearch]);
 
   // Set initial location when locations are loaded
   useEffect(() => {
     if (locations && locations.length > 0 && !locationTypeFilter) {
       const firstLocationId = locations[0]?.id;
       if (firstLocationId) {
-        console.log("Setting initial location:", firstLocationId);
         setLocationTypeFilter(firstLocationId);
       }
     }
@@ -205,7 +197,6 @@ export function Students() {
   // Fetch initial locations
   useEffect(() => {
     if (!locations || locations.length === 0) {
-      console.log("Fetching locations...");
       dispatch(fetchLocations());
     }
   }, [locations, dispatch]);
@@ -223,47 +214,41 @@ export function Students() {
 
   //batch search debounce
   useEffect(() => {
+    if (batchSearch === "") return;
+
     const handler = setTimeout(() => {
       setBatchDebouncedSearch(batchSearch);
     }, 250);
 
-    return () => {
-      clearTimeout(handler);
-    };
+    return () => clearTimeout(handler);
   }, [batchSearch]);
 
-  // Main data fetching with all filters
-  useEffect(() => {
-    if (locationTypeFilter) {
-      console.log("Fetching students with filters:", {
-        location: locationTypeFilter,
-        batch: batchTypeFilter,
-        search: debouncedSearch,
-      });
+  // Fetch student data whenever filters change
+  const fetchStudentsData = useCallback(() => {
+    if (!locationTypeFilter) return;
 
-      dispatch(
-        fetchStudents({
-          page: pagination?.currentPage || 1,
-          limit: itemsPerPage,
-          search: debouncedSearch,
-          isFundedAccount:
-            accountTypeFilter === "funded"
-              ? true
-              : accountTypeFilter === "regular"
-              ? false
-              : undefined,
-          location: locationTypeFilter,
-          batch: batchTypeFilter === "all" ? undefined : batchTypeFilter,
-          mode: modeFilter === "all" ? undefined : modeFilter,
-          status: statusFilter === "all" ? undefined : statusFilter,
-          switched: switchFilter ? true : undefined,
-          month: monthFilter === "all" ? undefined : monthFilter,
-          year: yearFilter,
-          feeStatus: feeStatusFilter === "all" ? undefined : feeStatusFilter,
-          dueThisWeek: dueThisWeekFilter ? true : undefined,
-        })
-      );
-    }
+    dispatch(
+      fetchStudents({
+        page: pagination?.currentPage || 1,
+        limit: itemsPerPage,
+        search: debouncedSearch,
+        isFundedAccount:
+          accountTypeFilter === "funded"
+            ? true
+            : accountTypeFilter === "regular"
+            ? false
+            : undefined,
+        location: locationTypeFilter,
+        batch: batchTypeFilter === "all" ? undefined : batchTypeFilter,
+        mode: modeFilter === "all" ? undefined : modeFilter,
+        status: statusFilter === "all" ? undefined : statusFilter,
+        switched: switchFilter ? true : undefined,
+        month: monthFilter === "all" ? undefined : monthFilter,
+        year: yearFilter,
+        feeStatus: feeStatusFilter === "all" ? undefined : feeStatusFilter,
+        dueThisWeek: dueThisWeekFilter ? true : undefined,
+      })
+    );
   }, [
     dispatch,
     debouncedSearch,
@@ -281,32 +266,14 @@ export function Students() {
     pagination?.currentPage,
   ]);
 
+  useEffect(() => {
+    if (!locationTypeFilter) return;
+    fetchStudentsData();
+  }, [fetchStudentsData, locationTypeFilter]);
+
   // Pagination handler
   const handlePageChange = (page: number) => {
-    if (locationTypeFilter) {
-      dispatch(
-        fetchStudents({
-          page,
-          limit: itemsPerPage,
-          search: debouncedSearch,
-          isFundedAccount:
-            accountTypeFilter === "funded"
-              ? true
-              : accountTypeFilter === "regular"
-              ? false
-              : undefined,
-          location: locationTypeFilter,
-          batch: batchTypeFilter === "all" ? undefined : batchTypeFilter,
-          mode: modeFilter === "all" ? undefined : modeFilter,
-          status: statusFilter === "all" ? undefined : statusFilter,
-          switched: switchFilter ? true : undefined,
-          month: monthFilter === "all" ? undefined : monthFilter,
-          year: yearFilter === "all" ? undefined : yearFilter,
-          feeStatus: feeStatusFilter === "all" ? undefined : feeStatusFilter,
-          dueThisWeek: dueThisWeekFilter ? true : undefined,
-        })
-      );
-    }
+    dispatch(setCurrentPage(page));
   };
 
   // handlers for add, update, delete...
@@ -319,6 +286,7 @@ export function Students() {
     }
   };
 
+  //update student
   const handleUpdateStudent = async (studentData: StudentInput) => {
     try {
       await dispatch(
@@ -331,6 +299,7 @@ export function Students() {
     }
   };
 
+  //delete student
   const handleDeleteStudent = async (studentId: string) => {
     try {
       await dispatch(deleteStudent(studentId));
@@ -339,35 +308,13 @@ export function Students() {
     }
   };
 
-  //switch batch
+  //switch batch handler
   const handleSwitchBatch = async (data: SwitchBatchPayload) => {
     try {
       // Wait for batch switch API to complete
       await dispatch(switchStudentBatch(data)).unwrap();
-
       // Refresh students list after successful batch switch
-      dispatch(
-        fetchStudents({
-          page: pagination?.currentPage || 1,
-          limit: itemsPerPage,
-          search: debouncedSearch,
-          isFundedAccount:
-            accountTypeFilter === "funded"
-              ? true
-              : accountTypeFilter === "regular"
-              ? false
-              : undefined,
-          location: locationTypeFilter,
-          batch: batchTypeFilter === "all" ? undefined : batchTypeFilter,
-          mode: modeFilter === "all" ? undefined : modeFilter,
-          status: statusFilter === "all" ? undefined : statusFilter,
-          switched: switchFilter ? true : undefined,
-          month: monthFilter === "all" ? undefined : monthFilter,
-          year: yearFilter,
-          feeStatus: feeStatusFilter === "all" ? undefined : feeStatusFilter,
-          dueThisWeek: dueThisWeekFilter ? true : undefined,
-        })
-      ).unwrap();
+      fetchStudentsData();
 
       // Close dialog only after API success
       setShowSwitchBatchDialog(false);
@@ -378,14 +325,16 @@ export function Students() {
   };
 
   const handleResetFilters = () => {
-    setMonthFilter("all");
-    setAccountTypeFilter("all");
-    setBatchTypeFilter("all");
-    setModeFilter("all");
-    setStatusFilter("all");
-    setSwitchFilter(false);
-    setFeeStatusFilter("all");
-    setDueThisWeekFilter(false);
+    startTransition(() => {
+      setMonthFilter("all");
+      setAccountTypeFilter("all");
+      setBatchTypeFilter("all");
+      setModeFilter("all");
+      setStatusFilter("all");
+      setSwitchFilter(false);
+      setFeeStatusFilter("all");
+      setDueThisWeekFilter(false);
+    });
   };
 
   return (
