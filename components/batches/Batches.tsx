@@ -44,6 +44,7 @@ import {
   addBatch,
   deleteBatch,
   fetchBatches,
+  fetchBatchStats,
   updateBatch,
 } from "@/redux/features/batch/batchSlice";
 import { BatchFormValues } from "@/lib/validation/batchSchema";
@@ -62,10 +63,9 @@ import DarkVeil from "../DarkVeil";
 
 export function Batches() {
   const dispatch = useAppDispatch();
-  const { batches, dashboardStats, pagination, loading } = useAppSelector(
+  const { batches, dashboardStats, pagination, loading, statsLoading } = useAppSelector(
     (state) => state.batches
   );
-  console.log(pagination);
 
   const { currentUser } = useAppSelector((state) => state.users);
   const locations = useAppSelector((state) => state.locations.locations);
@@ -85,8 +85,8 @@ export function Batches() {
   const [editingBatch, setEditingBatch] = useState<Batch | null>(null);
 
   //fetch batches
-  const getBatches = async () => {
-    await dispatch(
+  const getBatches = useCallback(() => {
+    dispatch(
       fetchBatches({
         page: pagination?.currentPage,
         limit: pagination?.limit,
@@ -98,12 +98,42 @@ export function Batches() {
         year: filters.year,
       })
     );
-  };
+  }, [
+    dispatch,
+    pagination?.currentPage,
+    pagination?.limit,
+    debouncedSearch,
+    filters.status,
+    filters.mode,
+    filters.location,
+    filters.course,
+    filters.year,
+  ]);
+
+  useEffect(() => {
+    getBatches();
+  }, [getBatches]);
+
+  //fetch dashboard stats
+  useEffect(() => {
+    if (!filters.location) return;
+
+    dispatch(
+      fetchBatchStats({
+        location: filters.location,
+        year: filters.year,
+      })
+    );
+  }, [filters.location, filters.year]);
 
   //fetch locations and courses
   useEffect(() => {
-    dispatch(fetchLocations());
-    dispatch(fetchCourses());
+    if (!locations.length) {
+      dispatch(fetchLocations());
+    }
+    if (!courses.length) {
+      dispatch(fetchCourses());
+    }
     if (!currentUser?.location?.name) {
       dispatch(fetchCurrentUser());
     }
@@ -127,19 +157,6 @@ export function Batches() {
 
     return () => clearTimeout(handler); // cleanup previous timeout
   }, [filters.search]);
-
-  // Fetch when filters change
-  useEffect(() => {
-    getBatches();
-  }, [
-    dispatch,
-    filters.status,
-    filters.mode,
-    filters.location,
-    filters.course,
-    filters.year,
-    debouncedSearch,
-  ]);
 
   const handlePageChange = (newPage: number) => {
     dispatch(
@@ -428,7 +445,7 @@ export function Batches() {
                   <p className="text-sm font-medium text-muted-foreground mb-1">
                     {label}
                   </p>
-                  {loading || !dashboardStats ? (
+                  {statsLoading || !dashboardStats ? (
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   ) : (
                     <p className="text-2xl font-bold tracking-tight">{value}</p>
