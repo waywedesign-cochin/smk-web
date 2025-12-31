@@ -19,6 +19,7 @@ export function CourseList({
   loading,
 }: CourseListProps) {
   const { currentUser } = useAppSelector((state) => state.users);
+  
   const handleCourseDeleteHaveBatches = () => {
     toast(
       "You cannot delete this course because it has batches, students, or fees associated with it. Please remove the related data before deleting the course.",
@@ -36,7 +37,7 @@ export function CourseList({
             <p className="mt-4 text-muted-foreground">Loading courses...</p>
           </div>
         </div>
-      ) : !courses ? (
+      ) : !courses.length ? (
         <div className="text-center">
           <p className="text-gray-400  text-center text-md font-medium">
             No courses added yet. Start by adding one!
