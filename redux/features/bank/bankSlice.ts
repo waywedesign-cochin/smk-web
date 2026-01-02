@@ -1,3 +1,4 @@
+import { BankTransaction } from "@/lib/types";
 import { BASE_URL } from "@/redux/baseUrl"; // Assuming BASE_URL is defined
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
@@ -19,6 +20,7 @@ type BankAccount = {
   balance?: number;
   ifscCode: string;
   branch: string;
+  bankTransactions?: BankTransaction[];
 };
 
 const initialState: BankState = {

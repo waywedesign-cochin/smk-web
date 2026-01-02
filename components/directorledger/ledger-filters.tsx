@@ -83,7 +83,6 @@ export function LedgerFilters({
         label: user.username || `Director ${user.id}`,
       }));
   }, [users, showDirectorFilter]);
-  console.log("directorsList", directorsList);
   const { totals } = useAppSelector((state) => state.directorLedger);
 
   useEffect(() => {

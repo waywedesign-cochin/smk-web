@@ -97,23 +97,19 @@ export function useCashbookForm({
     }
   }, [isEdit, existingData, transactionType]);
 
-  // 🔹 Fetch batches when location changes
   useEffect(() => {
-    if (
-      !isOpen ||
-      transactionType !== "STUDENT_PAID" ||
-      !locationId ||
-      fetchedBatchesForLocation.current === locationId
-    )
-      return;
+    if (!isOpen || transactionType !== "STUDENT_PAID" || !locationId) return;
 
     const loadBatches = async () => {
       setLoadingBatches(true);
       try {
         await dispatch(
-          fetchBatches({ location: locationId, limit: 0, status: "ACTIVE" })
+          fetchBatches({
+            location: locationId,
+            limit: 10,
+            status: "ACTIVE",
+          })
         ).unwrap();
-        fetchedBatchesForLocation.current = locationId;
       } catch (error) {
         console.error("❌ Failed to fetch batches:", error);
       } finally {

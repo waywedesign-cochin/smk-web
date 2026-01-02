@@ -82,6 +82,18 @@ export default function DirectorLedgerPage() {
       })
     );
   };
+  const directorNotFound = !directorsList.some(
+    (user: User) => user.id === directorId
+  );
+  if (directorNotFound) {
+    return (
+      <div className="h-1/2 flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 rounded-md text-white p-2">
+        <p className="text-md">
+          Director not found. Please create a director account to view the ledger.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen  bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 rounded-md text-white p-2 space-y-6">

@@ -91,6 +91,8 @@ export default function EntryDialog({
     studentId: undefined,
     directorId: undefined,
   });
+  const [batchSearch, setBatchSearch] = useState("");
+  const [batchDebouncedSearch, setBatchDebouncedSearch] = useState("");
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -184,6 +186,24 @@ export default function EntryDialog({
     setSelectedStudentId,
     !selectedBatchId,
   ]);
+
+  //debounce search for batches
+  useEffect(() => {
+    if (batchSearch === "") {
+      setBatchDebouncedSearch("");
+      return;
+    }
+
+    const handler = setTimeout(() => {
+      setBatchDebouncedSearch(batchSearch.toLowerCase());
+    }, 250);
+
+    return () => clearTimeout(handler);
+  }, [batchSearch]);
+  //filtered batches
+  const filteredBatchList = batches.filter((b) =>
+    b.name.toLowerCase().includes(batchDebouncedSearch)
+  );
 
   // ------------------ Effects: clear dependent fields on type change ------------------
   useEffect(() => {
@@ -528,12 +548,7 @@ export default function EntryDialog({
                   // 3. Clear dependent local data arrays
                   setSelectedBatchId(undefined);
                   setSelectedStudentId(undefined);
-
-                  // 4. Fetch new batches for this location
-                  if (value)
-                    dispatch(fetchBatches({ location: value, limit: 10000 }));
                 }}
-                disabled
               >
                 <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                   <SelectValue placeholder="Select location" />
@@ -554,31 +569,60 @@ export default function EntryDialog({
 
           {/* Batch Selection - Only for STUDENT_PAID */}
           {form.transactionType === "STUDENT_PAID" && (
-            <div className="space-y-2">
-              <Label className="text-white">Batch *</Label>
+            <div className="w-full flex flex-col">
+              <span className="text-xs text-gray-200 mb-1">Batch *</span>
+
               <Select
                 value={selectedBatchId || ""}
                 onValueChange={handleBatchChange}
-                disabled={loadingBatches || batches.length === 0}
-                required
               >
-                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                <SelectTrigger className="bg-gray-800 border-gray-600 text-white w-full">
                   <SelectValue
-                    placeholder={
-                      loadingBatches
-                        ? "Loading batches..."
-                        : batches.length === 0
-                        ? "No batches available"
-                        : "Select batch"
-                    }
+                    placeholder="Select Batch"
+                    className="truncate"
                   />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-600 text-white">
-                  {batches.map((batch) => (
-                    <SelectItem key={batch.id} value={batch.id as string}>
-                      {batch.name}
-                    </SelectItem>
-                  ))}
+
+                <SelectContent
+                  onPointerDown={(e) => e.preventDefault()}
+                  className="bg-[#1B2437] text-white text-xs max-h-90 overflow-y-auto w-[var(--radix-select-trigger-width)]"
+                >
+                  {/* Search */}
+                  <div
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="p-2 sticky top-0 bg-[#1B2437] z-10 border-b border-gray-700"
+                  >
+                    <Input
+                      placeholder="Search batch..."
+                      value={batchSearch}
+                      onChange={(e) => setBatchSearch(e.target.value)}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className="bg-[#111827] text-white border border-gray-600 h-8 text-xs"
+                    />
+                  </div>
+
+                  {loadingBatches ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="animate-spin text-muted-foreground" />
+                    </div>
+                  ) : filteredBatchList.length === 0 ? (
+                    <div className="text-center py-4 text-gray-400 text-xs">
+                      No batches found
+                    </div>
+                  ) : (
+                    filteredBatchList.map((batch) => (
+                      <SelectItem
+                        key={batch.id}
+                        value={batch.id as string}
+                        className="text-xs w-full truncate"
+                      >
+                        {batch.name}{" "}
+                        <span className="capitalize text-green-400">
+                          ({batch.status.toLowerCase()})
+                        </span>
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -609,7 +653,7 @@ export default function EntryDialog({
                   {filteredStudents.map((student) => (
                     <SelectItem key={student.id} value={student.id as string}>
                       {student.name} -{" "}
-                      <span className="text-[10px] py-0.5 bg-blue-800 px-2 rounded-md">
+                      <span className="text-[10px] py-0.5 bg-blue-800 px-2 text-white rounded-md">
                         (AD.NO:{student?.admissionNo})
                       </span>
                       {loadingStudents && <Loader2 className="animate-spin" />}

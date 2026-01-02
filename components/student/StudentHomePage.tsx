@@ -132,7 +132,7 @@ export function Students() {
   const [modeFilter, setModeFilter] = useState<string>("");
   const [switchFilter, setSwitchFilter] = useState<boolean>(false);
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const [yearFilter, setYearFilter] = useState<string>("2025");
+  const [yearFilter, setYearFilter] = useState<string>(currentYear.toString());
   const [monthFilter, setMonthFilter] = useState<string>("");
   const [feeStatusFilter, setFeeStatusFilter] = useState<string>("");
   const [dueThisWeekFilter, setDueThisWeekFilter] = useState<boolean>(false);
@@ -169,10 +169,20 @@ export function Students() {
     }
   }, [filteredBatches]);
 
+  
+  // Set initial location when locations are loaded
+  useEffect(() => {
+    if (locations && locations.length > 0 && !locationTypeFilter) {
+      const firstLocationId = locations[0]?.id;
+      if (firstLocationId) {
+        setLocationTypeFilter(firstLocationId);
+      }
+    }
+  }, [locations, locationTypeFilter]);
+  
   // Fetch batches when location changes
   useEffect(() => {
     if (!locationTypeFilter) return;
-    if (batchDebouncedSearch === "" && batches.length > 0) return;
 
     dispatch(
       fetchBatches({
@@ -183,17 +193,7 @@ export function Students() {
       })
     );
   }, [locationTypeFilter, batchDebouncedSearch]);
-
-  // Set initial location when locations are loaded
-  useEffect(() => {
-    if (locations && locations.length > 0 && !locationTypeFilter) {
-      const firstLocationId = locations[0]?.id;
-      if (firstLocationId) {
-        setLocationTypeFilter(firstLocationId);
-      }
-    }
-  }, [locations, locationTypeFilter]);
-
+  
   // Fetch initial locations
   useEffect(() => {
     if (!locations || locations.length === 0) {
@@ -390,6 +390,7 @@ export function Students() {
                       }
                       onCancel={() => setIsAddFormOpen(false)}
                       loading={submitting}
+                      locationId={currentUser?.role===1?locationTypeFilter:currentUser?.locationId as string}
                     />
                   </div>
                 </SheetContent>

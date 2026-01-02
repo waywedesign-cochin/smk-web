@@ -91,6 +91,8 @@ export const fetchBatches = createAsyncThunk<BatchResponse, FetchBatchesParams>(
       const response = await axios.get(`${BASE_URL}/api/batch/get-batches`, {
         params: params || {},
       });
+      console.log(response.data.data);
+      
       return response.data.data as BatchResponse;
     } catch (error: unknown) {
       let errorMessage = "Failed to fetch batches";
