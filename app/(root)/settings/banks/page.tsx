@@ -14,6 +14,7 @@ import {
 } from "@/redux/features/bank/bankSlice"; // Changed slice imports
 import { BankAccount } from "@/lib/types"; // Used BankAccount type
 import DarkVeil from "@/components/DarkVeil";
+import toast from "react-hot-toast";
 
 export default function BankAccountsPage() {
   const dispatch = useAppDispatch();
@@ -59,6 +60,10 @@ export default function BankAccountsPage() {
   };
   const handleDelete = (id?: string) => {
     if (!id) return;
+    const accountUsed = bankAccounts.find((acc) => acc.id === id);
+    if (accountUsed?.bankTransactions?.length) {
+      toast.error("Cannot delete account used in transactions");
+    }
     dispatch(deleteBankAccount(id)); // Changed delete thunk
   };
 

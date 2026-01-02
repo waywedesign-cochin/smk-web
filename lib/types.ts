@@ -18,6 +18,8 @@ export type BankAccount = {
   bankName: string;
   ifscCode: string;
   branch: string;
+  bankTransactions?: BankTransaction[];
+  balance?: number;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };

@@ -127,7 +127,22 @@ export function LedgerForm({
     locationId: entry?.locationId || "",
     batchId: entry?.student?.currentBatchId || "",
   });
-  console.log("entry", entry);
+  const [batchSearch, setBatchSearch] = useState("");
+  const [batchDebouncedSearch, setBatchDebouncedSearch] = useState("");
+
+  //debounce batch search
+  useEffect(() => {
+    if (batchSearch === "") {
+      setBatchDebouncedSearch("");
+      return;
+    }
+
+    const handler = setTimeout(() => {
+      setBatchDebouncedSearch(batchSearch.toLowerCase());
+    }, 250);
+
+    return () => clearTimeout(handler);
+  }, [batchSearch]);
 
   // Fetch locations on mount
   useEffect(() => {
@@ -140,12 +155,17 @@ export function LedgerForm({
       dispatch(
         fetchBatches({
           location: formData.locationId,
-          limit: 0,
+          limit: 10,
           status: "ACTIVE",
         })
       );
     }
   }, [formData.locationId, dispatch]);
+
+  //filter batches
+  const filteredBatches = batches.filter((b) =>
+    b.name.toLowerCase().includes(batchDebouncedSearch)
+  );
 
   // Fetch students when batch changes
   useEffect(() => {
@@ -256,7 +276,6 @@ export function LedgerForm({
       studentId: formData.studentId,
       // locationId: formData.locationId,
     };
-    console.log(formDataToValidate);
     const result = directorLedgerEntrySchema.safeParse(formDataToValidate);
 
     if (!result.success) {
@@ -330,27 +349,34 @@ export function LedgerForm({
           : undefined,
       directorId,
     };
-    console.log("is edit value", isEdit);
     if (isEdit) {
-      console.log("update button clicked and payload is", payload);
-      await dispatch(
-        updateDirectorLedgerEntry({
-          id: entry?.id as string,
-          entry: payload,
-        })
-      );
-      setSuccessMessage("Entry updated successfully!");
+      try {
+        await dispatch(
+          updateDirectorLedgerEntry({
+            id: entry?.id as string,
+            entry: payload,
+          })
+        ).unwrap();
+        setSuccessMessage("Entry updated successfully!");
+      } catch (err) {
+        console.log(err);
+      }
     } else {
-      await dispatch(
-        addDirectorLedgerEntry(
-          payload as Omit<
-            DirectorLedgerEntry,
-            "id" | "debitCredit" | "createdAt" | "updatedAt"
-          >
-        )
-      )
+      try {
+        await dispatch(
+          addDirectorLedgerEntry(
+            payload as Omit<
+              DirectorLedgerEntry,
+              "id" | "debitCredit" | "createdAt" | "updatedAt"
+            >
+          )
+        ).unwrap();
+        setSuccessMessage("Entry added successfully!");
+      } catch (err) {
+        console.log(err);
+      }
+
       await fetchDirectorLedgerEntries({ directorId, page: 1 });
-      setSuccessMessage("Entry added successfully!");
     }
 
     setFormData({
@@ -498,43 +524,69 @@ export function LedgerForm({
 
             {/* Batch Selector - Only for Student Paid */}
             {isStudentPaid && formData.locationId && (
-              <div className="space-y-2">
+              <div className="w-full flex flex-col space-y-1">
                 <label className="text-sm font-semibold text-slate-300 block">
                   Batch <span className="text-red-500">*</span>
                 </label>
-                {batchesLoading ? (
-                  <LoadingSkeleton />
-                ) : batches.length === 0 ? (
-                  <EmptyState message="No batches available for this location" />
-                ) : (
-                  <Select
-                    value={formData.batchId} // Always use formData.batchId
-                    onValueChange={(value) =>
-                      handleSelectChange("batchId", value)
-                    }
+
+                <Select
+                  value={formData.batchId}
+                  onValueChange={(value) =>
+                    handleSelectChange("batchId", value)
+                  }
+                >
+                  <SelectTrigger className="bg-[#1E293B] w-full border border-slate-700 text-white hover:border-blue-500 transition">
+                    <SelectValue
+                      placeholder="Select batch"
+                      className="truncate"
+                    />
+                  </SelectTrigger>
+
+                  <SelectContent
+                    onPointerDown={(e) => e.preventDefault()}
+                    className="bg-[#151D2A] text-white text-xs max-h-90 overflow-y-auto w-[var(--radix-select-trigger-width)]"
                   >
-                    <SelectTrigger className="bg-[#1E293B] w-full border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1">
-                      {" "}
-                      <SelectValue placeholder="Select batch">
-                        {formData.batchId &&
-                          batches.find((b) => b.id === formData.batchId)?.name}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#151D2A] text-white border border-slate-700">
-                      {batches.map((batch) => (
-                        <SelectItem key={batch.id} value={batch?.id as string}>
-                          {batch.name || batch.id}
+                    {/* Search bar */}
+                    <div
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className="p-2 sticky top-0 bg-[#151D2A] z-10 border-b border-slate-700"
+                    >
+                      <Input
+                        placeholder="Search batch..."
+                        value={batchSearch}
+                        onChange={(e) => setBatchSearch(e.target.value)}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        className="bg-[#0A1121] text-white border border-slate-600 h-8 text-xs w-full"
+                      />
+                    </div>
+
+                    {batchesLoading ? (
+                      <div className="flex justify-center py-4">
+                        <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    ) : filteredBatches.length === 0 ? (
+                      <div className="text-center py-4 text-slate-400 text-xs">
+                        No batches found
+                      </div>
+                    ) : (
+                      filteredBatches.map((batch) => (
+                        <SelectItem
+                          key={batch.id}
+                          value={batch.id as string}
+                          className="text-xs font-medium truncate"
+                        >
+                          {batch.name}
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
             )}
 
             {/* Student Selector - Only for Student Paid */}
             {isStudentPaid && (formData.batchId || entry?.student) && (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <label className="text-sm font-semibold text-slate-300 block">
                   Student <span className="text-red-500">*</span>
                 </label>
@@ -549,7 +601,7 @@ export function LedgerForm({
                       handleSelectChange("studentId", value)
                     }
                   >
-                    <SelectTrigger className="bg-[#1E293B] border border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1">
+                    <SelectTrigger className="bg-[#1E293B] border w-full border-slate-700 text-white hover:border-blue-500 transition focus:ring-blue-500 focus:ring-1">
                       <SelectValue placeholder="Select student">
                         {formData.studentId &&
                           students.find((s) => s.id === formData.studentId)
