@@ -126,9 +126,6 @@ export default function BankAccountsTable({
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        {/* You might want to update the deletion check based on bank account usage */}
-                        {/* Assuming no usage checks for now, or update the logic */}
-                        {/* {account.batches?.length === 0 && account.users?.length === 0 && ( */}
                         <DeleteDialogue
                           id={account.id as string}
                           title={account.accountName} // Use accountName for title

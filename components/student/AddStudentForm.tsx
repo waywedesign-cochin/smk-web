@@ -24,6 +24,7 @@ interface AddStudentFormProps {
   onCancel: () => void;
   student?: Student;
   loading?: boolean;
+  locationId: string;
 }
 
 const AddStudentForm: React.FC<AddStudentFormProps> = ({
@@ -31,6 +32,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
   onCancel,
   student,
   loading = false,
+  locationId,
 }) => {
   const dispatch = useAppDispatch();
   const { batches, loading: batchesLoading } = useAppSelector(
@@ -114,7 +116,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
         status: "ACTIVE",
         limit: 10,
         search: debouncedSearch ?? undefined,
-        location: currentUser?.locationId || undefined,
+        location: locationId || undefined,
       })
     );
   }, [dispatch, debouncedSearch]);
