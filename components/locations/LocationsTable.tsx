@@ -8,7 +8,7 @@ import {
   TableHead,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
+import { Edit, Loader2 } from "lucide-react";
 import { Location } from "@/lib/types";
 import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
 import { useAppSelector } from "@/lib/hooks";
@@ -23,6 +23,7 @@ export default function LocationsTable({
   handleDelete: (locationId: string) => void;
 }) {
   const { currentUser } = useAppSelector((state) => state.users);
+  const { loading } = useAppSelector((state) => state.locations);
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-IN", {
       year: "numeric",
@@ -52,16 +53,19 @@ export default function LocationsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {locations.length === 0 ? (
+          {loading ? (
             <TableRow>
               <TableCell
                 colSpan={4}
                 className="text-center text-muted-foreground py-8"
               >
-                No locations found. Add your first location to get started.
+                <div className="flex items-center justify-center gap-2 text-gray-500">
+                  <Loader2 className="animate-spin h-5 w-5" />
+                  Loading locations...
+                </div>
               </TableCell>
             </TableRow>
-          ) : (
+          ) : locations.length > 0 ? (
             locations.map((location, idx) => (
               <TableRow
                 key={location.id}
@@ -114,7 +118,16 @@ export default function LocationsTable({
                 )}
               </TableRow>
             ))
-          )}
+          ) : locations.length === 0 && !loading ? (
+            <TableRow>
+              <TableCell
+                colSpan={4}
+                className="text-center text-muted-foreground py-8"
+              >
+                No locations found
+              </TableCell>
+            </TableRow>
+          ) : null}
         </TableBody>
       </Table>
     </div>

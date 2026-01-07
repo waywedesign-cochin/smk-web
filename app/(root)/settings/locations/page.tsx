@@ -26,11 +26,13 @@ export default function LocationsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
 
-  const handleSubmit = (data: Location, isEdit?: boolean) => {
+  const handleSubmit = async (data: Location, isEdit?: boolean) => {
     if (isEdit) {
-      dispatch(updateLocation(data));
+      await dispatch(updateLocation(data));
+      await dispatch(fetchLocations());
     } else {
-      dispatch(addLocation(data));
+      await dispatch(addLocation(data));
+      await dispatch(fetchLocations());
     }
   };
 
