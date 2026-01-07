@@ -45,20 +45,22 @@ export default function AddLocation({
     defaultValues: { name: "", address: "" },
   });
   const { currentUser } = useAppSelector((state) => state.users);
+  const { loading } = useAppSelector((state) => state.locations);
   // Reset when editing or adding new
   useEffect(() => {
     if (editingLocation) {
       reset({
+        id: editingLocation.id,
         name: editingLocation.name,
         address: editingLocation.address || "",
       });
     } else {
-      reset({ name: "", address: "" });
+      reset({ id: "", name: "", address: "" });
     }
   }, [editingLocation, reset]);
 
-  const submitHandler = (data: LocationFormData) => {
-    onSubmit(data, !!editingLocation);
+  const submitHandler = async (data: LocationFormData) => {
+    await onSubmit(data, !!editingLocation);
     setIsAddDialogOpen(false);
     setEditingLocation(null);
     reset();
@@ -134,7 +136,13 @@ export default function AddLocation({
                   Cancel
                 </Button>
                 <Button type="submit">
-                  {editingLocation ? "Update Location" : "Add Location"}
+                  {editingLocation
+                    ? loading
+                      ? "Updating..."
+                      : "Update Location"
+                    : loading
+                    ? "Adding..."
+                    : "Add Location"}
                 </Button>
               </div>
             </form>
