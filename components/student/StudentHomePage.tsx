@@ -170,7 +170,6 @@ export function Students() {
     }
   }, [filteredBatches]);
 
-  
   // Set initial location when locations are loaded
   useEffect(() => {
     if (locations && locations.length > 0 && !locationTypeFilter) {
@@ -180,7 +179,7 @@ export function Students() {
       }
     }
   }, [locations, locationTypeFilter]);
-  
+
   // Fetch batches when location changes
   useEffect(() => {
     if (!locationTypeFilter) return;
@@ -194,7 +193,7 @@ export function Students() {
       })
     );
   }, [locationTypeFilter, batchDebouncedSearch]);
-  
+
   // Fetch initial locations
   useEffect(() => {
     if (!locations || locations.length === 0) {
@@ -337,6 +336,10 @@ export function Students() {
       setDueThisWeekFilter(false);
     });
   };
+  //reset page
+  const resetPage = () => {
+    dispatch(setCurrentPage(1));
+  };
 
   return (
     <div className="space-y-6 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-2 rounded-md">
@@ -391,7 +394,11 @@ export function Students() {
                       }
                       onCancel={() => setIsAddFormOpen(false)}
                       loading={submitting}
-                      locationId={currentUser?.role===1?locationTypeFilter:currentUser?.locationId as string}
+                      locationId={
+                        currentUser?.role === 1
+                          ? locationTypeFilter
+                          : (currentUser?.locationId as string)
+                      }
                     />
                   </div>
                 </SheetContent>
@@ -416,7 +423,10 @@ export function Students() {
               <span className="text-xs text-gray-200 mb-1">Year</span>
               <Select
                 value={yearFilter?.toString() || ""}
-                onValueChange={(value) => setYearFilter(value)}
+                onValueChange={(value) => {
+                  setYearFilter(value);
+                  resetPage();
+                }}
               >
                 <SelectTrigger className="w-full   border-white/50">
                   <SelectValue placeholder="Select Year" />
@@ -437,7 +447,10 @@ export function Students() {
                 <span className="text-xs text-gray-200 mb-1">Month</span>
                 <Select
                   value={monthFilter?.toString() || ""}
-                  onValueChange={(value) => setMonthFilter(value)}
+                  onValueChange={(value) => {
+                    setMonthFilter(value);
+                    resetPage();
+                  }}
                 >
                   <SelectTrigger className=" w-full border-white/50">
                     <SelectValue placeholder="Select Month" />
@@ -462,9 +475,10 @@ export function Students() {
               <span className="text-xs text-gray-200 mb-1">Account Type</span>
               <Select
                 value={accountTypeFilter}
-                onValueChange={(value) =>
-                  setAccountTypeFilter(value as "all" | "funded" | "regular")
-                }
+                onValueChange={(value) => {
+                  setAccountTypeFilter(value as "all" | "funded" | "regular");
+                  resetPage();
+                }}
               >
                 <SelectTrigger className=" w-full border-white/50">
                   <SelectValue placeholder="Funded / Regular" />
@@ -482,7 +496,10 @@ export function Students() {
               <span className="text-xs text-gray-200 mb-1">Location</span>
               <Select
                 value={locationTypeFilter}
-                onValueChange={(value) => setLocationTypeFilter(value)}
+                onValueChange={(value) => {
+                  setLocationTypeFilter(value);
+                  resetPage();
+                }}
               >
                 <SelectTrigger className=" w-full border-white/50">
                   <SelectValue placeholder="Select Location" />
@@ -504,7 +521,10 @@ export function Students() {
               <span className="text-xs text-gray-200 mb-1">Batch</span>
               <Select
                 value={batchTypeFilter}
-                onValueChange={(value) => setBatchTypeFilter(value)}
+                onValueChange={(value) => {
+                  setBatchTypeFilter(value);
+                  resetPage();
+                }}
               >
                 <SelectTrigger className=" border border-gray-600 text-white w-full">
                   <SelectValue
@@ -568,7 +588,10 @@ export function Students() {
               <span className="text-xs text-gray-200 mb-1">Batch Mode</span>
               <Select
                 value={modeFilter}
-                onValueChange={(value) => setModeFilter(value)}
+                onValueChange={(value) => {
+                  setModeFilter(value);
+                  resetPage();
+                }}
               >
                 <SelectTrigger className=" w-full border-white/50">
                   <SelectValue placeholder="Online / Offline" />
@@ -608,7 +631,10 @@ export function Students() {
               </span>
               <Select
                 value={switchFilter ? "true" : "false"}
-                onValueChange={(value) => setSwitchFilter(value === "true")}
+                onValueChange={(value) => {
+                  setSwitchFilter(value === "true");
+                  resetPage();
+                }}
               >
                 <SelectTrigger className=" w-full border-white/50">
                   <SelectValue placeholder="All Students" />
@@ -625,7 +651,10 @@ export function Students() {
               <span className="text-xs text-gray-200 mb-1">Fee Status</span>
               <Select
                 value={feeStatusFilter}
-                onValueChange={(value) => setFeeStatusFilter(value)}
+                onValueChange={(value) => {
+                  setFeeStatusFilter(value);
+                  resetPage();
+                }}
               >
                 <SelectTrigger className="w-full border-white/50">
                   <SelectValue placeholder="Pending / Paid / Refunded" />
@@ -645,9 +674,10 @@ export function Students() {
                 <Checkbox
                   id="dueThisWeek"
                   checked={dueThisWeekFilter}
-                  onCheckedChange={(checked) =>
-                    setDueThisWeekFilter(checked === true)
-                  }
+                  onCheckedChange={(checked) => {
+                    setDueThisWeekFilter(checked === true);
+                    resetPage();
+                  }}
                   className="border-gray-400 data-[state=checked]:bg-blue-500 cursor-pointer"
                 />
                 <Label
