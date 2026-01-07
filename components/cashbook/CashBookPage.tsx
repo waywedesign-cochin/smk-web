@@ -92,7 +92,7 @@ export const CashBookPage = () => {
     filters.locationId,
     filters.month,
     filters.year,
-    // filters.type,
+    filters.type,
     pagination?.page,
   ]);
 
