@@ -90,7 +90,8 @@ export interface StudentInput {
   admissionNo: string;
 }
 const currentYear = new Date().getFullYear();
-const years = Array.from({ length: 5 }, (_, i) => currentYear + i);
+const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
+
 const months = [
   "January",
   "February",
