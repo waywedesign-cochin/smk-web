@@ -41,6 +41,7 @@ import {
   addBankTransaction,
   deleteBankTransaction,
   fetchBankTransactions,
+  setCurrentPage,
 } from "@/redux/features/bankTransactions/bankTransactionSlice";
 import { fetchBankAccounts } from "@/redux/features/bank/bankSlice";
 import { Badge } from "../ui/badge";
@@ -112,6 +113,7 @@ export default function BankTransactionsPage() {
     if (!currentUser?.id) dispatch(fetchCurrentUser());
   }, [dispatch]);
 
+  //handle page change
   const handlePageChange = async (page: number) => {
     await dispatch(
       fetchBankTransactions({
@@ -132,6 +134,11 @@ export default function BankTransactionsPage() {
         search: debouncedSearch,
       })
     );
+  };
+
+  //page reset
+  const resetPage = () => {
+    dispatch(setCurrentPage(1));
   };
 
   //handle edit
@@ -383,9 +390,10 @@ export default function BankTransactionsPage() {
                 <Label>Location</Label>
                 <Select
                   value={filters.locationId}
-                  onValueChange={(value) =>
-                    setFilters((prev) => ({ ...prev, locationId: value }))
-                  }
+                  onValueChange={(value) => {
+                    setFilters((prev) => ({ ...prev, locationId: value }));
+                    resetPage();
+                  }}
                 >
                   <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                     <SelectValue placeholder="Select location" />
@@ -407,9 +415,10 @@ export default function BankTransactionsPage() {
               <Label>Year</Label>
               <Select
                 value={filters.year}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, year: value }))
-                }
+                onValueChange={(value) => {
+                  setFilters((prev) => ({ ...prev, year: value }));
+                  resetPage();
+                }}
               >
                 <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                   <SelectValue />
@@ -433,9 +442,10 @@ export default function BankTransactionsPage() {
               <Label>Month</Label>
               <Select
                 value={filters.month}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, month: value }))
-                }
+                onValueChange={(value) => {
+                  setFilters((prev) => ({ ...prev, month: value }));
+                  resetPage();
+                }}
               >
                 <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                   <SelectValue placeholder="Select month" />
@@ -458,9 +468,10 @@ export default function BankTransactionsPage() {
               <Label>Bank Account</Label>
               <Select
                 value={filters.bankAccountId}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, bankAccountId: value }))
-                }
+                onValueChange={(value) => {
+                  setFilters((prev) => ({ ...prev, bankAccountId: value }));
+                  resetPage();
+                }}
               >
                 <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                   <SelectValue placeholder="Select bank" />
@@ -481,9 +492,10 @@ export default function BankTransactionsPage() {
               <Label>Transaction Type</Label>
               <Select
                 value={filters.transactionType}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, transactionType: value }))
-                }
+                onValueChange={(value) => {
+                  setFilters((prev) => ({ ...prev, transactionType: value }));
+                  resetPage();
+                }}
               >
                 <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                   <SelectValue placeholder="Debit / Credit" />
@@ -499,9 +511,10 @@ export default function BankTransactionsPage() {
               <Label>Transaction Mode</Label>
               <Select
                 value={filters.transactionMode}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, transactionMode: value }))
-                }
+                onValueChange={(value) => {
+                  setFilters((prev) => ({ ...prev, transactionMode: value }));
+                  resetPage();
+                }}
               >
                 <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                   <SelectValue placeholder="Razorpay / Bank Transfer" />
@@ -518,9 +531,10 @@ export default function BankTransactionsPage() {
               <Label>Category</Label>
               <Select
                 value={filters.category}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, category: value }))
-                }
+                onValueChange={(value) => {
+                  setFilters((prev) => ({ ...prev, category: value }));
+                  resetPage();
+                }}
               >
                 <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                   <SelectValue placeholder="Select category" />
@@ -548,9 +562,10 @@ export default function BankTransactionsPage() {
                   placeholder="Search description..."
                   className="pl-9 bg-white/10 border-white/20 text-white"
                   value={filters.search}
-                  onChange={(e) =>
-                    setFilters((prev) => ({ ...prev, search: e.target.value }))
-                  }
+                  onChange={(e) => {
+                    setFilters((prev) => ({ ...prev, search: e.target.value }));
+                    resetPage();
+                  }}
                 />
               </div>
             </div>

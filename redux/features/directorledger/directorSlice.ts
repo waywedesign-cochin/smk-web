@@ -21,7 +21,7 @@ export interface DirectorLedgerEntry {
   debitCredit: "DEBIT" | "CREDIT";
   description: string;
   bankAccountId?: string;
- bankTransaction:BankTransaction | null;
+  bankTransaction: BankTransaction | null;
   locationId: string;
   referenceId?: string;
   studentId?: string;
@@ -229,6 +229,11 @@ const directorLedgerSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    setCurrentPage: (state, action) => {
+      if (state.pagination) {
+        state.pagination.page = action.payload;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -305,6 +310,6 @@ const directorLedgerSlice = createSlice({
   },
 });
 
-export const { setFilters, setPagination, clearError } =
+export const { setFilters, setPagination, clearError, setCurrentPage } =
   directorLedgerSlice.actions;
 export default directorLedgerSlice.reducer;

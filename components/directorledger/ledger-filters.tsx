@@ -14,6 +14,7 @@ import {
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
   fetchDirectorLedgerEntries,
+  setCurrentPage,
   setFilters,
 } from "@/redux/features/directorledger/directorSlice";
 import { Label } from "../ui/label";
@@ -116,10 +117,15 @@ export function LedgerFilters({
     selectedDirector,
     debitOrCredit,
   ]);
+  //reset page
+  const resetPage = () => {
+    dispatch(setCurrentPage(1));
+  };
 
   const handleDirectorChange = (value: string) => {
     setSelectedDirector(value);
     onDirectorChange?.(value);
+    resetPage();
   };
 
   return (
@@ -148,7 +154,13 @@ export function LedgerFilters({
           )}
           <div className="space-y-2">
             <Label>Year</Label>
-            <Select value={year} onValueChange={setYear}>
+            <Select
+              value={year}
+              onValueChange={(value) => {
+                setYear(value);
+                resetPage();
+              }}
+            >
               <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                 <SelectValue />
               </SelectTrigger>
@@ -167,7 +179,13 @@ export function LedgerFilters({
           </div>
           <div className="space-y-2">
             <Label> Month</Label>
-            <Select value={month} onValueChange={setMonth}>
+            <Select
+              value={month}
+              onValueChange={(value) => {
+                setMonth(value);
+                resetPage();
+              }}
+            >
               <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                 <SelectValue placeholder="Select month" />
               </SelectTrigger>
@@ -184,7 +202,13 @@ export function LedgerFilters({
           <div className="space-y-2">
             <Label>Type</Label>
 
-            <Select value={transactionType} onValueChange={setTransactionType}>
+            <Select
+              value={transactionType}
+              onValueChange={(value) => {
+                setTransactionType(value);
+                resetPage();
+              }}
+            >
               <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
@@ -199,7 +223,13 @@ export function LedgerFilters({
           </div>
           <div className="space-y-2">
             <Label>Mode</Label>
-            <Select value={debitOrCredit} onValueChange={setDebitOrCredit}>
+            <Select
+              value={debitOrCredit}
+              onValueChange={(value) => {
+                setDebitOrCredit(value);
+                resetPage();
+              }}
+            >
               <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                 <SelectValue placeholder="Debit / Credit" />
               </SelectTrigger>
@@ -227,7 +257,10 @@ export function LedgerFilters({
               value={search}
               id="search"
               className="pl-9 bg-white/10 border-white/20 text-white placeholder:text-gray-400 h-10"
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                resetPage();
+              }}
             />
           </div>
         </div>
