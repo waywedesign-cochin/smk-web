@@ -145,7 +145,11 @@ export const CashBookPage = () => {
   const handlePageChange = (page: number) => {
     dispatch(setCurrentPage(page));
   };
-
+  //reset page
+  const resetPage = () => {
+    dispatch(setCurrentPage(1));
+  };
+  // Export handler
   const handleExportCashbook = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/api/cashbook/entries`, {
@@ -310,7 +314,6 @@ export const CashBookPage = () => {
       </div>
 
       {/* Dialogs */}
-
       {user && (
         <EntryDialog
           showAddEntry={showAddEntry}
@@ -353,9 +356,10 @@ export const CashBookPage = () => {
                 <Label>Location</Label>
                 <Select
                   value={filters.locationId}
-                  onValueChange={(value) =>
-                    setFilters((prev) => ({ ...prev, locationId: value }))
-                  }
+                  onValueChange={(value) => {
+                    setFilters((prev) => ({ ...prev, locationId: value }));
+                    resetPage();
+                  }}
                 >
                   <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                     <SelectValue placeholder="Select location" />
@@ -375,9 +379,10 @@ export const CashBookPage = () => {
               <Label>Year</Label>
               <Select
                 value={filters.year}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, year: value }))
-                }
+                onValueChange={(value) => {
+                  setFilters((prev) => ({ ...prev, year: value }));
+                  resetPage();
+                }}
               >
                 <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                   <SelectValue />
@@ -400,9 +405,10 @@ export const CashBookPage = () => {
               <Label>Month</Label>
               <Select
                 value={filters.month}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, month: value }))
-                }
+                onValueChange={(value) => {
+                  setFilters((prev) => ({ ...prev, month: value }));
+                  resetPage();
+                }}
               >
                 <SelectTrigger className="w-full border-white/30 bg-white/10 text-white h-10">
                   <SelectValue />

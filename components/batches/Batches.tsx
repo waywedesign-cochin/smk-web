@@ -45,6 +45,7 @@ import {
   deleteBatch,
   fetchBatches,
   fetchBatchStats,
+  setCurrentPage,
   updateBatch,
 } from "@/redux/features/batch/batchSlice";
 import { BatchFormValues } from "@/lib/validation/batchSchema";
@@ -63,9 +64,8 @@ import DarkVeil from "../DarkVeil";
 
 export function Batches() {
   const dispatch = useAppDispatch();
-  const { batches, dashboardStats, pagination, loading, statsLoading } = useAppSelector(
-    (state) => state.batches
-  );
+  const { batches, dashboardStats, pagination, loading, statsLoading } =
+    useAppSelector((state) => state.batches);
 
   const { currentUser } = useAppSelector((state) => state.users);
   const locations = useAppSelector((state) => state.locations.locations);
@@ -205,6 +205,11 @@ export function Batches() {
     await getBatches();
   };
 
+  //reset page
+  const resetPage = () => {
+    dispatch(setCurrentPage(1));
+  };
+
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 12 }, (_, i) => currentYear - 1 + i);
 
@@ -240,8 +245,8 @@ export function Batches() {
           )}
         </div>
       </div>
-      {/* Filters */}
 
+      {/* Filters */}
       <Card className="bg-gradient-to-br from-white/5 to-white/10 text-white border-0">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2 text-white">
@@ -266,9 +271,10 @@ export function Batches() {
               <Input
                 placeholder="Search batches..."
                 value={filters.search}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, search: e.target.value }))
-                }
+                onChange={(e) => {
+                  setFilters((prev) => ({ ...prev, search: e.target.value }));
+                  resetPage();
+                }}
                 className="pl-9 bg-white/10 border-white/20 text-white placeholder:text-gray-400 h-10 w-full"
               />
             </div>
@@ -276,9 +282,10 @@ export function Batches() {
             {/* Status */}
             <Select
               value={filters.status}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, status: value }))
-              }
+              onValueChange={(value) => {
+                setFilters((prev) => ({ ...prev, status: value }));
+                resetPage();
+              }}
             >
               <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
                 <SelectValue placeholder="Select status" />
@@ -295,9 +302,10 @@ export function Batches() {
             {/* Mode */}
             <Select
               value={filters.mode}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, mode: value }))
-              }
+              onValueChange={(value) => {
+                setFilters((prev) => ({ ...prev, mode: value }));
+                resetPage();
+              }}
             >
               <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
                 <SelectValue placeholder="Select Mode" />
@@ -313,9 +321,10 @@ export function Batches() {
             {/* Course */}
             <Select
               value={filters.course}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, course: value }))
-              }
+              onValueChange={(value) => {
+                setFilters((prev) => ({ ...prev, course: value }));
+                resetPage();
+              }}
             >
               <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
                 <SelectValue placeholder="Select Course" />
@@ -334,9 +343,10 @@ export function Batches() {
             {currentUser?.role !== 3 && (
               <Select
                 value={filters.location}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, location: value }))
-                }
+                onValueChange={(value) => {
+                  setFilters((prev) => ({ ...prev, location: value }));
+                  resetPage();
+                }}
               >
                 <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
                   <SelectValue placeholder="Location" />
@@ -354,9 +364,10 @@ export function Batches() {
             {/* Year */}
             <Select
               value={filters.year}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, year: value }))
-              }
+              onValueChange={(value) => {
+                setFilters((prev) => ({ ...prev, year: value }));
+                resetPage();
+              }}
             >
               <SelectTrigger className="border-white/30 bg-white/10 text-white h-10 w-full">
                 <SelectValue placeholder="Year" />

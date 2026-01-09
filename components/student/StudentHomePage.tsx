@@ -694,7 +694,10 @@ export function Students() {
               <Input
                 placeholder="Search by name, admission no, email, or phone..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  resetPage();
+                }}
                 className="pl-9 border-white/50 w-full"
               />
             </div>

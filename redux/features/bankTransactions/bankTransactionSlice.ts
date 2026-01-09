@@ -202,6 +202,11 @@ const bankTransactionSlice = createSlice({
     clearBankTransactionError: (state) => {
       state.error = null;
     },
+    setCurrentPage: (state, action) => {
+      if (state.pagination) {
+        state.pagination.page = action.payload;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder;
@@ -272,5 +277,6 @@ const bankTransactionSlice = createSlice({
       });
   },
 });
-
+export const { clearBankTransactionError, setCurrentPage } =
+  bankTransactionSlice.actions;
 export default bankTransactionSlice.reducer;

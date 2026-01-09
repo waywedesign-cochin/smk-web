@@ -188,6 +188,11 @@ const batchSlice = createSlice({
       state.dashboardStats = initialState.dashboardStats;
       state.pagination = initialState.pagination;
     },
+    setCurrentPage: (state, action) => {
+      if (state.pagination) {
+        state.pagination.currentPage = action.payload;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -266,5 +271,5 @@ const batchSlice = createSlice({
       });
   },
 });
-export const { clearBatches } = batchSlice.actions;
+export const { clearBatches, setCurrentPage } = batchSlice.actions;
 export default batchSlice.reducer;

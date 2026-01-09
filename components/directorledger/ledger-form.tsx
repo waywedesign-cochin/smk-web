@@ -745,7 +745,7 @@ export function LedgerForm({
               !isEdit &&
               Number(formData.amount) > periodBalance && (
                 <p className="text-yellow-400 text-sm">
-                  ⚠️ Entered amount exceedsclosing balance (₹{periodBalance})
+                  ⚠️ Entered amount exceeds closing balance (₹{periodBalance})
                 </p>
               )}
             {formData.transactionType === "OTHER_EXPENSE" &&
