@@ -129,7 +129,7 @@ export function Students() {
     currentUser?.locationId || ""
   );
 
-  const [batchTypeFilter, setBatchTypeFilter] = useState<string>("");
+  const [batchTypeFilter, setBatchTypeFilter] = useState<string>("all");
   const [modeFilter, setModeFilter] = useState<string>("");
   const [switchFilter, setSwitchFilter] = useState<boolean>(false);
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -159,7 +159,7 @@ export function Students() {
   // Set batch filter when filteredBatches changes
   useEffect(() => {
     if (!filteredBatches.length) return;
-    if (batchTypeFilter === "all") return;
+    if (!batchTypeFilter || batchTypeFilter === "all") return;
 
     const isValid = filteredBatches.some(
       (batch) => batch.id === batchTypeFilter
@@ -168,7 +168,7 @@ export function Students() {
     if (!isValid) {
       setBatchTypeFilter("all");
     }
-  }, [filteredBatches]);
+  }, [filteredBatches, batchTypeFilter]);
 
   // Set initial location when locations are loaded
   useEffect(() => {
@@ -269,7 +269,7 @@ export function Students() {
   useEffect(() => {
     if (!locationTypeFilter) return;
     fetchStudentsData();
-  }, [fetchStudentsData, locationTypeFilter]);
+  }, [fetchStudentsData]);
 
   // Pagination handler
   const handlePageChange = (page: number) => {
