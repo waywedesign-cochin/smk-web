@@ -185,7 +185,6 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
             <Button
               size="sm"
               onClick={() => setShowAddPaymentDialog(true)}
-              disabled={latestFee.status==="PAID"}
               className="bg-blue/80 text-white border border-gray-600 hover:bg-white hover:text-black hover:border-black"
             >
               <Plus className="h-4 w-4" />
