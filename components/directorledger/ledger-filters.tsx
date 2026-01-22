@@ -67,6 +67,7 @@ export function LedgerFilters({
 }: LedgerFiltersProps) {
   const dispatch = useAppDispatch();
   const { users } = useAppSelector((state) => state.users);
+  const { pagination } = useAppSelector((state) => state.directorLedger);
   // const [month, setMonth] = useState((new Date().getMonth() + 1).toString());
   // const [year, setYear] = useState(new Date().getFullYear().toString());
   const [search, setSearch] = useState("");
@@ -91,32 +92,36 @@ export function LedgerFilters({
   }, [directorId]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      dispatch(
-        fetchDirectorLedgerEntries({
-          // locationId,
-          directorId: selectedDirector,
-          month: month !== "all-months" ? month : undefined,
-          year: year || undefined,
-          search: search || undefined,
-          transactionType:
-            transactionType !== "all-types" ? transactionType : undefined,
-          debitCredit:
-            debitOrCredit !== "all-types" ? debitOrCredit : undefined,
-        })
-      );
-    }, 300);
+    dispatch(
+      fetchDirectorLedgerEntries({
+        directorId: selectedDirector,
+        page: 1,
+        month: month !== "all-months" ? month : undefined,
+        year: year === "ALL" ? undefined : year,
+        search: search || undefined,
+        transactionType:
+          transactionType !== "all-types" ? transactionType : undefined,
+        debitCredit: debitOrCredit !== "all-types" ? debitOrCredit : undefined,
+      })
+    );
+  }, [selectedDirector, month, year, search, transactionType, debitOrCredit]);
 
-    return () => clearTimeout(timer);
-  }, [
-    month,
-    year,
-    search,
-    transactionType,
-    dispatch,
-    selectedDirector,
-    debitOrCredit,
-  ]);
+  //pagination api call
+  useEffect(() => {
+    dispatch(
+      fetchDirectorLedgerEntries({
+        directorId: selectedDirector,
+        page: pagination.page,
+        month: month !== "all-months" ? month : undefined,
+        year: year === "ALL" ? undefined : year,
+        search: search || undefined,
+        transactionType:
+          transactionType !== "all-types" ? transactionType : undefined,
+        debitCredit: debitOrCredit !== "all-types" ? debitOrCredit : undefined,
+      })
+    );
+  }, [pagination.page]);
+
   //reset page
   const resetPage = () => {
     dispatch(setCurrentPage(1));
@@ -158,6 +163,9 @@ export function LedgerFilters({
               value={year}
               onValueChange={(value) => {
                 setYear(value);
+                if (value === "ALL") {
+                  setMonth("all-months");
+                }
                 resetPage();
               }}
             >
@@ -227,6 +235,7 @@ export function LedgerFilters({
               value={debitOrCredit}
               onValueChange={(value) => {
                 setDebitOrCredit(value);
+                setTransactionType("");
                 resetPage();
               }}
             >
