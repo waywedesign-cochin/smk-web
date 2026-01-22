@@ -56,14 +56,14 @@ export default function DirectorLedgerPage() {
   const canEdit = currentUser?.role === 1 || currentUser?.role === 3;
   const isDirector = currentUser?.role === 2;
 
-  useEffect(() => {
-    dispatch(
-      fetchDirectorLedgerEntries({
-        directorId,
-        page: pagination.page,
-      })
-    );
-  }, [dispatch, directorId, pagination.page]);
+  // useEffect(() => {
+  //   dispatch(
+  //     fetchDirectorLedgerEntries({
+  //       directorId,
+  //       page: pagination.page,
+  //     })
+  //   );
+  // }, [dispatch, directorId, pagination.page]);
 
   const handleEdit = (entry: DirectorLedgerEntry) => {
     setEditingEntry(entry);
@@ -89,7 +89,8 @@ export default function DirectorLedgerPage() {
     return (
       <div className="h-1/2 flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 rounded-md text-white p-2">
         <p className="text-md">
-          Director not found. Please create a director account to view the ledger.
+          Director not found. Please create a director account to view the
+          ledger.
         </p>
       </div>
     );
