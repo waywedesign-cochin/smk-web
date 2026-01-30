@@ -158,7 +158,7 @@ export function ReportsPage() {
       dispatch(fetchCurrentUser());
     }
   }, [locations, currentUser, dispatch]);
-  console.log(summary);
+  // console.log(summary);
 
   return (
     <div className="space-y-6">

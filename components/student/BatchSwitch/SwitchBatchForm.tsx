@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -11,35 +11,49 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Repeat } from "lucide-react";
+import { Loader2, Repeat } from "lucide-react";
 import { Batch, Student } from "@/lib/types";
-import { useAppSelector } from "@/lib/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { fetchBatches } from "@/redux/features/batch/batchSlice";
+import { Input } from "../../ui/input";
 
 interface SwitchBatchFormProps {
   student: Student;
-  availableBatches: Batch[];
   onSubmit: (data: {
     newBatchId: string;
     reason: string;
     feeAction: string;
   }) => void;
   onClose: () => void;
+
+  // ADD THESE
+  defaultBatchId?: string;
+  defaultReason?: string;
+  defaultFeeAction?: string;
 }
 
 const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
   student,
-  availableBatches,
   onSubmit,
   onClose,
+  defaultBatchId,
+  defaultReason,
+  defaultFeeAction,
 }) => {
   const loading = useAppSelector((state) => state.students.submitting);
-  const [selectedBatchId, setSelectedBatchId] = useState<string>("");
-  const [reason, setReason] = useState("");
-  const [feeAction, setFeeAction] = useState(""); // default option
+  const dispatch = useAppDispatch();
+  const { batches, loading: batchesLoading } = useAppSelector(
+    (state) => state.batches
+  );
+  const [batchSearch, setBatchSearch] = useState("");
+  const [batchDebouncedSearch, setBatchDebouncedSearch] = useState(batchSearch);
+  const [selectedBatchId, setSelectedBatchId] = useState(defaultBatchId || "");
+  const [reason, setReason] = useState(defaultReason || "");
+  const [feeAction, setFeeAction] = useState(defaultFeeAction || "");
 
   const selectedBatch = useMemo(
-    () => availableBatches.find((b) => b.id === selectedBatchId),
-    [selectedBatchId, availableBatches]
+    () => batches.find((b) => b.id === selectedBatchId),
+    [selectedBatchId, batches]
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -48,7 +62,23 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
       onSubmit({ newBatchId: selectedBatchId, reason, feeAction });
     }
   };
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setBatchDebouncedSearch(batchSearch);
+    }, 250);
 
+    return () => clearTimeout(handler);
+  }, [batchSearch]);
+
+  useEffect(() => {
+    dispatch(
+      fetchBatches({
+        search: batchDebouncedSearch,
+        limit: 25,
+        status: "ACTIVE",
+      })
+    );
+  }, [batchDebouncedSearch]);
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Current Batch Info */}
@@ -89,23 +119,59 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
           required
           disabled={loading}
         >
-          <SelectTrigger className="border-white/80 w-full text-wrap !h-16">
-            <SelectValue placeholder="Choose a batch" />
+          <SelectTrigger className="border-white/80 w-full h-16 overflow-hidden">
+            <div className="flex w-full items-center">
+              <span className="truncate w-full text-left">
+                {selectedBatch?.name || "Choose a batch"}
+              </span>
+            </div>
           </SelectTrigger>
-          <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
-            {availableBatches
-              .filter((b) => b.id !== student?.currentBatch?.id)
-              .map((batch) => (
-                <SelectItem key={batch.id} value={batch.id ?? ""}>
-                  <div className="flex flex-col justify-start items-start">
-                    <span className="text-wrap">{batch.name}</span>
-                    <span className="text-xs text-gray-300">
-                      {batch?.course?.mode} • {batch?.location?.name} • ₹
-                      {batch?.course?.baseFee.toLocaleString()}
+
+          <SelectContent
+            //onPointerDown={(e) => e.preventDefault()}
+            className="bg-blue-100/10 backdrop-blur-lg text-white text-xs max-h-90 overflow-y-auto w-[var(--radix-select-trigger-width)]"
+          >
+            {/*  Search Bar (Shadcn Input) */}
+            <div
+              onPointerDown={(e) => e.stopPropagation()}
+              className="p-2 sticky top-0 bg-[#1b24377f] z-10 border-b border-gray-700"
+            >
+              <Input
+                placeholder="Search batch..."
+                value={batchSearch}
+                onChange={(e) => setBatchSearch(e.target.value)}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="bg-[#11182751] text-white border border-gray-600 h-8 text-xs"
+              />
+            </div>
+
+            {/*  All Batches Option */}
+
+            {/* Filtered Batch List (With Search) */}
+            {batchesLoading ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="animate-spin text-muted-foreground" />
+              </div>
+            ) : batches.length === 0 ? (
+              <div className="text-center py-4 text-gray-400 text-xs">
+                No batches found
+              </div>
+            ) : (
+              batches
+                .filter((b) => b.id !== student?.currentBatch?.id)
+                .map((batch) => (
+                  <SelectItem
+                    key={batch.id}
+                    value={batch.id as string}
+                    className="text-xs w-full truncate"
+                  >
+                    {batch.name}{" "}
+                    <span className="capitalize">
+                      - ({batch.location?.name.toLocaleUpperCase() || "N/A"})
                     </span>
-                  </div>
-                </SelectItem>
-              ))}
+                  </SelectItem>
+                ))
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -138,13 +204,13 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
           <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
             <SelectItem value="TRANSFER">
               {" "}
-              Keep same fees no change (Late switch).
+              Keep same fees no change (No revenue shift).
             </SelectItem>
             <SelectItem value="NEW_FEE">
-              Create new fee record for new batch (Early switch).
+              Create new fee record for new batch (Revenue shift).
             </SelectItem>
             <SelectItem value="SPLIT">
-              Keep current batch fees, apply new fees in new batch
+              Keep current batch fees, apply new fees in new batch.
             </SelectItem>
           </SelectContent>
         </Select>
@@ -172,7 +238,11 @@ const SwitchBatchForm: React.FC<SwitchBatchFormProps> = ({
           }
         >
           <Repeat className={`${loading && "animate-spin"} h-4 w-4 mr-2`} />
-          {loading ? "Switching..." : "Switch Batch"}
+          {loading
+            ? "Switching..."
+            : defaultBatchId
+            ? "Update Switch"
+            : "Switch Batch"}{" "}
         </Button>
       </div>
     </form>
