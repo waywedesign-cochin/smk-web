@@ -66,6 +66,7 @@ export function Batches() {
   const dispatch = useAppDispatch();
   const { batches, dashboardStats, pagination, loading, statsLoading } =
     useAppSelector((state) => state.batches);
+  console.log(batches);
 
   const { currentUser } = useAppSelector((state) => state.users);
   const locations = useAppSelector((state) => state.locations.locations);
@@ -599,8 +600,13 @@ export function Batches() {
                         <p className="font-medium text-green-400">
                           ₹{batch.totalFee?.toLocaleString()}
                         </p>
-                        <p className="text-xs text-orange-4 00">
-                          ₹{batch.collected?.toLocaleString()} collected
+                        <p className="text-xs text-orange-300">
+                          ₹
+                          {(
+                            (batch.collected || 0) +
+                            (batch.historicalCollected || 0)
+                          ).toLocaleString()}{" "}
+                          collected
                         </p>
                         <p className="text-xs text-red-500">
                           ₹{batch.pending?.toLocaleString()} pending

@@ -10,7 +10,7 @@ export const StudentSchema = z.object({
   isFundedAccount: z.boolean().default(false),
   admissionNo: z.string().min(1, "Admission No is required"),
   referralInfo: z.string().optional(),
- 
+  status: z.string().min(1, "Status is required"),
 });
 
 export type StudentInput = z.infer<typeof StudentSchema>;
