@@ -322,9 +322,14 @@ export default function EntryDialog({
         setIsSubmitting(false);
         return;
       }
+      const d = validData.transactionDate;
+
+      const utcDate = new Date(
+        Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0)
+      );
 
       const payload = {
-        transactionDate: validData.transactionDate.toISOString(),
+        transactionDate: utcDate.toISOString(),
         transactionType: validData.transactionType,
         amount: Number(validData.amount),
         description: (validData.description ?? "").toString().trim(),

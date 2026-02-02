@@ -73,6 +73,7 @@ export interface Batch {
   updatedAt?: Date;
   enrollment?: string; // e.g. "12/30"
   enrollmentPercent?: string; // e.g. "40"
+  historicalCollected?: number;
   totalFee?: number;
   collected?: number;
   pending?: number;
@@ -91,7 +92,6 @@ export enum BatchStatus {
   PENDING = "PENDING",
 }
 export interface BatchResponse {
-
   batches: Batch[];
   pagination: {
     currentPage: number;
@@ -114,6 +114,7 @@ export interface Student {
   currentBatch?: Batch;
   currentBatchId: string;
   fees?: Fee[];
+  status: "ACTIVE" | "INACTIVE" | "ALUMNI" | "REMOVED" | string; // optional enum expansion
   // payments: Payment[];
   //   admissions: Admission[];
   //   payments: Payment[];
@@ -265,6 +266,9 @@ export interface BatchHistory {
   toBatchId: number;
   changeDate: Date;
   reason?: string;
+  feeManageMode?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CommunicationLog {

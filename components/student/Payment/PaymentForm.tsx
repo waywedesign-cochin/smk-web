@@ -78,7 +78,7 @@ export default function PaymentForm({
   });
 
   useEffect(() => {
-    console.log(existingPayment);
+    // console.log(existingPayment);
 
     if (existingPayment) {
       setFormData({
@@ -144,6 +144,9 @@ export default function PaymentForm({
   };
 
   const isEditMode = !!existingPayment;
+  const hasAdvance =
+    (fee?.advanceAmount && fee.advanceAmount > 0) ||
+    student?.fees?.some((f) => f.advanceAmount && f.advanceAmount > 0);
 
   return (
     <div className="w-full mx-auto rounded-xl p-6 bg-[#0E1628] text-gray-200 border border-white/10 shadow-xl">
@@ -320,9 +323,7 @@ export default function PaymentForm({
         </div>
 
         {/* Advance Checkbox */}
-        {!student?.fees?.some(
-          (fee) => fee.advanceAmount && fee.advanceAmount > 0
-        ) && (
+        {!hasAdvance && !existingPayment && (
           <div className="flex items-center gap-2 bg-[#1B2437] border border-gray-600 p-3 rounded-lg">
             <Checkbox
               id="isAdvance"

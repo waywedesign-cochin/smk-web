@@ -18,6 +18,7 @@ import { StudentSchema, StudentInput } from "@/lib/validation/studentSchema";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { fetchBatches } from "@/redux/features/batch/batchSlice";
 import { Loader2 } from "lucide-react";
+import { Label } from "../ui/label";
 
 interface AddStudentFormProps {
   onSubmit: (studentData: StudentInput) => void;
@@ -50,6 +51,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
     isFundedAccount: student?.isFundedAccount || false,
     admissionNo: student?.admissionNo || "",
     referralInfo: student?.referralInfo || "",
+    status: student?.status || "ACTIVE",
   });
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(search);
@@ -303,7 +305,29 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
             disabled={loading}
           />
         </div>
-
+        {/* Status */}
+        <div className="space-y-3">
+          <Label>Status</Label>
+          <Select
+            value={formData?.status}
+            onValueChange={(value) => handleInputChange("status", value)}
+            disabled={loading}
+            required
+          >
+            <SelectTrigger className=" w-full bg-[#1B2437] border border-gray-600 text-white">
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent className="bg-accent-foreground text-gray-50">
+              <SelectItem value="ACTIVE">Active</SelectItem>
+              <SelectItem value="INACTIVE">Inactive</SelectItem>
+              <SelectItem value="REMOVED">Removed </SelectItem>
+              <SelectItem value="ALUMNI">Alumni</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.status && (
+            <p className="text-red-400 text-xs mt-1">{errors.status}</p>
+          )}
+        </div>
         {/* Funded Account */}
         <div className="flex items-center gap-2 bg-[#1B2437] border border-gray-600 p-3 rounded-lg">
           <Checkbox

@@ -15,7 +15,6 @@ interface SwitchBatchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   student: Student;
-  availableBatches: Batch[];
   onSubmit: (data: {
     studentId: string;
     fromBatchId: string;
@@ -30,7 +29,6 @@ const SwitchBatchDialog: React.FC<SwitchBatchDialogProps> = ({
   open,
   onOpenChange,
   student,
-  availableBatches,
   onSubmit,
 }) => {
   const handleFormSubmit = (data: {
@@ -60,7 +58,6 @@ const SwitchBatchDialog: React.FC<SwitchBatchDialogProps> = ({
         {/* switch batch form */}
         <SwitchBatchForm
           student={student}
-          availableBatches={availableBatches ? availableBatches : []}
           onSubmit={handleFormSubmit}
           onClose={() => onOpenChange(false)}
         />

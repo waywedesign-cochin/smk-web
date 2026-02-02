@@ -49,6 +49,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Repeat,
+  Pencil,
 } from "lucide-react";
 import { Batch, Student } from "@/lib/types";
 import AddStudentForm from "./AddStudentForm";
@@ -57,6 +58,7 @@ import { fetchBatches } from "@/redux/features/batch/batchSlice";
 import {
   addStudent,
   deleteStudent,
+  editBatchSwitch,
   fetchStudents,
   setCurrentPage,
   SwitchBatchPayload,
@@ -73,11 +75,19 @@ import {
 import DeleteDialogue from "../shared/DashboardSidebar/DeleteDialogue";
 import Link from "next/link";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
-import SwitchBatchDialog from "./SwitchBatchDialog";
+import SwitchBatchDialog from "./BatchSwitch/SwitchBatchDialog";
 import toast from "react-hot-toast";
 import { Label } from "../ui/label";
 import { Checkbox } from "../ui/checkbox";
 import DarkVeil from "../DarkVeil";
+import EditBatchSwitchDialog from "./BatchSwitch/EditSwitchBatchDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { set } from "lodash";
 
 export interface StudentInput {
   name: string;
@@ -88,6 +98,8 @@ export interface StudentInput {
   salesperson?: string;
   isFundedAccount: boolean;
   admissionNo: string;
+  referralInfo?: string;
+  status: string;
 }
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
@@ -144,6 +156,14 @@ export function Students() {
   const [showSwitchBatchDialog, setShowSwitchBatchDialog] = useState(false);
   const [studentForBatchSwitch, setStudentForBatchSwitch] =
     useState<Student | null>(null);
+  const [showEditBatchSwitchDialog, setShowEditBatchSwitchDialog] =
+    useState(false);
+  const [studentForBatchEdit, setStudentForBatchEdit] =
+    useState<Student | null>(null);
+  const [latestBatchHistory, setLatestBatchHistory] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
 
   // Filter batches based on selected location - THIS IS CRITICAL
   const filteredBatches = useMemo(() => {
@@ -339,6 +359,22 @@ export function Students() {
   //reset page
   const resetPage = () => {
     dispatch(setCurrentPage(1));
+  };
+
+  const handleEditBatchSwitch = async (data: {
+    studentId: string;
+    batchHistoryId: string;
+    newToBatchId: string;
+    changeDate: string;
+    reason: string;
+    newFeeAction: string;
+  }) => {
+    try {
+      await dispatch(editBatchSwitch(data)).unwrap();
+      fetchStudentsData();
+      setShowEditBatchSwitchDialog(false);
+      setLatestBatchHistory(null);
+    } catch (err) {}
   };
 
   return (
@@ -605,7 +641,7 @@ export function Students() {
             </div>
 
             {/* Status Filter */}
-            {/* <div className=" w-full flex flex-col">
+            <div className=" w-full flex flex-col">
               <span className="text-xs text-gray-200 mb-1">Status</span>
               <Select
                 value={statusFilter}
@@ -616,13 +652,12 @@ export function Students() {
                 </SelectTrigger>
                 <SelectContent className="border-white/50 bg-accent-foreground text-gray-50">
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="PENDING">Pending</SelectItem>
                   <SelectItem value="ACTIVE">Active</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
-                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                  <SelectItem value="REMOVED">Removed</SelectItem>
+                  <SelectItem value="ALUMNI">Alumni</SelectItem>
                 </SelectContent>
               </Select>
-            </div> */}
+            </div>
 
             {/* Switched Filter */}
             <div className=" w-full flex flex-col">
@@ -738,6 +773,9 @@ export function Students() {
                     Current Batch
                   </TableHead>
                   <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
+                    Funded/Regular
+                  </TableHead>
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Status
                   </TableHead>
                   <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
@@ -849,6 +887,23 @@ export function Students() {
                           )}{" "}
                         </div>
                       </TableCell>
+                      <TableCell className="px-6 py-4 whitespace-nowrap">
+                        {student.status === "ACTIVE" ? (
+                          <Badge className="text-sm bg-green-600">Active</Badge>
+                        ) : student.status === "INACTIVE" ? (
+                          <Badge className="text-sm bg-gray-500">
+                            Inactive
+                          </Badge>
+                        ) : student.status === "REMOVED" ? (
+                          <Badge className="text-sm bg-red-600">Removed</Badge>
+                        ) : student.status === "ALUMNI" ? (
+                          <Badge className="text-sm bg-blue-600">Alumni</Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-sm">
+                            {student.status}
+                          </Badge>
+                        )}
+                      </TableCell>
                       <TableCell className="px-6 py-4 whitespace-nowrap flex gap-2">
                         <Link
                           href={`/students/${student.id}`}
@@ -877,25 +932,68 @@ export function Students() {
                               handelDelete={handleDeleteStudent}
                               loading={submitting}
                             />
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setStudentForBatchSwitch(student);
+                                      setShowSwitchBatchDialog(true);
+                                    }}
+                                    className="cursor-pointer"
+                                  >
+                                    <Repeat className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
 
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setStudentForBatchSwitch(student);
-                                setShowSwitchBatchDialog(true);
-                              }}
-                              disabled={student?.fees?.some(
-                                (fee) =>
-                                  (fee?.batchHistoryFrom &&
-                                    fee?.batchHistoryFrom.length > 0) ||
-                                  (fee?.batchHistoryTo &&
-                                    fee.batchHistoryTo.length > 0)
-                              )}
-                              className="cursor-pointer"
-                            >
-                              <Repeat className="h-4 w-4" />
-                            </Button>
+                                <TooltipContent>
+                                  <p>Batch Switch</p>
+                                </TooltipContent>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      const latestHistory =
+                                        student.fees?.[0]
+                                          ?.batchHistoryTo?.[0] ||
+                                        student.fees?.[0]
+                                          ?.batchHistoryFrom?.[0] ||
+                                        null;
+
+                                      if (!latestHistory) return;
+
+                                      setStudentForBatchEdit(student);
+                                      setLatestBatchHistory(
+                                        latestHistory as unknown as Record<
+                                          string,
+                                          unknown
+                                        >
+                                      );
+                                      setShowEditBatchSwitchDialog(true);
+                                    }}
+                                    disabled={
+                                      !(
+                                        student.fees?.[0]
+                                          ?.batchHistoryTo?.[0] ||
+                                        student.fees?.[0]?.batchHistoryFrom?.[0]
+                                      )
+                                    }
+                                  >
+                                    <Pencil className="h-4 w-4 text-orange-500" />{" "}
+                                  </Button>
+                                </TooltipTrigger>
+
+                                <TooltipContent>
+                                  <p>Edit Batch Switch</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </>
                         )}
                       </TableCell>
@@ -920,10 +1018,23 @@ export function Students() {
                 open={showSwitchBatchDialog}
                 onOpenChange={setShowSwitchBatchDialog}
                 student={studentForBatchSwitch}
-                availableBatches={batches}
                 onSubmit={handleSwitchBatch}
               />
             )}
+            {/* Edit Batch Switch Dialog */}
+            {studentForBatchEdit && latestBatchHistory && (
+              <EditBatchSwitchDialog
+                open={showEditBatchSwitchDialog}
+                onOpenChange={setShowEditBatchSwitchDialog}
+                student={studentForBatchEdit}
+                batchHistoryId={latestBatchHistory!.id as string}
+                toBatchId={latestBatchHistory!.toBatchId as string}
+                reason={latestBatchHistory!.reason as string}
+                feeAction={latestBatchHistory!.feeManageMode as string}
+                onSubmit={handleEditBatchSwitch}
+              />
+            )}
+
             {pagination && pagination?.totalPages > 1 && (
               <div className="flex items-center justify-end mt-6 px-4">
                 <div className="flex items-center gap-2">

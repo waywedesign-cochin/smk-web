@@ -32,7 +32,7 @@ interface FetchStudentsParams {
   isFundedAccount?: true | false;
   location?: string;
   batch?: string;
-  currentBatchId?:string
+  currentBatchId?: string;
   mode?: string;
   status?: string;
   switched?: boolean;
@@ -50,6 +50,15 @@ export interface SwitchBatchPayload {
   toBatchId: string;
   changeDate: string;
   reason: string;
+}
+
+export interface EditBatchSwitchPayload {
+  studentId: string;
+  batchHistoryId: string;
+  newToBatchId: string;
+  changeDate: string;
+  reason: string;
+  newFeeAction: string;
 }
 
 // ------------------ Initial State ------------------
@@ -208,6 +217,39 @@ export const switchStudentBatch = createAsyncThunk<
   }
 });
 
+export const editBatchSwitch = createAsyncThunk<
+  EditBatchSwitchPayload,
+  EditBatchSwitchPayload,
+  { rejectValue: string }
+>("student/editBatchSwitch", async (payload, { rejectWithValue }) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await axios.put(
+      `${BASE_URL}/api/batch-history/edit-batch-switch`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.data.success) {
+      toast.success(response.data.message || "Batch switch edit successfull");
+      return payload;
+    } else {
+      return rejectWithValue(
+        response.data.message || "Failed to edit batch switch"
+      );
+    }
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+    return rejectWithValue("Failed to switch batch");
+  }
+});
+
 // ------------------ Slice ------------------
 const studentSlice = createSlice({
   name: "students",
@@ -219,7 +261,7 @@ const studentSlice = createSlice({
       }
     },
   },
-    extraReducers: (builder) => {
+  extraReducers: (builder) => {
     // ---------------- Fetch Students ----------------
     builder
       .addCase(fetchStudents.pending, (state) => {
@@ -319,6 +361,28 @@ const studentSlice = createSlice({
         );
       })
       .addCase(switchStudentBatch.rejected, (state, action) => {
+        state.submitting = false;
+        state.error = action.payload as string;
+      });
+    // ---------------- Edit Batch Switch ----------------
+    builder
+      .addCase(editBatchSwitch.pending, (state) => {
+        state.submitting = true;
+        state.error = null;
+      })
+      .addCase(editBatchSwitch.fulfilled, (state, action) => {
+        state.submitting = false;
+        const { studentId, newToBatchId } = action.payload;
+        state.students = state.students.map((student) =>
+          student.id === studentId
+            ? {
+                ...student,
+                currentBatch: { id: newToBatchId } as Student["currentBatch"],
+              }
+            : student
+        );
+      })
+      .addCase(editBatchSwitch.rejected, (state, action) => {
         state.submitting = false;
         state.error = action.payload as string;
       });
