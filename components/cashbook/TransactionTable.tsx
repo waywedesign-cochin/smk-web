@@ -39,6 +39,7 @@ const TransactionTable = ({
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-IN", {
+      timeZone: "UTC",
       day: "2-digit",
       month: "short",
       year: "numeric",
