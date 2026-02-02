@@ -26,10 +26,8 @@ import {
   AlertCircle,
   TrendingDown,
   Activity,
-  DollarSign,
   Users,
   Loader2,
-  Download,
   IndianRupee,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
@@ -42,15 +40,12 @@ import {
 } from "@/redux/features/reports/reportsSlice";
 import { fetchLocations } from "@/redux/features/location/locationSlice";
 import { PieChartIcon, GraduationCap } from "lucide-react";
-
-import DarkVeil from "../DarkVeil";
 import { fetchCurrentUser } from "@/redux/features/user/userSlice";
 import RevenueChart from "./RevenueChart";
 import BatchPerformanceChart from "./BatchPerformanceChart";
 import LocationComparisonChart from "./LocationComparisonChart";
 import PaymentMethodPie from "./PaymentMethodPie";
 import CourseRevenueBar from "./CourseRevenueBar";
-import { sum } from "lodash";
 
 // Colors
 const COLORS = {
