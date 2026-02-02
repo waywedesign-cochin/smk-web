@@ -319,9 +319,9 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({
             </SelectTrigger>
             <SelectContent className="bg-accent-foreground text-gray-50">
               <SelectItem value="ACTIVE">Active</SelectItem>
-              <SelectItem value="INACTIVE">Inactive</SelectItem>
+              {/* <SelectItem value="INACTIVE">Inactive</SelectItem> */}
               <SelectItem value="REMOVED">Removed </SelectItem>
-              <SelectItem value="ALUMNI">Alumni</SelectItem>
+              {/* <SelectItem value="ALUMNI">Alumni</SelectItem> */}
             </SelectContent>
           </Select>
           {errors.status && (

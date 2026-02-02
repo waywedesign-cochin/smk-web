@@ -10,15 +10,9 @@ import { Badge } from "../ui/badge";
 import {
   Users,
   GraduationCap,
-  CreditCard,
-  TrendingUp,
   Clock,
-  CheckCircle,
   AlertCircle,
-  DollarSign,
-  Filter,
   Settings,
-  Loader2,
   Activity,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
