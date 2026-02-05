@@ -476,21 +476,10 @@ export default function EntryDialog({
                       selected={selectedDate}
                       onSelect={(d) => {
                         if (!d) return;
-                        // Only allow current month selection
-                        const inCurrentMonth =
-                          d.getMonth() === now.getMonth() &&
-                          d.getFullYear() === now.getFullYear();
-                        if (inCurrentMonth) {
-                          setSelectedDate(d);
-                          setField("transactionDate", d, true);
-                        }
+                        setSelectedDate(d);
+                        setField("transactionDate", d, true);
                       }}
-                      disabled={(date) =>
-                        // restrict to current month when adding
-                        !isEdit &&
-                        (date.getMonth() !== now.getMonth() ||
-                          date.getFullYear() !== now.getFullYear())
-                      }
+                      disabled={(date) => !isEdit && date > now}
                       initialFocus
                       className="bg-gray-800 text-white"
                     />

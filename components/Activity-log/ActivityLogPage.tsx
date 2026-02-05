@@ -95,6 +95,8 @@ export default function ActivityLogPage() {
           filters.locationId === "ALL" ? undefined : filters.locationId,
         loggedById:
           filters.loggedById === "ALL" ? undefined : filters.loggedById,
+        month: filters.month === "ALL" ? undefined : filters.month,
+        year: filters.year === "ALL" ? undefined : filters.year,
       })
     );
   };
@@ -121,11 +123,13 @@ export default function ActivityLogPage() {
     try {
       const res = await axios.get(`${BASE_URL}/api/communication/logs`, {
         params: {
-          locationId: filters.locationId,
-          month: filters.month,
-          loggedById: filters.loggedById,
-          year: filters.year,
-          limit: 10000,
+          limit: 100,
+          locationId:
+            filters.locationId === "ALL" ? undefined : filters.locationId,
+          loggedById:
+            filters.loggedById === "ALL" ? undefined : filters.loggedById,
+          month: filters.month === "ALL" ? undefined : filters.month,
+          year: filters.year === "ALL" ? undefined : filters.year,
         },
       });
 
@@ -212,7 +216,6 @@ export default function ActivityLogPage() {
     filters.locationId,
     filters.loggedById,
     debouncedSearch,
-    pagination?.currentPage,
     dispatch,
   ]);
 

@@ -227,7 +227,7 @@ export default function BankTransactionFormDialog({
                     {format(form.transactionDate, "PPP")}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="bg-gray-800 border-gray-600 p-0">
+                <PopoverContent className="bg-gray-800 text-white border-gray-600 p-0">
                   <Calendar
                     mode="single"
                     selected={form.transactionDate}
