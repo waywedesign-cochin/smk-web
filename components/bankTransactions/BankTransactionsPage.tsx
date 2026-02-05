@@ -306,7 +306,7 @@ export default function BankTransactionsPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2 text-blue-400">
               <TrendingUp className="h-4 w-4" />
-              Net Balance
+              Period Net Change
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -712,33 +712,64 @@ export default function BankTransactionsPage() {
       </Card>
 
       {/* Pagination */}
-      {pagination && pagination.totalPages > 1 && (
-        <div className="flex justify-between items-center mt-4 px-2">
-          {/* Page info */}
-          <span className="text-xs text-gray-400">
-            Page {pagination.page} of {pagination.totalPages}
-          </span>
-
-          {/* Controls */}
+      {/* Pagination */}
+      {pagination && pagination.totalEntries > 1 && (
+        <div className="flex items-center justify-end mt-6 px-4">
+          {/* Pagination buttons */}
           <div className="flex items-center gap-2">
+            {/* Previous */}
             <Button
+              variant="ghost"
               size="sm"
-              disabled={pagination.page === 1}
               onClick={() => handlePageChange(pagination.page - 1)}
-              className="bg-black/40 border border-white/10 hover:bg-white/10 text-gray-300 disabled:opacity-40"
+              disabled={pagination.page === 1}
+              className="bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
 
-            <div className="px-3 py-1 rounded-md bg-black/40 border border-white/10 text-xs text-gray-200">
-              {pagination.page} / {pagination.totalPages}
-            </div>
+            {/* Page numbers */}
+            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+              .filter(
+                (page) =>
+                  page === 1 ||
+                  page === pagination.totalPages ||
+                  Math.abs(page - pagination.page) <= 1
+              )
+              .map((page, index, array) => {
+                const showEllipsis =
+                  index < array.length - 1 && array[index + 1] - page > 1;
+                const isActive = pagination.page === page;
+                return (
+                  <div key={page} className="flex items-center">
+                    <Button
+                      variant={isActive ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => handlePageChange(page)}
+                      className={`${
+                        isActive
+                          ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
+                          : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/10"
+                      }`}
+                    >
+                      {page}
+                    </Button>
+                    {showEllipsis && (
+                      <span className="px-2 text-gray-500 select-none">
+                        ...
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
 
+            {/* Next */}
             <Button
+              variant="ghost"
               size="sm"
-              disabled={pagination.page === pagination.totalPages}
               onClick={() => handlePageChange(pagination.page + 1)}
-              className="bg-black/40 border border-white/10 hover:bg-white/10 text-gray-300 disabled:opacity-40"
+              disabled={pagination.page === pagination.totalPages}
+              className="bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

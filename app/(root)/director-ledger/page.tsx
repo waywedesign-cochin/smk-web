@@ -114,18 +114,18 @@ export default function DirectorLedgerPage() {
               Manage transaction entries and view financial summaries{" "}
             </p>
           </div>
-          {canEdit &&
-            month === (new Date().getMonth() + 1).toString() &&
-            year === new Date().getFullYear().toString() && (
-              <EntryDialog
-                directorId={directorId}
-                periodBalance={totals?.periodBalance || 0}
-                onSuccess={() => {
-                  setEditingEntry(null);
-                  dispatch(fetchDirectorLedgerEntries({ directorId }));
-                }}
-              />
-            )}
+          {canEdit && (
+            // month === (new Date().getMonth() + 1).toString() &&
+            // year === new Date().getFullYear().toString() && (
+            <EntryDialog
+              directorId={directorId}
+              periodBalance={totals?.periodBalance || 0}
+              onSuccess={() => {
+                setEditingEntry(null);
+                dispatch(fetchDirectorLedgerEntries({ directorId }));
+              }}
+            />
+          )}
         </div>
       </div>
 
