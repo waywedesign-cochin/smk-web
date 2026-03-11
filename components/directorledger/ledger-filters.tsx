@@ -175,8 +175,8 @@ export function LedgerFilters({
               <SelectContent className="bg-[#0A1533] text-white border-white/20">
                 <SelectItem value="ALL">All Years</SelectItem>
                 {Array.from(
-                  { length: 10 },
-                  (_, i) => new Date().getFullYear() - i + 5
+                  { length: 6 },
+                  (_, i) => new Date().getFullYear() - i
                 ).map((y) => (
                   <SelectItem key={y} value={y.toString()}>
                     {y}
