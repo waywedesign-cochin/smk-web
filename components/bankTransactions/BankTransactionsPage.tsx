@@ -585,7 +585,7 @@ export default function BankTransactionsPage() {
               <TableHeader className="bg-gray-50/10 hover:bg-[#141617]">
                 <TableRow className="bg-black border-none">
                   <TableHead className="px-2 py-2 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
-                    Date
+                    Transaction Date
                   </TableHead>
                   <TableHead className="px-2 py-2 text-left text-xs font-medium text-gray-50 uppercase tracking-wider">
                     Transaction ID

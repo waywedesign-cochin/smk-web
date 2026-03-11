@@ -100,6 +100,7 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
     try {
       await dispatch(updatePayment(payment)).unwrap();
       getStudentDetails();
+      fetchPayments();
       setShowAddPaymentDialog(false);
     } catch (err) {
       console.error("Failed to update payment:", err);
@@ -151,7 +152,7 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
                   onClick={() => {
                     setOpenDueDialog(true), setSelectedPayment(null);
                   }}
-                  disabled={latestFee.status==="PAID"}
+                  disabled={latestFee.status === "PAID"}
                 >
                   <Plus className="h-4 w-4" />
                   Create Payment Due
@@ -185,7 +186,7 @@ export default function PaymentsTab({ student, latestFee }: PaymentsTabProps) {
             <Button
               size="sm"
               onClick={() => setShowAddPaymentDialog(true)}
-              disabled={latestFee.status==="PAID"}
+              disabled={latestFee.status === "PAID"}
               className="bg-blue/80 text-white border border-gray-600 hover:bg-white hover:text-black hover:border-black"
             >
               <Plus className="h-4 w-4" />
