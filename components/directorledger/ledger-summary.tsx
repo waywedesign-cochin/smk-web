@@ -48,7 +48,7 @@ export function LedgerSummary({ totals, debitOrCredit }: LedgerSummaryProps) {
           ? "Total Credit"
           : debitOrCredit === "DEBIT"
           ? "Total Debit"
-          : "Period Balance",
+          : "Closing Balance",
       value:
         debitOrCredit === "CREDIT"
           ? totals.totalCredit
@@ -67,7 +67,7 @@ export function LedgerSummary({ totals, debitOrCredit }: LedgerSummaryProps) {
           ? "Total credited amount "
           : debitOrCredit === "DEBIT"
           ? "Total debited amount"
-          : "Total period balance amount",
+          : "Balance up to the selected period",
     },
   ];
 
