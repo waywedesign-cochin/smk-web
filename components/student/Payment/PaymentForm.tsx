@@ -52,7 +52,7 @@ export default function PaymentForm({
   const dispatch = useAppDispatch();
   const loading = useSelector((state: RootState) => state.payments.submitting);
   const { bankAccounts, loading: bankLoading } = useAppSelector(
-    (state) => state.bank
+    (state) => state.bank,
   );
   const [errors, setErrors] = useState<
     Partial<Record<keyof PaymentInput, string>>
@@ -71,7 +71,7 @@ export default function PaymentForm({
       ? new Date(existingPayment.dueDate)
       : null,
     isAdvance: student?.fees?.some(
-      (fee) => fee.advanceAmount && fee.advanceAmount > 0
+      (fee) => fee.advanceAmount && fee.advanceAmount > 0,
     )
       ? false
       : true,
@@ -110,7 +110,7 @@ export default function PaymentForm({
 
   const handleChange = (
     field: keyof PaymentInput,
-    value: PaymentInput[keyof PaymentInput]
+    value: PaymentInput[keyof PaymentInput],
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -260,7 +260,7 @@ export default function PaymentForm({
             onChange={(e) =>
               handleChange(
                 "paidAt",
-                e.target.value ? new Date(e.target.value) : null
+                e.target.value ? new Date(e.target.value) : null,
               )
             }
             disabled={loading}
@@ -287,7 +287,7 @@ export default function PaymentForm({
               onChange={(e) =>
                 handleChange(
                   "dueDate",
-                  e.target.value ? new Date(e.target.value) : null
+                  e.target.value ? new Date(e.target.value) : null,
                 )
               }
               disabled={loading}
@@ -323,7 +323,7 @@ export default function PaymentForm({
         </div>
 
         {/* Advance Checkbox */}
-        {!hasAdvance && !existingPayment && (
+        {!hasAdvance && (
           <div className="flex items-center gap-2 bg-[#1B2437] border border-gray-600 p-3 rounded-lg">
             <Checkbox
               id="isAdvance"
@@ -359,8 +359,8 @@ export default function PaymentForm({
             {loading
               ? "Saving..."
               : existingPayment
-              ? "Update Payment"
-              : "Add Payment"}
+                ? "Update Payment"
+                : "Add Payment"}
           </Button>
         </div>
       </form>
