@@ -84,7 +84,7 @@ export const addStudent = createAsyncThunk<Student, Student>(
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Student added successfully");
@@ -92,10 +92,15 @@ export const addStudent = createAsyncThunk<Student, Student>(
       return response.data.data.student as Student;
     } catch (error: unknown) {
       let errorMessage = "Failed to add student";
-      if (error instanceof Error) errorMessage = error.message;
+
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data?.message || error.message;
+      }
+      toast.error(errorMessage);
+
       return rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 
 export const fetchStudents = createAsyncThunk<
@@ -107,7 +112,7 @@ export const fetchStudents = createAsyncThunk<
       `${BASE_URL}/api/student/get-students?page=${params?.page}&limit=${params?.limit}`,
       {
         params: params || {},
-      }
+      },
     );
     return response.data.data as StudentsResponse;
   } catch (error: unknown) {
@@ -125,7 +130,7 @@ export const fetchStudentById = createAsyncThunk<
 >("students/fetchById", async (id, { rejectWithValue }) => {
   try {
     const response = await axios.get(
-      `${BASE_URL}/api/student/get-students?id=${id}`
+      `${BASE_URL}/api/student/get-students?id=${id}`,
     );
     return response.data.data as Student;
   } catch (error: unknown) {
@@ -147,7 +152,7 @@ export const updateStudent = createAsyncThunk<Student, Student>(
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Student updated successfully");
@@ -158,7 +163,7 @@ export const updateStudent = createAsyncThunk<Student, Student>(
       if (error instanceof Error) errorMessage = error.message;
       return rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 
 export const deleteStudent = createAsyncThunk<string, string>(
@@ -172,7 +177,7 @@ export const deleteStudent = createAsyncThunk<string, string>(
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       if (response.data.success === true) {
         toast.success(response.data.message || "Student deleted successfully");
@@ -183,7 +188,7 @@ export const deleteStudent = createAsyncThunk<string, string>(
       if (error instanceof Error) errorMessage = error.message;
       return rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 
 export const switchStudentBatch = createAsyncThunk<
@@ -200,7 +205,7 @@ export const switchStudentBatch = createAsyncThunk<
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     if (response.data.success) {
@@ -231,7 +236,7 @@ export const editBatchSwitch = createAsyncThunk<
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     if (response.data.success) {
@@ -239,7 +244,7 @@ export const editBatchSwitch = createAsyncThunk<
       return payload;
     } else {
       return rejectWithValue(
-        response.data.message || "Failed to edit batch switch"
+        response.data.message || "Failed to edit batch switch",
       );
     }
   } catch (error: unknown) {
@@ -302,7 +307,7 @@ const studentSlice = createSlice({
       .addCase(updateStudent.fulfilled, (state, action) => {
         state.submitting = false;
         state.students = state.students.map((student) =>
-          student.id === action.payload.id ? action.payload : student
+          student.id === action.payload.id ? action.payload : student,
         );
       })
       .addCase(updateStudent.rejected, (state, action) => {
@@ -319,7 +324,7 @@ const studentSlice = createSlice({
       .addCase(deleteStudent.fulfilled, (state, action) => {
         state.submitting = false;
         state.students = state.students.filter(
-          (student) => student.id !== action.payload
+          (student) => student.id !== action.payload,
         );
       })
       .addCase(deleteStudent.rejected, (state, action) => {
@@ -357,7 +362,7 @@ const studentSlice = createSlice({
                 ...student,
                 currentBatch: { id: toBatchId } as Student["currentBatch"],
               }
-            : student
+            : student,
         );
       })
       .addCase(switchStudentBatch.rejected, (state, action) => {
@@ -379,7 +384,7 @@ const studentSlice = createSlice({
                 ...student,
                 currentBatch: { id: newToBatchId } as Student["currentBatch"],
               }
-            : student
+            : student,
         );
       })
       .addCase(editBatchSwitch.rejected, (state, action) => {
