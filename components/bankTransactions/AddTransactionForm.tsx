@@ -61,6 +61,12 @@ interface BankTransactionFormDialogProps {
   existingData?: Partial<BankTransactionFormData>;
   getTransactions?: () => void;
 }
+// Add this helper at the top of the file
+function toUTCDate(date: Date): Date {
+  return new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+  );
+}
 
 export default function BankTransactionFormDialog({
   open,
@@ -111,7 +117,7 @@ export default function BankTransactionFormDialog({
 
   const setField = <K extends keyof BankTransactionFormData>(
     key: K,
-    value: BankTransactionFormData[K]
+    value: BankTransactionFormData[K],
   ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -146,11 +152,12 @@ export default function BankTransactionFormDialog({
       const parsed = bankTransactionSchema.parse({
         ...form,
         amount: Number(form.amount),
+        transactionDate: toUTCDate(form.transactionDate), 
       });
 
       if (isEdit && existingData?.id) {
         await dispatch(
-          updateBankTransaction({ id: existingData.id, ...parsed })
+          updateBankTransaction({ id: existingData.id, ...parsed }),
         );
       } else {
         await dispatch(addBankTransaction(parsed));
