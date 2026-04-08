@@ -93,16 +93,16 @@ export function LedgerForm({
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.directorLedger);
   const { locations, loading: locationsLoading } = useAppSelector(
-    (state) => state.locations
+    (state) => state.locations,
   );
   const { batches, loading: batchesLoading } = useAppSelector(
-    (state) => state.batches
+    (state) => state.batches,
   );
   const { students, loading: studentsLoading } = useAppSelector(
-    (state) => state.students
+    (state) => state.students,
   );
   const { bankAccounts, loading: bankLoading } = useAppSelector(
-    (state) => state.bank
+    (state) => state.bank,
   );
   const { currentUser } = useAppSelector((state) => state.users);
 
@@ -155,17 +155,15 @@ export function LedgerForm({
       dispatch(
         fetchBatches({
           location: formData.locationId,
-          limit: 10,
+          limit: 1,
           status: "ACTIVE",
-        })
+          search: batchDebouncedSearch,
+        }),
       );
     }
-  }, [formData.locationId, dispatch]);
+  }, [formData.locationId, dispatch, batchDebouncedSearch]);
 
   //filter batches
-  const filteredBatches = batches.filter((b) =>
-    b.name.toLowerCase().includes(batchDebouncedSearch)
-  );
 
   // Fetch students when batch changes
   useEffect(() => {
@@ -174,7 +172,7 @@ export function LedgerForm({
         fetchStudents({
           currentBatchId: formData?.batchId,
           limit: 300,
-        })
+        }),
       );
     }
   }, [formData.batchId]);
@@ -219,7 +217,7 @@ export function LedgerForm({
   }, [currentUser]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -355,7 +353,7 @@ export function LedgerForm({
           updateDirectorLedgerEntry({
             id: entry?.id as string,
             entry: payload,
-          })
+          }),
         ).unwrap();
         setSuccessMessage("Entry updated successfully!");
       } catch (err) {
@@ -368,8 +366,8 @@ export function LedgerForm({
             payload as Omit<
               DirectorLedgerEntry,
               "id" | "debitCredit" | "createdAt" | "updatedAt"
-            >
-          )
+            >,
+          ),
         ).unwrap();
         setSuccessMessage("Entry added successfully!");
       } catch (err) {
@@ -564,12 +562,12 @@ export function LedgerForm({
                       <div className="flex justify-center py-4">
                         <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       </div>
-                    ) : filteredBatches.length === 0 ? (
+                    ) : batches.length === 0 ? (
                       <div className="text-center py-4 text-slate-400 text-xs">
                         No batches found
                       </div>
                     ) : (
-                      filteredBatches.map((batch) => (
+                      batches.map((batch) => (
                         <SelectItem
                           key={batch.id}
                           value={batch.id as string}
