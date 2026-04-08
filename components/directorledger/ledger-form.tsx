@@ -155,7 +155,7 @@ export function LedgerForm({
       dispatch(
         fetchBatches({
           location: formData.locationId,
-          limit: 1,
+          limit: 10,
           status: "ACTIVE",
           search: batchDebouncedSearch,
         }),
