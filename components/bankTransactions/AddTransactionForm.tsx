@@ -100,7 +100,9 @@ export default function BankTransactionFormDialog({
   useEffect(() => {
     if (isEdit && existingData) {
       setForm({
-        transactionDate: existingData.transactionDate ?? new Date(),
+        transactionDate: existingData.transactionDate
+          ? new Date(existingData.transactionDate)
+          : new Date(),
         transactionId: existingData.transactionId ?? "",
         amount: existingData.amount ?? "",
         description: existingData.description ?? "",
@@ -112,7 +114,6 @@ export default function BankTransactionFormDialog({
       });
     }
   }, [isEdit, existingData, locationId]);
-
   //onChange handler
 
   const setField = <K extends keyof BankTransactionFormData>(
@@ -152,7 +153,7 @@ export default function BankTransactionFormDialog({
       const parsed = bankTransactionSchema.parse({
         ...form,
         amount: Number(form.amount),
-        transactionDate: toUTCDate(form.transactionDate), 
+        transactionDate: toUTCDate(form.transactionDate),
       });
 
       if (isEdit && existingData?.id) {
