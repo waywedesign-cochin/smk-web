@@ -63,10 +63,15 @@ export const CashBookPage = () => {
         page: pagination?.page || 1,
         limit: itemsPerPage,
         locationId: filters.locationId,
-        month: filters.month === "ALL" ? undefined : filters.month,
+        month:
+          filters.year === "ALL"
+            ? undefined
+            : filters.month === "ALL"
+              ? undefined
+              : filters.month,
         year: filters.year === "ALL" ? undefined : filters.year,
         transactionType: filters.type,
-      })
+      }),
     );
   };
 
@@ -135,7 +140,7 @@ export const CashBookPage = () => {
         otherExpense: "OTHER_EXPENSE",
       };
       return entries.filter(
-        (entry) => entry.transactionType === typeMap[activeTab]
+        (entry) => entry.transactionType === typeMap[activeTab],
       );
     }
     return entries;
@@ -161,12 +166,12 @@ export const CashBookPage = () => {
             activeTab === "students"
               ? "STUDENT_PAID"
               : activeTab === "expenses"
-              ? "OFFICE_EXPENSE"
-              : activeTab === "other-income"
-              ? "OTHER_INCOME"
-              : activeTab === "other-expense"
-              ? "OTHER_EXPENSE"
-              : "OWNER_TAKEN",
+                ? "OFFICE_EXPENSE"
+                : activeTab === "other-income"
+                  ? "OTHER_INCOME"
+                  : activeTab === "other-expense"
+                    ? "OTHER_EXPENSE"
+                    : "OWNER_TAKEN",
           limit: 10000,
         },
       });
@@ -323,6 +328,7 @@ export const CashBookPage = () => {
           user={user}
           handleTabChange={setActiveTab}
           cashInHand={totals.cashInHand}
+          onSuccess={fetchCashbook}
         />
       )}
 
@@ -337,6 +343,7 @@ export const CashBookPage = () => {
           user={user}
           handleTabChange={setActiveTab}
           cashInHand={totals.cashInHand}
+          onSuccess={fetchCashbook}
         />
       )}
 
@@ -380,7 +387,11 @@ export const CashBookPage = () => {
               <Select
                 value={filters.year}
                 onValueChange={(value) => {
-                  setFilters((prev) => ({ ...prev, year: value }));
+                  setFilters((prev) => ({
+                    ...prev,
+                    year: value,
+                    month: value === "ALL" ? "ALL" : prev.month,
+                  }));
                   resetPage();
                 }}
               >
@@ -391,7 +402,7 @@ export const CashBookPage = () => {
                   <SelectItem value="ALL">All Years</SelectItem>
                   {Array.from(
                     { length: 5 },
-                    (_, i) => new Date().getFullYear() - i
+                    (_, i) => new Date().getFullYear() - i,
                   ).map((y) => (
                     <SelectItem key={y} value={y.toString()}>
                       {y}
@@ -666,7 +677,7 @@ export const CashBookPage = () => {
                 (page) =>
                   page === 1 ||
                   page === pagination.totalPages ||
-                  Math.abs(page - pagination.page) <= 1
+                  Math.abs(page - pagination.page) <= 1,
               )
               .map((page, index, array) => {
                 const showEllipsis =

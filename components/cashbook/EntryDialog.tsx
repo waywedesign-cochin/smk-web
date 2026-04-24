@@ -64,6 +64,7 @@ interface EntryDialogProps {
   user: User;
   handleTabChange: Dispatch<SetStateAction<string>>;
   cashInHand: number;
+  onSuccess?: () => void;
 }
 
 export default function EntryDialog({
@@ -76,6 +77,7 @@ export default function EntryDialog({
   handleTabChange,
   user,
   cashInHand,
+  onSuccess,
 }: EntryDialogProps) {
   const dispatch = useAppDispatch();
   const locations = useAppSelector((state) => state.locations.locations);
@@ -99,7 +101,7 @@ export default function EntryDialog({
 
   // UI date for the calendar button text
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date()
+    new Date(),
   );
 
   // mirrors previous "watch" behavior
@@ -202,7 +204,7 @@ export default function EntryDialog({
   }, [batchSearch]);
   //filtered batches
   const filteredBatchList = batches.filter((b) =>
-    b.name.toLowerCase().includes(batchDebouncedSearch)
+    b.name.toLowerCase().includes(batchDebouncedSearch),
   );
 
   // ------------------ Effects: clear dependent fields on type change ------------------
@@ -230,7 +232,7 @@ export default function EntryDialog({
   };
 
   const setErrorsFromZod = (
-    zodFieldErrors: Record<string, string[] | undefined>
+    zodFieldErrors: Record<string, string[] | undefined>,
   ) => {
     const mapped: Record<string, string> = {};
     for (const [key, messages] of Object.entries(zodFieldErrors)) {
@@ -242,7 +244,7 @@ export default function EntryDialog({
   const setField = <K extends keyof CashBookFormData>(
     key: K,
     value: CashBookFormData[K],
-    clearError = false
+    clearError = false,
   ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (clearError) clearFieldError(String(key));
@@ -325,7 +327,7 @@ export default function EntryDialog({
       const d = validData.transactionDate;
 
       const utcDate = new Date(
-        Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0)
+        Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0),
       );
 
       const payload = {
@@ -341,21 +343,14 @@ export default function EntryDialog({
 
       if (isEdit && existingData?.id) {
         await dispatch(
-          updateCashbookEntry({ id: existingData.id, data: payload })
+          updateCashbookEntry({ id: existingData.id, data: payload }),
         ).unwrap();
       } else {
         await dispatch(addCashbookEntry(payload)).unwrap();
       }
 
-      // Refresh the list based on transaction type
-      await dispatch(
-        fetchCashbookEntries({
-          transactionType: payload.transactionType,
-          locationId: payload.locationId,
-          year: new Date(payload.transactionDate).getFullYear().toString(),
-          month: (new Date(payload.transactionDate).getMonth() + 1).toString(),
-        })
-      );
+      // Refresh cashbook data after successful submit
+      onSuccess?.();
 
       // Update active tab
       if (payload.transactionType === "STUDENT_PAID") {
@@ -502,7 +497,7 @@ export default function EntryDialog({
                   setField(
                     "transactionType",
                     v as CashBookFormData["transactionType"],
-                    true
+                    true,
                   )
                 }
                 disabled={isEdit}
@@ -638,8 +633,8 @@ export default function EntryDialog({
                       loadingStudents
                         ? "Loading students..."
                         : filteredStudents.length === 0
-                        ? "No students in batch"
-                        : "Select student"
+                          ? "No students in batch"
+                          : "Select student"
                     }
                   />
                 </SelectTrigger>
