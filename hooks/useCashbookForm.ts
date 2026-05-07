@@ -21,6 +21,7 @@ interface UseCashbookFormProps {
     | "OTHER_INCOME"
     | "OTHER_EXPENSE";
   locationId: string;
+  batchSearch?: string;
 }
 
 interface UseCashbookFormReturn {
@@ -48,6 +49,7 @@ export function useCashbookForm({
   existingData,
   transactionType,
   locationId,
+  batchSearch,
 }: UseCashbookFormProps): UseCashbookFormReturn {
   const dispatch = useAppDispatch();
 
@@ -106,9 +108,10 @@ export function useCashbookForm({
         await dispatch(
           fetchBatches({
             location: locationId,
-            limit: 10,
+            limit: 1,
             status: "ACTIVE",
-          })
+            search: batchSearch,
+          }),
         ).unwrap();
       } catch (error) {
         console.error("❌ Failed to fetch batches:", error);
@@ -118,7 +121,7 @@ export function useCashbookForm({
     };
 
     loadBatches();
-  }, [isOpen, transactionType, locationId, dispatch]);
+  }, [isOpen, transactionType, locationId, batchSearch, dispatch]);
 
   // 🔹 Fetch students when batch changes
   useEffect(() => {
@@ -140,7 +143,7 @@ export function useCashbookForm({
             location: locationId,
             page: 1,
             limit: 200,
-          })
+          }),
         ).unwrap();
         fetchedStudentsForBatch.current = selectedBatchId;
       } catch (error) {
