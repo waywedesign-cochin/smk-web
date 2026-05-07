@@ -108,7 +108,7 @@ export function useCashbookForm({
         await dispatch(
           fetchBatches({
             location: locationId,
-            limit: 1,
+            limit: 15,
             status: "ACTIVE",
             search: batchSearch,
           }),
