@@ -31,10 +31,8 @@ import type { User } from "@/lib/types";
 import {
   addCashbookEntry,
   type CashbookEntry,
-  fetchCashbookEntries,
   updateCashbookEntry,
 } from "@/redux/features/cashbook/cashbookSlice";
-import { fetchBatches } from "@/redux/features/batch/batchSlice";
 import { useCashbookForm } from "@/hooks/useCashbookForm";
 import { cashBookFormSchema } from "@/lib/validation/cashBookFormSchema";
 
@@ -125,6 +123,7 @@ export default function EntryDialog({
     existingData,
     transactionType: watchType,
     locationId: watchLocation,
+    batchSearch: batchDebouncedSearch,
   });
 
   // ------------------ Initialize / Edit Mode Prefill ------------------
@@ -202,10 +201,6 @@ export default function EntryDialog({
 
     return () => clearTimeout(handler);
   }, [batchSearch]);
-  //filtered batches
-  const filteredBatchList = batches.filter((b) =>
-    b.name.toLowerCase().includes(batchDebouncedSearch),
-  );
 
   // ------------------ Effects: clear dependent fields on type change ------------------
   useEffect(() => {
@@ -594,12 +589,12 @@ export default function EntryDialog({
                     <div className="flex justify-center py-4">
                       <Loader2 className="animate-spin text-muted-foreground" />
                     </div>
-                  ) : filteredBatchList.length === 0 ? (
+                  ) : batches.length === 0 ? (
                     <div className="text-center py-4 text-gray-400 text-xs">
                       No batches found
                     </div>
                   ) : (
-                    filteredBatchList.map((batch) => (
+                    batches.map((batch) => (
                       <SelectItem
                         key={batch.id}
                         value={batch.id as string}
